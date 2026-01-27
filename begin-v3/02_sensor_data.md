@@ -1,0 +1,39 @@
+# 第二章：传感器数据 (变量与类型)
+
+> 系统启动后，首要任务是感知环境。我们需要从各类传感器读取数据（温度、湿度、状态），并将其存储在内存中。
+
+## 1. 定义环境参数 (变量)
+
+现实世界的数据千变万化。
+*   有些是固定的（如设备ID），用 `let`。
+*   有些是波动的（如实时温度），用 `var`。
+
+```cangjie
+main() {
+    // 设备元数据
+    let deviceId: String = "SENSOR-001"
+    let location = "Living Room" // 自动推断为 String
+
+    // 实时监控数据
+    var currentTemp: Float64 = 23.5 // 温度需要小数精度
+    var humidity: Int64 = 45        // 湿度通常为整数百分比
+    var isOnline: Bool = true       // 设备在线状态
+
+    println("=== 设备状态监控 ===")
+    println("ID: ${deviceId} | 位置: ${location}")
+    println("状态: 在线(${isOnline}) | 温度: ${currentTemp}°C | 湿度: ${humidity}%")
+
+    // 模拟数据变化
+    currentTemp = 24.2
+    println("更新温度: ${currentTemp}°C")
+}
+```
+
+## 2. 强类型的意义
+
+为什么仓颉要区分 `Float64` 和 `Int64`？
+在嵌入式开发中，资源是宝贵的。类型系统帮助我们在编译阶段就发现“将电压（数字）赋值给日志（文本）”这类逻辑错误，避免系统在运行时崩溃。
+
+```cangjie
+// currentTemp = "Error" // ❌ 编译器拦截：防止脏数据污染系统
+```
