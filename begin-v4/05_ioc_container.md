@@ -1,0 +1,84 @@
+# 第五章：IoC 容器 (泛型与接口)
+
+> 为了解耦业务代码，现代框架通常提供依赖注入（Dependency Injection）功能。我们需要构建一个简单的 IoC (Inversion of Control) 容器。
+
+## 1. 容器定义 (Generics)
+
+我们需要一个万能的字典，可以存储任意类型的服务实例。
+
+```cangjie
+import std.collection.*
+
+// 抽象服务接口
+interface Service {
+    func getName(): String
+}
+
+class Container {
+    // 简化版：Key 是服务名，Value 是服务实例
+    // 真实框架会使用反射或 TypeId
+    var services = HashMap<String, Service>()
+
+    public func register(name: String, svc: Service) {
+        services[name] = svc
+        println("IoC: 注册服务 [${name}]")
+    }
+
+    // 泛型获取方法 (模拟)
+    // 仓颉中通常需要转换类型，这里简化演示
+    public func resolve(name: String): Option<Service> {
+        if (services.contains(name)) {
+            return Some(services[name])
+        }
+        return None
+    }
+}
+```
+
+## 2. 服务注册与获取
+
+```cangjie
+class DatabaseService <: Service {
+    public func getName() = "Database"
+    public func query() = "SELECT * FROM users"
+}
+
+class CacheService <: Service {
+    public func getName() = "Redis"
+    public func get(key: String) = "Value for ${key}"
+}
+
+class UserController {
+    let db: DatabaseService
+
+    // 构造注入
+    public init(db: DatabaseService) {
+        this.db = db
+    }
+
+    public func getUser() {
+        println("Controller 调用 DB: " + db.query())
+    }
+}
+
+main() {
+    let container = Container()
+
+    // 1. 注册依赖
+    container.register("db", DatabaseService())
+    container.register("cache", CacheService())
+
+    // 2. 解析依赖
+    if (let Some(svc) <- container.resolve("db")) {
+        // 假设我们知道它是 DatabaseService 并进行了转换
+        // 在强类型语言中，这里通常涉及 cast
+        if (svc is DatabaseService) {
+             let db = svc as DatabaseService
+
+             // 3. 注入 Controller
+             let ctrl = UserController(db.getOrThrow())
+             ctrl.getUser()
+        }
+    }
+}
+```
