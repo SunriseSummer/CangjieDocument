@@ -1,118 +1,57 @@
 # 调用函数
 
-函数调用的形式为 `f(arg1, arg2, ..., argn)`。其中，`f` 是要调用的函数的名字，`arg1` 到 `argn` 是 `n` 个调用时的参数（称为实参），要求每个实参的类型必须是对应参数类型的子类型。实参可以有 0 个或多个，当实参个数为 0 时，调用方式为 `f()`。
+定义好函数后，可以通过函数名加上圆括号 `()` 来调用它。
 
-根据函数定义时参数是非命名参数还是命名参数的差异，函数调用时传实参的方式也有所不同：对于非命名参数，它对应的实参是一个表达式；对于命名参数，它对应的实参需要使用 `p: e` 的形式，其中 `p` 是命名参数的名字，`e` 是表达式（即传递给参数 `p` 的值）。
+## 1. 位置参数
 
-非命名参数调用举例：
+这是最常见的调用方式，实参按照定义的顺序传递给形参。
 
 <!-- verify -->
-
 ```cangjie
-func add(a: Int64, b: Int64) {
-    return a + b
+func sub(a: Int64, b: Int64) => a - b
+
+main() {
+    let result = sub(10, 5) // a=10, b=5
+    println(result) // 5
+}
+```
+
+## 2. 命名参数
+
+调用时可以显式指定参数名，这样可以不按顺序传递，提高代码可读性。
+要使用命名参数，定义函数时需要给参数指定**外部参数名**（或者直接使用变量名作为外部参数名，如果在变量名前加 `!` 则强制位置调用，或者不加特殊修饰则默认既可位置也可命名，具体视仓颉版本规则，这里以通用规则为准：参数默认即可位置也可命名）。
+
+> **注意**: 在仓颉中，默认情况下，参数既可以使用位置参数调用，也可以使用命名参数调用。
+
+<!-- verify -->
+```cangjie
+func connect(host: String, port: Int64) {
+    println("Connecting to ${host}:${port}")
 }
 
 main() {
-    let x = 1
-    let y = 2
-    let r = add(x, y)
-    println("The sum of x and y is ${r}")
+    // 混合使用
+    connect("localhost", port: 8080)
+
+    // 纯命名参数
+    connect(port: 3306, host: "127.0.0.1")
 }
 ```
 
-执行结果为：
+## 3. 参数默认值
 
-```text
-The sum of x and y is 3
-```
-
-命名参数调用举例：
+可以为函数参数提供默认值。调用时如果省略该参数，则使用默认值。
 
 <!-- verify -->
-
 ```cangjie
-func add(a: Int64, b!: Int64) {
-    return a + b
+func log(message: String, level: String = "INFO") {
+    println("[${level}] ${message}")
 }
 
 main() {
-    let x = 1
-    let y = 2
-    let r = add(x, b: y)
-    println("The sum of x and y is ${r}")
+    log("System starting...") // 使用默认 level="INFO"
+    log("File not found", level: "ERROR") // 覆盖默认值
 }
 ```
 
-执行结果为：
-
-```text
-The sum of x and y is 3
-```
-
-对于多个命名参数，调用时的传参顺序可以和定义时的参数顺序不同。例如，下例中调用 `add` 函数时 `b` 可以出现在 `a` 之前：
-
-<!-- verify -->
-
-```cangjie
-func add(a!: Int64, b!: Int64) {
-    return a + b
-}
-
-main() {
-    let x = 1
-    let y = 2
-    let r = add(b: y, a: x)
-    println("The sum of x and y is ${r}")
-}
-```
-
-执行结果为：
-
-```text
-The sum of x and y is 3
-```
-
-对于拥有默认值的命名参数，调用时如果没有传实参，那么此参数将使用默认值作为实参的值。例如，下例中调用 `add` 函数时没有为参数 `b` 传实参，那么参数 `b` 的值等于其定义时的默认值 `2`：
-
-<!-- verify -->
-
-```cangjie
-func add(a: Int64, b!: Int64 = 2) {
-    return a + b
-}
-
-main() {
-    let x = 1
-    let r = add(x)
-    println("The sum of x and y is ${r}")
-}
-```
-
-执行结果为：
-
-```text
-The sum of x and y is 3
-```
-
-对于拥有默认值的命名参数，调用时也可以为其传递新的实参，此时命名参数的值等于新的实参的值，即定义时的默认值将失效。例如，下例中调用 `add` 函数时为参数 `b` 传了新的实参值 `20`，那么参数 `b` 的值就等于 `20`：
-
-<!-- verify -->
-
-```cangjie
-func add(a: Int64, b!: Int64 = 2) {
-    return a + b
-}
-
-main() {
-    let x = 1
-    let r = add(x, b: 20)
-    println("The sum of x and y is ${r}")
-}
-```
-
-执行结果为：
-
-```text
-The sum of x and y is 21
-```
+> **规则**: 拥有默认值的参数通常放在参数列表的末尾，以便于省略。
