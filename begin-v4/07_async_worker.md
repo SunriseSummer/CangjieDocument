@@ -1,0 +1,65 @@
+# 第七章：并发 Worker 模型 (并发编程)
+
+> Web 服务器必须能同时处理成千上万个请求。虽然仓颉的 `main` 是单线程的，但通过 `spawn` 我们可以轻松实现高并发。
+
+## 1. 请求处理 Worker
+
+模拟一个能够并发处理请求的 Worker 池。
+
+```cangjie
+import std.sync.*
+import std.time.*
+import std.collection.*
+
+// 模拟耗时的业务逻辑
+func handleRequest(id: Int64) {
+    let processTime = Duration.millisecond * (id * 100) // 模拟不同耗时
+    println("Worker [${id}]: 开始处理 (预计 ${id * 100}ms)")
+    sleep(processTime)
+    println("Worker [${id}]: 完成 ✅")
+}
+
+main() {
+    println(">>> Web 服务器启动，准备接收并发请求...")
+
+    let futures = ArrayList<Future<Unit>>()
+
+    // 模拟瞬间涌入 5 个请求
+    for (i in 1..=5) {
+        // spawn 启动轻量级线程
+        let f = spawn {
+            handleRequest(i)
+        }
+        futures.append(f)
+    }
+
+    println(">>> 主线程：所有请求已分发，继续监听新请求...")
+
+    // 模拟主线程做其他事
+    sleep(Duration.second)
+
+    // 等待所有请求完成 (实际 Server 不需要等，这里为了演示)
+    for (f in futures) { f.get() }
+    println(">>> 所有请求处理完毕。")
+}
+```
+
+## 2. 线程安全计数器 (Atomic)
+
+统计服务器的总请求数 (QPS)，必须保证线程安全。
+
+```cangjie
+main() {
+    let totalRequests = AtomicInt64(0)
+
+    // 并发增加计数
+    for (i in 0..100) {
+        spawn {
+            totalRequests.fetchAdd(1)
+        }
+    }
+
+    sleep(Duration.millisecond * 500)
+    println("总请求数: ${totalRequests.load()}")
+}
+```
