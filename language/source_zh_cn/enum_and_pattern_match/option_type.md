@@ -1,50 +1,64 @@
 # Option 类型
 
-`Option` 类型使用 `enum` 定义，它包含两个构造器：`Some` 和 `None`。其中，`Some` 会携带一个参数，表示有值；`None` 不带参数，表示无值。当需要表示某个类型可能有值，也可能没有值时，可以选择使用 `Option` 类型。
+`Option<T>` 是仓颉标准库中内置的一个枚举类型，用于表示“一个值可能存在，也可能不存在”的情况。它是仓颉处理空值安全的主要机制，替代了其他语言中容易导致错误的 `null`。
 
-`Option` 类型被定义为一个泛型 `enum` 类型，定义如下（这里仅需要知道尖括号中的 `T` 是一个类型形参，当 `T` 为不同类型时会得到不同的 `Option` 类型即可。关于泛型的详细介绍，可参见[泛型](../generic/generic_overview.md)）：
+## 1. 定义
 
-<!-- compile -->
+`Option` 本质上是一个简单的枚举：
 
 ```cangjie
 enum Option<T> {
-    | Some(T)
-    | None
+    Some(T) | None
 }
 ```
 
-其中，`Some` 构造器的参数类型就是类型形参 `T`，当 `T` 被实例化为不同的类型时，会得到不同的 `Option` 类型，例如：`Option<Int64>`、`Option<String>`等。
+- **`Some(T)`**: 包含一个类型为 `T` 的值。
+- **`None`**: 表示没有值。
 
-`Option` 类型还有一种简单的写法：在类型名前加 `?`。也就是说，对于任意类型 `Ty`，`?Ty` 等价于 `Option<Ty>`。例如，`?Int64` 等价于 `Option<Int64>`，`?String` 等价于 `Option<String>`。
+## 2. 创建 Option
 
-下面的例子展示了如何定义 `Option` 类型的变量：
-
-<!-- compile -->
-
+<!-- verify -->
 ```cangjie
-let a: Option<Int64> = Some(100)
-let b: ?Int64 = Some(100)
-let c: Option<String> = Some("Hello")
-let d: ?String = None
+main() {
+    let a: Option<Int64> = Some(10)
+    let b: Option<Int64> = None
+    println(a.getOrThrow())
+}
 ```
 
-另外，虽然 `T` 和 `Option<T>` 是不同的类型，但是当明确知道某个位置需要的是 `Option<T>` 类型的值时，可以直接传一个 `T` 类型的值，编译器会用 `Option<T>` 类型的 `Some` 构造器将 `T` 类型的值封装成 `Option<T>` 类型的值（注意：这里并不是类型转换）。例如，下面的定义是合法的（等价于上例中变量 `a`，`b` 和 `c` 的定义）：
+## 3. 使用 Option
 
-<!-- compile -->
+通常不需要直接使用 `match` 来解构 `Option`，仓颉提供了一些便捷的操作符和方法。
 
-```cangjie
-let a: Option<Int64> = 100
-let b: ?Int64 = 100
-let c: Option<String> = "100"
-```
-
-在上下文没有明确的类型要求时，无法使用 `None` 直接构造出想要的类型，此时应使用 `None<T>` 这样的语法来构造 `Option<T>` 类型的数据，例如：
-
-<!-- compile -->
+### 使用 `??` (Coalescing)
+如果 `Option` 是 `None`，则提供一个默认值。
 
 ```cangjie
-let a = None<Int64> // a: Option<Int64>
-let b = None<Bool> // b: Option<Bool>
+let val = someOption ?? 0 // 如果 someOption 是 None，val 就是 0
 ```
 
-最后，关于 `Option` 的使用，请参见[使用 Option](../error_handle/use_option.md)。
+### 使用 `?.` (Safe Call)
+如果对象存在则调用成员，如果不存在（None）则不调用并返回 None。
+
+### 使用 `if-let` 解构
+这种语法糖允许我们仅在值存在时执行代码。
+
+<!-- verify -->
+```cangjie
+main() {
+    let opt = Some("Cangjie")
+
+    if (let Some(name) <- opt) {
+        println("Hello, ${name}")
+    } else {
+        println("No name provided")
+    }
+}
+```
+
+## 4. 获取值
+
+- **`getOrThrow()`**: 如果是 `Some` 返回值，如果是 `None` 抛出异常。
+- **`getOrDefault(default)`**: 类似 `??` 操作符。
+
+> **💡 最佳实践**: 尽量避免直接使用 `getOrThrow()`，推荐使用 `match`、`if-let` 或 `??` 来安全地处理空值。
