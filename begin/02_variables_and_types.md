@@ -1,51 +1,55 @@
-# 02. 变量与基础类型
+# 02. 变量与类型：打造你的 RPG 角色
 
-本节我们将学习如何在仓颉中定义变量以及常用的数据类型。
+在游戏开发中，我们需要定义角色的各种属性。这正是学习变量和数据类型的最佳场景。让我们来创建一个简单的 RPG 角色属性卡。
 
-## 1. 变量定义
+## 1. 定义角色属性 (变量与常量)
 
-仓颉使用 `let` 定义不可变变量，使用 `var` 定义可变变量。
-
-```cangjie
-main() {
-    let name = "Cangjie" // let 定义后不可修改
-    var age = 1          // var 定义后可以修改
-
-    // name = "New Name" // 编译错误！let 定义的变量不能重新赋值
-    age = 2              // 正确
-
-    println("Name: " + name)
-    println("Age: " + age.toString())
-}
-```
-
-## 2. 基础数据类型
-
-仓颉是强类型语言，支持以下基础类型：
-
-*   **整数**: `Int64`, `Int32`, `UInt64`, `UInt8` 等 (默认整数通过字面量推断为 `Int64`)。
-*   **浮点数**: `Float64`, `Float32` (默认浮点数推断为 `Float64`)。
-*   **布尔值**: `Bool` (取值为 `true` 或 `false`)。
-*   **字符**: `Rune` (表示 Unicode 字符，使用单引号，如 `'a'`, `'中'`)。
-*   **字符串**: `String` (表示文本，使用双引号，如 `"Hello"`)。
+在仓颉中，有些属性是与生俱来的（如名字），我们用 `let` 定义不可变变量；有些属性是会随战斗变化的（如生命值），我们用 `var` 定义可变变量。
 
 ```cangjie
 main() {
-    let pi: Float64 = 3.14159
-    let isActive: Bool = true
-    let char: Rune = '仓'
+    // 角色档案
+    let heroName: String = "Cangjie Hero" // 名字一旦确定就不改了
+    let heroClass = "Warrior"             // 类型推断：自动识别为 String
 
-    println(pi)
-    println(char)
+    // 战斗属性
+    var level: Int64 = 1                  // 等级会提升
+    var hp: Float64 = 100.0               // 生命值可能会有小数（如受到持续伤害）
+    var isAlive: Bool = true              // 角色状态
+
+    println("=== 角色创建成功 ===")
+    println("姓名: " + heroName)
+    println("职业: ${heroClass}")
+    println("等级: ${level}")
+    println("生命值: ${hp}")
+
+    // 经历一场战斗...
+    println("\n>>> 遭遇史莱姆！")
+    hp = hp - 15.5
+    level = level + 1
+
+    println("=== 战斗结算 ===")
+    println("当前生命: ${hp}")
+    println("当前等级: ${level}")
 }
 ```
 
-## 3. 类型推断
+## 2. 数据类型详解
 
-仓颉编译器具有强大的类型推断能力，在大多数情况下，你可以省略显式的类型标注，编译器会根据上下文自动推导出变量的类型。
+通过上面的例子，我们接触了仓颉的核心基础类型：
+
+*   **整数 (Integer)**: `Int64` 是最常用的整数类型。用于表示等级、金币数量等。
+*   **浮点数 (Float)**: `Float64` 用于表示需要精度的数值，如暴击率、生命值。
+*   **布尔 (Bool)**: `true` 或 `false`，用于判断状态（如 `isAlive`）。
+*   **字符串 (String)**: 文本信息，如名字、对话。
+*   **字符 (Rune)**: 单个字符，如 `'A'`, `'中'`。
+
+## 3. 类型安全
+
+仓颉是强类型语言，这意味着你不能把“生命值”（数字）赋值给“名字”（字符串），这保护了你的程序不会出现低级错误。
 
 ```cangjie
-let x = 100     // 自动推断为 Int64
-let y = 3.14    // 自动推断为 Float64
-let z = "Text"  // 自动推断为 String
+// heroName = 100 // 编译错误！不能将整数赋值给字符串变量
 ```
+
+这种严谨性确保了大型项目的稳定性。

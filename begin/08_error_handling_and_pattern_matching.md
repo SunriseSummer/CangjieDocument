@@ -1,90 +1,92 @@
-# 08. 错误处理与模式匹配
+# 08. 错误处理与模式匹配：简易计算器
 
-## 1. Option 类型
+在数学计算中，总有一些“非法操作”，比如除以零。如何优雅地处理这些异常？如何解析用户的指令？
 
-在仓颉中，`Option<T>` 类型用于表示一个值可能存在，也可能不存在。它有两个构造器：`Some(T)` 表示有值，`None` 表示无值。这比使用空指针更加安全。
+## 1. 安全除法 (Option 类型)
+
+与其让程序崩溃，不如返回一个“可能为空”的结果。
 
 ```cangjie
-func findUser(id: Int64): Option<String> {
-    if (id == 1) {
-        return Some("Alice")
+func safeDivide(a: Float64, b: Float64): Option<Float64> {
+    if (b == 0.0) {
+        return None // 就像返回 null，但更安全
+    }
+    return Some(a / b)
+}
+
+main() {
+    let result1 = safeDivide(10.0, 2.0)
+    let result2 = safeDivide(10.0, 0.0)
+
+    // 处理 result1
+    match (result1) {
+        case Some(val) => println("结果: ${val}")
+        case None => println("错误：不能除以零")
+    }
+
+    // 简写：如果只是为了取值
+    if (let Some(val) <- result2) {
+        println("Result 2: ${val}")
     } else {
-        return None
+        println("计算 2 失败！")
+    }
+}
+```
+
+## 2. 指令解析 (Match 模式匹配)
+
+假设我们要解析用户的文本指令进行计算。
+
+```cangjie
+// 定义操作类型
+enum Operation {
+    | Add(Float64, Float64)
+    | Subtract(Float64, Float64)
+    | Power(Float64) // 求平方
+    | Quit
+}
+
+func execute(op: Operation) {
+    match (op) {
+        case Add(x, y) => println("${x} + ${y} = ${x + y}")
+        case Subtract(x, y) => println("${x} - ${y} = ${x - y}")
+        case Power(x) => println("${x}² = ${x * x}")
+        case Quit => println("程序退出。")
     }
 }
 
 main() {
-    let result = findUser(1)
+    let commands = [
+        Add(5.0, 3.0),
+        Power(4.0),
+        Quit
+    ]
 
-    // 使用 match 处理 Option
-    match (result) {
-        case Some(name) => println("Found user: " + name)
-        case None => println("User not found")
-    }
-
-    // 简便方法：getOrThrow (如果有值则返回，无值则抛出异常)
-    // println(result.getOrThrow())
-}
-```
-
-## 2. 模式匹配 (match)
-
-`match` 表达式是仓颉中强大的控制流工具，不仅可以匹配值，还可以匹配类型和解构对象。
-
-### 值匹配
-
-```cangjie
-main() {
-    let score = 85
-    match (score) {
-        case 100 => println("Perfect")
-        case 90..100 => println("Excellent") // 区间匹配 (注意：仓颉 match 不直接支持区间语法，需结合 guard 或 if)
-        // 修正：仓颉的 case 支持字面量，对于范围通常使用 if guard
-        case x where x >= 60 => println("Pass")
-        case _ => println("Fail")
+    for (cmd in commands) {
+        execute(cmd)
     }
 }
 ```
 
-*(注意：上文中的区间匹配 `90..100` 在 `match` 的 `case` 中可能需要特定语法或使用 guard `where`。为了准确性，这里使用 `where` 子句。)*
+## 3. 异常拦截 (Try-Catch)
 
-### 类型匹配
-
-```cangjie
-open class Base {}
-class A <: Base {}
-class B <: Base {}
-
-func identify(obj: Base) {
-    match (obj) {
-        case a: A => println("It is A")
-        case b: B => println("It is B")
-        case _ => println("Unknown")
-    }
-}
-```
-
-## 3. 异常处理 (try-catch)
-
-对于运行时错误，仓颉使用异常机制。
+对于不可控的系统错误（如文件不存在），我们使用 `try-catch`。
 
 ```cangjie
-func divide(a: Int64, b: Int64): Int64 {
-    if (b == 0) {
-        // 抛出异常
-        throw Exception("Division by zero")
+func readFile(path: String) {
+    if (path == "") {
+        throw Exception("路径不能为空！")
     }
-    return a / b
+    println("读取文件: ${path}")
 }
 
 main() {
     try {
-        let res = divide(10, 0)
-        println(res)
+        readFile("")
     } catch (e: Exception) {
-        println("Error caught: " + e.message)
+        println("❌ 捕获异常: " + e.message)
     } finally {
-        println("Execution finished")
+        println("清理资源...")
     }
 }
 ```

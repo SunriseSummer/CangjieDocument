@@ -1,82 +1,77 @@
-# 05. 结构体与类
+# 05. 结构体与类：电商订单系统
 
-仓颉提供了 `struct` (值类型) 和 `class` (引用类型) 来构建自定义数据类型。
+在构建复杂系统（如淘宝、京东）时，我们需要精准地模拟现实世界的实体。结构体 (`struct`) 和类 (`class`) 是我们的基石。
 
-## 1. 结构体 (Struct)
+## 1. 商品模型 (Struct - 值类型)
 
-结构体是值类型，通常用于表示轻量级的数据聚合。当结构体实例被赋值给新变量或作为参数传递时，会发生值拷贝。
-
-```cangjie
-struct Point {
-    var x: Int64
-    var y: Int64
-
-    // 构造函数
-    public init(x: Int64, y: Int64) {
-        this.x = x
-        this.y = y
-    }
-
-    // 成员函数
-    public func printPos() {
-        println("Position: (${x}, ${y})")
-    }
-}
-
-main() {
-    var p1 = Point(10, 20)
-    var p2 = p1 // 值拷贝
-
-    p2.x = 100
-
-    p1.printPos() // 输出 (10, 20)，p1 不受影响
-    p2.printPos() // 输出 (100, 20)
-}
-```
-
-## 2. 类 (Class)
-
-类是引用类型，支持继承和多态。当类实例被赋值时，传递的是引用（指针）。
+商品信息通常是静态的数据集合，适合用 `struct`。
 
 ```cangjie
-// 定义父类，使用 open 允许被继承
-open class Animal {
-    var name: String
+struct Product {
+    let id: Int64
+    let name: String
+    var price: Float64 // 价格可能会变
 
-    public init(name: String) {
+    public init(id: Int64, name: String, price: Float64) {
+        this.id = id
         this.name = name
+        this.price = price
     }
 
-    // open 允许子类重写
-    public open func speak() {
-        println("Animal sound")
+    public func display() {
+        println("[商品 #${id}] ${name} - ¥${price}")
     }
 }
+```
 
-// 定义子类
-class Dog <: Animal {
-    public init(name: String) {
-        super(name)
+## 2. 订单系统 (Class - 引用类型)
+
+订单需要被追踪、状态需要被修改，且可能涉及复杂的业务逻辑，适合用 `class`。
+
+```cangjie
+class Order {
+    let orderId: String
+    var items: Array<Product>
+    var status: String
+
+    public init(id: String) {
+        this.orderId = id
+        this.items = [] // 初始化空购物车
+        this.status = "Pending"
     }
 
-    // 重写父类方法
-    public override func speak() {
-        println(name + ": Woof!")
+    // 添加商品
+    public func addItem(p: Product) {
+        items = Array<Product>(items.size + 1) { i =>
+             if (i < items.size) items[i] else p
+        } // 简化演示，实际应使用 ArrayList
+        println("已添加: ${p.name}")
+    }
+
+    // 结账
+    public func checkout() {
+        var total = 0.0
+        for (item in items) {
+            total = total + item.price
+        }
+        this.status = "Paid"
+        println("订单 ${orderId} 支付成功！总计: ¥${total}")
     }
 }
 
 main() {
-    let dog = Dog("Buddy")
-    dog.speak()
+    // 1. 上架商品
+    let p1 = Product(101, "机械键盘", 399.0)
+    let p2 = Product(102, "人体工学椅", 1299.0)
+
+    // 2. 用户下单
+    let myOrder = Order("ORD-2024-001")
+    myOrder.addItem(p1)
+    myOrder.addItem(p2)
+
+    // 3. 支付
+    myOrder.checkout()
 }
 ```
 
-## 3. struct vs class 核心区别
-
-| 特性 | struct | class |
-| :--- | :--- | :--- |
-| **类型** | 值类型 (Value Type) | 引用类型 (Reference Type) |
-| **内存分配** | 通常在栈上 | 堆上 |
-| **赋值行为** | 拷贝值 | 拷贝引用 |
-| **继承** | 不支持 | 支持 |
-| **用途** | 简单数据模型 | 复杂业务逻辑、对象体系 |
+通过区分值类型（数据）和引用类型（行为实体），我们构建了一个清晰的业务模型。

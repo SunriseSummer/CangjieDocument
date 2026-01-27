@@ -1,78 +1,89 @@
-# 03. 流程控制
+# 03. 流程控制：猜数字游戏
 
-本节介绍仓颉语言中的流程控制语句：条件判断和循环。
+光有数据是不够的，程序需要逻辑。本节我们将通过编写一个经典的“猜数字”游戏的逻辑核心，来学习控制流。
 
-## 1. 条件表达式 (if-else)
+## 1. 游戏规则逻辑 (if-else)
 
-在仓颉中，`if-else` 不仅仅是语句，更是表达式，这意味着它有返回值。
+我们需要根据玩家猜测的数字与目标数字的大小关系，给出提示。
 
 ```cangjie
 main() {
-    let score = 85
+    let targetNumber = 42
+    let playerGuess = 30 // 假设玩家输入了 30
 
-    if (score >= 60) {
-        println("及格")
+    print("玩家猜了 ${playerGuess} -> ")
+
+    if (playerGuess == targetNumber) {
+        println("🎉 恭喜！猜对了！")
+    } else if (playerGuess < targetNumber) {
+        println("太小了，再试一次。")
     } else {
-        println("不及格")
-    }
-
-    // if-else 作为表达式使用，直接将结果赋值给变量
-    let result = if (score >= 60) "Pass" else "Fail"
-    println(result)
-}
-```
-
-> 注意：`if` 条件必须是 `Bool` 类型。
-
-## 2. 循环结构
-
-### while 循环
-
-`while` 循环在条件为真时重复执行代码块。
-
-```cangjie
-main() {
-    var i = 0
-    while (i < 3) {
-        println("While loop: " + i.toString())
-        i = i + 1
+        println("太大了，再试一次。")
     }
 }
 ```
 
-### for-in 循环
-
-`for-in` 循环用于遍历区间、数组或其他可迭代对象。
+`if-else` 不仅可以控制流程，在仓颉中它还是表达式，可以直接返回值：
 
 ```cangjie
-main() {
-    // 遍历 0 到 4 (左闭右开区间 0..5)
-    for (i in 0..5) {
-        println("Index: " + i.toString())
-    }
-
-    // 遍历 1 到 3 (左闭右闭区间 1..=3)
-    for (i in 1..=3) {
-        println("Count: " + i.toString())
-    }
-}
+let resultMsg = if (playerGuess == targetNumber) "Win" else "Try Again"
 ```
 
-## 3. 跳转语句
+## 2. 持续挑战 (while 循环)
 
-*   `break`: 立即跳出当前循环。
-*   `continue`: 跳过本次循环的剩余部分，直接开始下一次迭代。
+游戏通常不会猜一次就结束。我们需要一个循环，直到玩家猜对为止。为了演示，我们模拟几次猜测过程。
 
 ```cangjie
 main() {
-    for (i in 0..10) {
-        if (i == 2) {
-            continue // 跳过 2
+    let target = 7
+    var guess = 0
+    var attempts = 0
+
+    println("=== 游戏开始：目标数字是 0-10 之间 ===")
+
+    // 模拟玩家猜测序列: 2, 9, 7
+    let guesses = [2, 9, 7]
+    var index = 0
+
+    while (guess != target) {
+        attempts = attempts + 1
+        guess = guesses[index] // 模拟读取输入
+        index = index + 1
+
+        println("第 ${attempts} 次尝试: ${guess}")
+
+        if (guess == target) {
+            println("✅ 胜利！你用了 ${attempts} 次机会。")
+            break // 跳出循环
+        } else {
+            println("❌ 错啦。")
         }
-        if (i > 4) {
-            break // 大于 4 时停止
-        }
-        println(i)
     }
 }
 ```
+
+## 3. 遍历道具 (for-in 循环)
+
+在 RPG 游戏中，我们经常需要查看背包里的物品。
+
+```cangjie
+main() {
+    // 定义一个区间，模拟背包格子编号
+    println("检查背包格子 1 到 5:")
+
+    for (slot in 1..=5) {
+        // 偶数格子放药水，奇数格子放装备
+        if (slot % 2 == 0) {
+            println("格子 ${slot}: [生命药水]")
+        } else {
+            println("格子 ${slot}: [铁剑]")
+        }
+    }
+}
+```
+
+*   `1..=5`: 表示闭区间 [1, 5]。
+*   `break`: 提前结束循环。
+*   `continue`: 跳过本次循环剩余代码，直接进入下一次。
+
+通过这些控制流，你的程序开始具备了“思考”的能力。

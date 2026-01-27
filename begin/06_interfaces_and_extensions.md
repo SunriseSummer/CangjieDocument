@@ -1,67 +1,82 @@
-# 06. 接口与扩展
+# 06. 接口与扩展：万能支付网关
 
-## 1. 接口 (Interface)
+在现实开发中，我们经常需要对接不同的系统（如支付宝、微信支付、银联）。如何用一套代码兼容它们？答案是**接口 (Interface)**。
 
-接口定义了一组行为规范（方法签名），任何实现了该接口的类型都必须提供这些方法的具体实现。接口实现了多态。
+## 1. 定义支付标准 (Interface)
+
+不管是什么支付方式，都必须具备“支付”这个能力。
 
 ```cangjie
-// 定义接口
-interface Printable {
-    func printInfo(): Unit
+interface PaymentGateway {
+    func pay(amount: Float64): Unit
+    func refund(amount: Float64): Unit
 }
+```
 
-// 类实现接口
-class Book <: Printable {
-    let title: String
+## 2. 对接不同渠道 (Implementation)
 
-    init(title: String) {
-        this.title = title
+```cangjie
+class AliPay <: PaymentGateway {
+    public func pay(amount: Float64) {
+        println("🔵 支付宝支付: ¥${amount} (正在连接蚂蚁金服...)")
     }
 
-    // 实现接口方法
-    public func printInfo() {
-        println("Book: " + title)
-    }
-}
-
-class Car <: Printable {
-    let model: String
-
-    init(model: String) {
-        this.model = model
-    }
-
-    public func printInfo() {
-        println("Car: " + model)
+    public func refund(amount: Float64) {
+        println("🔵 支付宝退款: ¥${amount}")
     }
 }
 
-main() {
-    let items: Array<Printable> = [Book("Cangjie Guide"), Car("Tesla")]
+class WeChatPay <: PaymentGateway {
+    public func pay(amount: Float64) {
+        println("🟢 微信支付: ¥${amount} (正在调用微信 API...)")
+    }
 
-    for (item in items) {
-        item.printInfo() // 多态调用
+    public func refund(amount: Float64) {
+        println("🟢 微信退款: ¥${amount}")
     }
 }
 ```
 
-## 2. 扩展 (Extend)
+## 3. 统一收银台 (多态)
 
-扩展（Extensions）允许你向已有的类型（甚至是系统内置类型）添加新的功能，而无需修改原始源码。
+收银台不需要知道用户具体用什么 App，它只认“支付网关”。
 
 ```cangjie
-// 为系统内置的 Int64 类型添加一个 square 方法
-extend Int64 {
-    func square(): Int64 {
-        return this * this
+func processPayment(gateway: PaymentGateway, price: Float64) {
+    println("--- 开始交易 ---")
+    gateway.pay(price)
+    println("--- 交易结束 ---\n")
+}
+
+main() {
+    let ali = AliPay()
+    let wechat = WeChatPay()
+
+    let price = 99.9
+
+    // 用户选择支付宝
+    processPayment(ali, price)
+
+    // 用户选择微信
+    processPayment(wechat, price)
+}
+```
+
+## 4. 扩展现有能力 (Extensions)
+
+为了防止支付金额出现负数，我们想给系统的 `Float64` 类型加个检查功能，但我们不能修改系统源码。扩展（Extend）来帮忙！
+
+```cangjie
+extend Float64 {
+    func isValidMoney(): Bool {
+        return this >= 0.0
     }
 }
 
 main() {
-    let num = 5
-    // 就像调用原生方法一样调用扩展方法
-    println(num.square()) // 输出 25
+    let money = -10.0
+    if (!money.isValidMoney()) {
+        println("❌ 错误：金额不能为负！")
+    }
 }
 ```
-
-扩展不仅可以添加方法，还可以让已有类型实现新的接口，极大增强了代码的灵活性。

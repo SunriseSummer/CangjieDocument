@@ -1,66 +1,80 @@
-# 09. 并发编程基础
+# 09. 并发编程：虚拟证券交易所
 
-仓颉原生支持轻量级线程（User-level Threads），使用 `spawn` 关键字即可轻松创建。这使得在仓颉中进行并发编程变得非常简单高效。
+金融市场瞬息万变，成千上万的交易并发进行。如果处理不好并发，可能会导致“钱变负数”的灾难。本节我们用仓颉的 `spawn` (轻量级线程) 来模拟一个高频交易系统。
 
-## 1. 创建线程 (spawn)
+## 1. 股票价格实时更新 (Spawn)
 
-使用 `spawn` 关键字启动一个新的并发任务。`spawn` 表达式接受一个 Lambda 表达式，并返回一个 `Future<T>` 对象，其中 `T` 是 Lambda 表达式的返回值类型。
-
-```cangjie
-import std.time.* // 导入时间包用于 Duration 和 sleep
-import std.sync.* // 导入同步包
-
-main() {
-    println("Main thread started")
-
-    // 启动新线程
-    // 这里的 lambda 返回 Int64，所以 future 类型是 Future<Int64>
-    let future = spawn { =>
-        println("  -> New thread is running...")
-        sleep(Duration.second) // 休眠 1 秒
-        println("  -> New thread finished.")
-        return 100
-    }
-
-    println("Main thread doing other work...")
-
-    // get() 会阻塞当前线程，直到新线程执行完毕并返回结果
-    let result = future.get()
-    println("Task result: " + result.toString())
-}
-```
-
-## 2. 线程同步
-
-当多个线程需要修改同一个变量时，如果不加控制，会导致数据竞争。仓颉提供了 `Atomic` 类型和锁机制。
-
-### 原子操作 (Atomic)
-
-对于简单的计数器，可以使用原子类型，如 `AtomicInt64`。
+每个股票都是独立的实体，它的价格应该独立波动。
 
 ```cangjie
-import std.sync.*
 import std.time.*
+import std.sync.*
+import std.collection.*
+
+// 模拟获取股票最新价格
+func fetchStockPrice(stockCode: String): Float64 {
+    // 模拟网络延迟
+    sleep(Duration.millisecond * 200)
+    // 模拟价格：随机波动 (这里简化为固定值演示)
+    if (stockCode == "CJTech") { return 102.5 }
+    if (stockCode == "BioHealth") { return 58.0 }
+    return 0.0
+}
 
 main() {
-    let count = AtomicInt64(0)
+    println("--- 交易所开市 ---")
 
-    // 启动 10 个线程，每个增加 1
-    let futures = ArrayList<Future<Unit>>()
+    // 同时查询两只股票，互不阻塞
+    let futureA = spawn { fetchStockPrice("CJTech") }
+    let futureB = spawn { fetchStockPrice("BioHealth") }
 
-    for (i in 0..10) {
-        let f = spawn {
-            // 原子加 1
-            count.fetchAdd(1)
-        }
-        futures.append(f)
-    }
+    println("正在从远端服务器获取数据...")
 
-    // 等待所有线程完成
-    for (f in futures) {
-        f.get()
-    }
+    // 获取结果
+    let priceA = futureA.get()
+    let priceB = futureB.get()
 
-    println("Final count: " + count.load().toString())
+    println("CJTech 当前价: $${priceA}")
+    println("BioHealth 当前价: $${priceB}")
 }
 ```
+
+## 2. 账户余额安全 (Atomic)
+
+假设有 100 个交易机器人同时操作同一个账户，如何保证余额不会出错？原子操作是关键。
+
+```cangjie
+main() {
+    // 初始资金 1000 元
+    let balance = AtomicInt64(1000)
+
+    let robots = ArrayList<Future<Unit>>()
+
+    println("初始余额: ${balance.load()}")
+
+    // 启动 50 个机器人，每个机器人花掉 10 元
+    for (i in 0..50) {
+        let f = spawn {
+            // 模拟交易耗时
+            sleep(Duration.millisecond * 10)
+            // 原子减法：安全！
+            balance.fetchSub(10)
+        }
+        robots.append(f)
+    }
+
+    // 等待所有机器人完成
+    for (f in robots) { f.get() }
+
+    let finalBalance = balance.load()
+    println("最终余额: ${finalBalance}")
+
+    if (finalBalance == 500) {
+        println("✅ 账目核对无误！")
+    } else {
+        println("❌ 严重事故：账目错误！")
+    }
+}
+```
+
+在没有原子操作的情况下，多个线程同时读取和修改余额，会导致严重的“竞态条件”。仓颉的 `Atomic` 类型帮我们规避了这一风险。

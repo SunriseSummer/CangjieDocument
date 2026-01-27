@@ -1,126 +1,98 @@
-# 07. 集合与泛型
+# 07. 集合与泛型：音乐播放器列表
 
-## 1. 常用集合
+我们都用过音乐 App。如何管理成千上万首歌？如何让我们的播放列表既能存“流行歌”，又能存“古典乐”，甚至将来存“播客”？集合与泛型是关键。
 
-仓颉提供了丰富的集合类型，最常用的有 `Array`, `ArrayList` 和 `HashMap`。
+## 1. 泛型播放列表 (Generics)
 
-### Array (数组)
-
-`Array` 是固定大小的序列。
+我们不想为每种音频类型都写一个列表类。我们可以定义一个“万能盒子”。
 
 ```cangjie
-main() {
-    // 定义并初始化数组
-    let arr: Array<Int64> = [1, 2, 3, 4, 5]
+// T 代表某种类型，由使用者决定
+class Playlist<T> {
+    var items: Array<T>
+    var name: String
 
-    // 访问元素
-    println("First element: " + arr[0].toString())
-
-    // 遍历数组
-    for (num in arr) {
-        println("Number: " + num.toString())
+    public init(name: String) {
+        this.name = name
+        this.items = [] // 初始化空
     }
+
+    public func add(item: T) {
+        // 简易扩容逻辑演示
+        let newItems = Array<T>(items.size + 1) { i =>
+            if (i < items.size) items[i] else item
+        }
+        items = newItems
+        println("添加到 [${name}]: 1 首新曲目")
+    }
+}
+
+struct Song {
+    let title: String
+    let artist: String
+}
+
+main() {
+    // 创建一个“歌曲”播放列表
+    let popList = Playlist<Song>("流行金曲")
+    popList.add(Song("稻香", "周杰伦"))
+
+    // 创建一个“字符串”列表 (模拟文件名)
+    let fileList = Playlist<String>("本地文件")
+    fileList.add("audio_001.mp3")
 }
 ```
 
-### ArrayList (动态数组)
+## 2. 歌手与专辑库 (HashMap)
 
-`ArrayList` 是可变大小的序列，需要导入 `std.collection` 包。
+我们需要快速查找某个歌手的所有专辑。`HashMap` 是最佳选择。
 
 ```cangjie
 import std.collection.*
 
 main() {
-    // 创建空的 ArrayList
-    let list = ArrayList<String>()
+    // 键(Key)是歌手名，值(Value)是专辑销量
+    let salesData = HashMap<String, Int64>()
 
-    // 添加元素
-    list.append("Apple")
-    list.append("Banana")
+    salesData["Adele"] = 30000000
+    salesData["Taylor Swift"] = 50000000
 
-    println("Size: " + list.size.toString())
-
-    // 遍历
-    for (item in list) {
-        println(item)
-    }
-}
-```
-
-### HashMap (哈希表)
-
-`HashMap` 用于存储键值对 (Key-Value)。
-
-```cangjie
-import std.collection.*
-
-main() {
-    // 创建 HashMap
-    let map = HashMap<String, Int64>()
-
-    // 添加或更新键值对
-    map["Apple"] = 10
-    map["Banana"] = 5
-
-    // 安全访问
-    let searchKey = "Apple"
-    if (map.contains(searchKey)) {
-        let price = map[searchKey]
-        println("${searchKey} price: ${price}")
+    // 粉丝查询
+    let query = "Adele"
+    if (salesData.contains(query)) {
+        println("${query} 的销量: ${salesData[query]}")
     } else {
-        println("${searchKey} not found")
+        println("未找到该歌手数据。")
     }
 
-    // 遍历 (顺序不保证)
-    for ((k, v) in map) {
-        println("Key: ${k}, Value: ${v}")
+    // 遍历排行榜
+    println("\n=== 销量榜单 ===")
+    for ((artist, sales) in salesData) {
+        println("${artist}: ${sales}")
     }
 }
 ```
 
-## 2. 泛型 (Generics)
+## 3. 动态歌单 (ArrayList)
 
-泛型允许我们编写适用于多种类型的代码，提高代码复用率和安全性。
-
-### 泛型函数
-
-我们可以定义一个泛型函数，用 `T` 代表任意类型。
+用户的“我喜欢的音乐”列表是随时变化的，使用 `ArrayList` 可以高效增删。
 
 ```cangjie
-// 交换数组中两个元素的位置
-func swap<T>(arr: Array<T>, i: Int64, j: Int64) {
-    let temp = arr[i]
-    arr[i] = arr[j]
-    arr[j] = temp
-}
+import std.collection.*
 
 main() {
-    let nums = [1, 2, 3]
-    swap<Int64>(nums, 0, 2) // 显式指定类型，通常可省略
-    println(nums[0]) // 输出 3
-}
-```
+    let myFavorites = ArrayList<String>()
 
-### 泛型类
+    myFavorites.append("Hotel California")
+    myFavorites.append("Yesterday")
 
-```cangjie
-class Box<T> {
-    var value: T
+    println("当前收藏数: ${myFavorites.size}")
 
-    init(v: T) {
-        value = v
+    // 移除非最爱
+    myFavorites.remove(1) // 移除第二个
+
+    for (song in myFavorites) {
+        println("正在播放: " + song)
     }
-
-    func get(): T {
-        return value
-    }
-}
-
-main() {
-    let intBox = Box<Int64>(100)
-    let strBox = Box<String>("Cangjie")
-
-    println(intBox.get())
-    println(strBox.get())
 }
 ```
