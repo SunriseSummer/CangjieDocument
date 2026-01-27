@@ -1,35 +1,37 @@
 # Nothing 类型
 
-`Nothing` 是一种特殊的类型，它不包含任何值，并且 `Nothing` 类型是所有类型的子类型（这当中也包括 [`Unit` 类型](unit.md)）。
+`Nothing` 是一个特殊的底层类型，表示“永远不会有结果”或“死胡同”。
 
-`break`、`continue`、`return` 和 `throw` 表达式的类型是 `Nothing`，程序执行到这些表达式时，它们之后的代码将不会被执行。`return` 只能在函数体中使用，`break`、`continue` 只能在循环体中使用，参考如下示例：
+## 1. 含义
 
-<!-- compile.error -->
+`Nothing` 类型**没有值**。如果一个表达式的类型是 `Nothing`，说明代码执行到这里时，程序的正常控制流会被切断（例如抛出了异常、死循环、或退出了程序）。
+
+## 2. 常见场景
+
+### 抛出异常
+`throw` 表达式的类型是 `Nothing`。
 
 ```cangjie
-while (true) {
-    func f() {
-        break // Error, break must be used directly inside a loop
-    }
-    let g = { =>
-        continue // Error, continue must be used directly inside a loop
+func error(): Nothing {
+    throw Exception("Error")
+}
+```
+
+### 控制流跳转
+`return`、`break`、`continue` 表达式的类型也是 `Nothing`。
+
+### 为什么需要它？
+`Nothing` 是所有类型的**子类型**。这意味着它可以出现在任何需要具体类型的地方，而不会违反类型检查。
+
+<!-- verify -->
+```cangjie
+main() {
+    let x: Int64 = if (true) {
+        100
+    } else {
+        throw Exception("Oops") // throw 类型是 Nothing，它是 Int64 的子类型，所以合法
     }
 }
 ```
 
-由于函数的形参和其默认值不属于该函数的函数体，所以下面例子中的 return 表达式缺少包围它的函数体——它既不属于外层函数 `f`（因为内层函数定义 `g` 已经开始），也不在内层函数 `g` 的函数体中（该用例相关内容，请参考[嵌套函数](../function/nested_functions.md)）：
-
-<!-- compile.error -->
-
-```cangjie
-func f() {
-    func g(x!: Int64 = return) { // Error, return must be used inside a function body
-        0
-    }
-    1
-}
-```
-
-> **注意：**
->
-> 目前编译器还不允许在使用类型的地方显式地使用 Nothing 类型。
+在上面的例子中，`if` 的一个分支返回 `Int64`，另一个分支是 `Nothing`。因为 `Nothing` 是 `Int64` 的子类型，所以整个 `if` 表达式的类型被推断为 `Int64`，编译可以通过。
