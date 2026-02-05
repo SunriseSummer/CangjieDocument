@@ -79,12 +79,8 @@ class SearchIndex {
 // 分词函数 (简单按空格切分)
 func tokenize(text: String): Array<String> {
     // 实际项目中会用更复杂的正则或 NLP 库
-    // 这里简单模拟：转小写，去标点（略），按空格分
-    // 仓颉目前 String split 示例
-    // 由于 std 库变动，这里用伪代码逻辑展示：
-    // 假设 content 只有空格分隔
-    // 真实环境需使用 text.split(" ")
-    // 这里为简化演示，我们手动模拟几个关键词
+    // 这里简化为：转小写、按空格切分（具体 API 以标准库为准）
+    // 为了让示例可读，我们手动模拟关键词集合
     let words = ArrayList<String>()
     if (text.contains("cangjie")) { words.append("cangjie") }
     if (text.contains("programming")) { words.append("programming") }

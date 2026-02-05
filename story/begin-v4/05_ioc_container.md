@@ -1,6 +1,6 @@
 # 第五章：IoC 容器 (泛型与接口)
 
-> 为了解耦业务代码，现代框架通常提供依赖注入（Dependency Injection）功能。我们需要构建一个简单的 IoC (Inversion of Control) 容器。
+> 为了解耦业务代码，现代框架通常提供依赖注入（Dependency Injection）功能。我们需要构建一个简单的 IoC (Inversion of Control) 容器，让服务注册与使用分离。
 
 ## 本章目标
 

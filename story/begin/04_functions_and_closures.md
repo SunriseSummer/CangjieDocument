@@ -16,9 +16,19 @@
 // 字符处理函数：将单个字符加密
 func encryptChar(char: Rune, shift: Int64): Rune {
     // 简单的位移算法 (仅演示原理，非生产级加密)
-    let base = UInt32(char)
-    let newChar = Rune(base + UInt32(shift))
-    return newChar
+    let code = UInt32(char)
+    let lowerA = UInt32('a')
+    let lowerZ = UInt32('z')
+    let upperA = UInt32('A')
+    let upperZ = UInt32('Z')
+
+    if (code >= lowerA && code <= lowerZ) {
+        return Rune(lowerA + (code - lowerA + UInt32(shift)) % 26)
+    }
+    if (code >= upperA && code <= upperZ) {
+        return Rune(upperA + (code - upperA + UInt32(shift)) % 26)
+    }
+    return char
 }
 
 // 主加密函数
@@ -72,7 +82,7 @@ main() {
 }
 ```
 
-通过这种方式，我们的代码变得极具扩展性。这就是函数式编程的魅力。
+通过这种方式，我们的代码变得极具扩展性。这就是函数式编程在工程中可组合、可替换的魅力。
 
 ## 工程化提示
 

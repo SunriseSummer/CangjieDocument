@@ -1,6 +1,6 @@
 # 第二章：英雄觉醒 (变量与类型)
 
-> 进入魔塔后，你需要重塑肉身。在这一层，你将定义自己的“英雄属性”。这些属性将决定你在塔内的生存能力。
+> 进入魔塔后，你需要重塑肉身。在这一层，你将定义自己的“英雄属性”。这些属性将决定你在塔内的生存能力，也决定后续技能与装备的成长路径。
 
 ## 本章目标
 
@@ -23,10 +23,11 @@ main() {
     var hp: Float64 = 100.0       // 生命值
     var mp: Float64 = 50.0        // 法力值
     var isAlive: Bool = true      // 存活状态
+    var exp: Int64 = 0            // 经验值
 
     println("=== 英雄诞生 ===")
     println("姓名: ${heroName} | 职业: ${heroClass}")
-    println("状态: HP ${hp} | MP ${mp} | Lv ${level}")
+    println("状态: HP ${hp} | MP ${mp} | Lv ${level} | EXP ${exp}")
 }
 ```
 

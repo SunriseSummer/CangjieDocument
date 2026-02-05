@@ -48,10 +48,10 @@ class WeChatPay <: PaymentGateway {
 收银台不需要知道用户具体用什么 App，它只认“支付网关”。
 
 ```cangjie
-func processPayment(gateway: PaymentGateway, price: Float64) {
-    println("--- 开始交易 ---")
+func processPayment(gateway: PaymentGateway, price: Float64, orderId: String) {
+    println("--- 开始交易: ${orderId} ---")
     gateway.pay(price)
-    println("--- 交易结束 ---\n")
+    println("--- 交易结束: ${orderId} ---\n")
 }
 
 main() {
@@ -61,10 +61,10 @@ main() {
     let price = 99.9
 
     // 用户选择支付宝
-    processPayment(ali, price)
+    processPayment(ali, price, "ORD-2024-0001")
 
     // 用户选择微信
-    processPayment(wechat, price)
+    processPayment(wechat, price, "ORD-2024-0002")
 }
 ```
 
