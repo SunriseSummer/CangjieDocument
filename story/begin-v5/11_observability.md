@@ -36,7 +36,8 @@ func timeBlock(name: String, action: () -> Unit) {
     let start = DateTime.now()
     action()
     let end = DateTime.now()
-    println("${name} 耗时: ${(end - start).toMilliseconds()} ms")
+    let duration = end - start
+    println("${name} 耗时: ${duration}")
 }
 
 main() {

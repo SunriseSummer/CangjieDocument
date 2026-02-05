@@ -52,7 +52,7 @@ struct Order {
 }
 
 func orderToJson(order: Order): String {
-    return "{\"id\":\"${order.id}\",\"weight\":${order.weight}}"
+    return "{\"id\":\"${order.id}\",\"weight\":${order.weight},\"priority\":${order.priority}}"
 }
 
 main() {
