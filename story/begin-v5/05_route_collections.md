@@ -12,6 +12,7 @@
 
 ```cangjie
 import std.collection.*
+import std.sync.*
 
 struct Route {
     let distanceKm: Float64
@@ -21,16 +22,21 @@ struct Route {
 
 class Cache<T> {
     var items = HashMap<String, T>()
+    let lock = Mutex()
 
     public func put(key: String, value: T) {
-        items[key] = value
+        synchronized(lock) {
+            items[key] = value
+        }
     }
 
     public func get(key: String): Option<T> {
-        if (items.contains(key)) {
-            return Some(items[key])
+        synchronized(lock) {
+            if (items.contains(key)) {
+                return Some(items[key])
+            }
+            return None
         }
-        return None
     }
 }
 ```

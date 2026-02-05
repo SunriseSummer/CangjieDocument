@@ -53,14 +53,18 @@ main() {
     let vehicle = Vehicle("V-01", 60.0)
     let futures = ArrayList<Future<Unit>>()
     let dispatchCount = AtomicInt64(0)
+    let lock = Mutex()
 
     for (order in orders) {
         let f = spawn {
-            if (vehicle.canLoad(order.weight)) {
-                dispatchCount.fetchAdd(1)
-                println("调度订单 ${order.id} -> ${decideLane(order)}")
-            } else {
-                println("订单 ${order.id} 超载，进入人工复核")
+            synchronized(lock) {
+                if (vehicle.canLoad(order.weight)) {
+                    vehicle.load = vehicle.load + order.weight
+                    dispatchCount.fetchAdd(1)
+                    println("调度订单 ${order.id} -> ${decideLane(order)}")
+                } else {
+                    println("订单 ${order.id} 超载，进入人工复核")
+                }
             }
         }
         futures.append(f)
