@@ -73,4 +73,4 @@ main() {
 ## 实践挑战
 
 1. 为 `AppConfig` 增加 `logLevel` 字段并在输出中显示。
-2. 将 `orderToJson` 改为输出包含 `priority` 字段。
+2. 为 `orderToJson` 增加 `region` 字段（来源于配置）。
