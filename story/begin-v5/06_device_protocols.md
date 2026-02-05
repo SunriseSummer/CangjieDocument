@@ -18,7 +18,7 @@ interface Telemetry {
 struct SensorPacket {
     let deviceId: String
     let value: Float64
-    let timestamp: Int64
+    let capturedAt: Int64
 }
 
 class GpsSensor <: Telemetry {
