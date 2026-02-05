@@ -2,6 +2,12 @@
 
 > 为了解耦业务代码，现代框架通常提供依赖注入（Dependency Injection）功能。我们需要构建一个简单的 IoC (Inversion of Control) 容器。
 
+## 本章目标
+
+*   理解依赖注入与控制反转的核心概念。
+*   学会用接口与泛型容器管理服务实例。
+*   认识构造注入在模块解耦中的作用。
+
 ## 1. 容器定义 (Generics)
 
 我们需要一个万能的字典，可以存储任意类型的服务实例。
@@ -76,9 +82,20 @@ main() {
              let db = svc as DatabaseService
 
              // 3. 注入 Controller
-             let ctrl = UserController(db.getOrThrow())
+             let ctrl = UserController(db)
              ctrl.getUser()
-        }
-    }
+         }
+     }
 }
 ```
+
+## 工程化提示
+
+*   真实 IoC 容器需要生命周期管理与依赖图校验，本例仅演示核心流程。
+*   强类型语言中应避免随意类型转换，建议引入明确的注册与解析接口。
+*   服务命名建议统一规范，避免重复注册或歧义。
+
+## 小试身手
+
+1. 为 `Container` 增加 `unregister` 方法，并验证服务移除。
+2. 给 `UserController` 增加 `CacheService` 依赖并完成注入。
