@@ -37,7 +37,8 @@ func timeBlock(name: String, action: () -> Unit) {
     action()
     let end = DateTime.now()
     let duration = end - start
-    println("${name} 耗时: ${duration}")
+    let durationMs = duration.toMilliseconds()
+    println("${name} 耗时: ${durationMs} ms")
 }
 
 main() {
@@ -48,7 +49,7 @@ main() {
 }
 ```
 
-> 说明：`duration` 为时间差对象，输出格式以标准库为准，实际项目中可转为毫秒或秒。
+> 说明：`duration` 为时间差对象，转换方法以标准库为准，示例使用毫秒输出以便指标统计。
 
 ## 工程化提示
 
