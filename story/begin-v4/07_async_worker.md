@@ -70,6 +70,12 @@ main() {
 }
 ```
 
+代码要点：
+
+`spawn` 启动轻量线程并返回 `Future<Unit>`，结合 `for (f in futures) { f.get() }` 实现最基础的同步等待。
+`Duration.millisecond * (id * 100)` 展示了时间单位的可读表达方式，便于描述 SLA 与性能测试。
+`AtomicInt64.fetchAdd` 适合高并发下的计数统计，不需要额外锁即可保证一致性。
+
 ## 工程化提示
 
 *   真实服务会使用线程池或协程框架，本例仅演示核心概念。
