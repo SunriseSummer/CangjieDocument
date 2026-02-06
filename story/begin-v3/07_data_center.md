@@ -89,7 +89,7 @@ main() {
 }
 ```
 
-## 语言特性与应用解读
+代码要点：
 
 `HashMap<String, ArrayList<String>>` 展示了嵌套泛型的表达能力，能精准描述“房间 -> 设备列表”的映射关系。
 `for (dev in roomDevices["Living Room"])` 依赖集合的迭代协议，让遍历逻辑保持简洁一致。

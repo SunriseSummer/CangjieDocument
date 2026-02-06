@@ -48,7 +48,7 @@ main() {
 }
 ```
 
-## 语言特性与应用解读
+代码要点：
 
 `spawn { handleDockEvent("Dock-A") }` 返回 `Future<Int64>`，表明并发任务也可以带返回值。
 通过遍历 `futures` 并调用 `get()` 汇总结果，体现“并发执行 + 同步汇总”的常用模式。

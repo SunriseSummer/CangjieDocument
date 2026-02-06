@@ -62,7 +62,7 @@ main() {
 }
 ```
 
-## 语言特性与应用解读
+代码要点：
 
 `type Handler = (Context) -> Unit` 是函数类型别名，简化了路由表的类型声明。
 `HashMap<String, Handler>` 让处理函数像数据一样存储与检索，符合“路径 -> 行为”的模型。

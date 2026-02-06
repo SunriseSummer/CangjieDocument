@@ -70,7 +70,7 @@ main() {
 }
 ```
 
-## 语言特性与应用解读
+代码要点：
 
 `spawn` 启动轻量线程并返回 `Future<Unit>`，结合 `for (f in futures) { f.get() }` 实现最基础的同步等待。
 `Duration.millisecond * (id * 100)` 展示了时间单位的可读表达方式，便于描述 SLA 与性能测试。

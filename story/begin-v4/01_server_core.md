@@ -43,7 +43,7 @@ cjc web_core.cj -o server
 
 虽然它现在还不能处理真正的 HTTP 请求，但它已经具备了作为一个守护进程（Daemon）的基本形态。这是所有高性能服务器的起点。
 
-## 语言特性与应用解读
+代码要点：
 
 `import std.time.*` 展示了模块导入语法，常用的时间工具会在启动阶段参与心跳与监控。
 `while (true)` 明确表达“持续运行”的服务生命周期，结合 `sleep(Duration.second * 5)` 可以避免空转占满 CPU。
