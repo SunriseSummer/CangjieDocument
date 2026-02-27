@@ -59,8 +59,9 @@ description: "仓颉语言基本编程概念。当需要了解仓颉语言的标
 
 ### 3.1 基本规则
 - 仓颉中所有可求值的内容都是表达式
-- 分号分隔同一行的多个语句（单行单语句时可省略）
-- 代码块 `{}` 的值/类型为其最后一个表达式的值/类型（空块为 `Unit`/`()`）
+- 多个表达式写在不同行上；同一行多个表达式时用分号分隔
+- **exprs** 表示 1~N 个表达式（含变量/函数定义），多个时各占一行。exprs 的值/类型 = 最后一个表达式的值/类型
+- 代码块 `{}`：仓颉**不允许独立的 `{}` 块**作为表达式（如 `let r = { ... }` 不合法）。代码块 `{}` 只能依附于 `if`/`while`/`for-in`/函数体/类体/`match` 等结构一起使用，其值/类型为其最后一个表达式的值/类型（空块为 `Unit`/`()`）
 
 ### 3.2 if 表达式
 - 语法：`if (condition) { branch1 } else { branch2 }`
@@ -71,12 +72,12 @@ description: "仓颉语言基本编程概念。当需要了解仓颉语言的标
 - 模式中绑定的变量仅在 `if` 分支中可用（`else` 中不可用）
 
 ### 3.3 while / do-while 循环
-- `while (cond) { body }` 和 `do { body } while (cond)`
+- `while (cond) { exprs }` 和 `do { exprs } while (cond)`
 - 返回类型均为 `Unit`
 - 条件规则与 `if` 相同
 
 ### 3.4 for-in 循环
-- `for (var in sequence) { body }`，其中 `sequence` 须实现 `Iterable<T>`
+- `for (var in sequence) { exprs }`，其中 `sequence` 须实现 `Iterable<T>`
 - 序列仅求值一次
 - 迭代变量不可变
 - 支持元组解构：`for ((x, y) in arr)`
@@ -92,6 +93,6 @@ description: "仓颉语言基本编程概念。当需要了解仓颉语言的标
 
 ## 4. 函数（基本概念）
 
-- 使用 `func name(params): ReturnType { body }` 定义
+- 使用 `func name(params): ReturnType { exprs }` 定义
 - 参数以逗号分隔，格式为 `name: Type`
 - 返回类型跟在参数列表后的 `:` 之后
