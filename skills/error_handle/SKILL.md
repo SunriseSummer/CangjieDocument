@@ -1,3 +1,8 @@
+---
+name: cangjie-error-handle
+description: "仓颉语言错误处理。当需要了解仓颉语言的异常层次(Error/Exception)、自定义异常、throw、try/catch/finally、try-with-resources、CatchPattern、Option类型错误处理(?./??/getOrThrow)、内置运行时异常等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言错误处理 Skill
 
 ## 1. 异常层次与定义

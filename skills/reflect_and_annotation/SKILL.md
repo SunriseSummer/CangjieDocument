@@ -1,3 +1,8 @@
+---
+name: cangjie-reflect-and-annotation
+description: "仓颉语言反射与注解。当需要了解仓颉语言的整数溢出注解(@OverflowThrowing/@OverflowWrapping/@OverflowSaturating)、自定义注解(@Annotation)、反射(TypeInfo)等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言反射与注解 Skill
 
 ## 1. 注解

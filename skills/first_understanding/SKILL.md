@@ -1,3 +1,8 @@
+---
+name: cangjie-first-understanding
+description: "仓颉语言入门。当需要了解仓颉语言的整体概述、语言特性、Hello World程序、编译运行方法、工具链安装(SDK/cjc/cjpm)等基础信息时，应使用此 Skill。"
+---
+
 # 仓颉语言初识 Skill
 
 ## 1. 语言概述

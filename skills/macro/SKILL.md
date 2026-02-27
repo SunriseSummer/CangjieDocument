@@ -1,3 +1,8 @@
+---
+name: cangjie-macro
+description: "仓颉语言宏。当需要了解仓颉语言的Token/Tokens类型、quote表达式与插值、非属性宏、属性宏、嵌套宏与通信、语法节点(AST)解析、宏包编译、内置编译标记(@sourceFile/@When/@FastNative/@Frozen/@Deprecated等)时，应使用此 Skill。"
+---
+
 # 仓颉语言宏 Skill
 
 ## 1. 宏概述

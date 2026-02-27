@@ -1,3 +1,8 @@
+---
+name: cangjie-collections
+description: "仓颉语言集合类型。当需要了解仓颉语言的Array、ArrayList、HashMap、HashSet集合类型的构造、访问、修改、引用语义，以及Iterable/Iterator接口和for-in迭代机制时，应使用此 Skill。"
+---
+
 # 仓颉语言集合类型 Skill
 
 ## 1. 集合概述

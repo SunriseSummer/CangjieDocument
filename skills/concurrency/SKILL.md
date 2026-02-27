@@ -1,3 +1,8 @@
+---
+name: cangjie-concurrency
+description: "仓颉语言并发编程。当需要了解仓颉语言的M:N线程模型、spawn创建线程、sleep、原子操作(Atomic)、互斥锁(Mutex)、条件变量(Condition)、synchronized、Future、线程取消、ThreadLocal等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言并发编程 Skill
 
 ## 1. 并发概述

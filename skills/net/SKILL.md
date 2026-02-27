@@ -1,3 +1,8 @@
+---
+name: cangjie-net
+description: "仓颉语言网络编程。当需要了解仓颉语言的TCP/UDP Socket编程、HTTP服务端与客户端(ServerBuilder/ClientBuilder)、WebSocket编程等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言网络编程 Skill
 
 ## 1. 网络概述

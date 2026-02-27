@@ -1,3 +1,8 @@
+---
+name: cangjie-basic-io
+description: "仓颉语言基本输入输出。当需要了解仓颉语言的I/O流模型(InputStream/OutputStream)、缓冲流(Buffered)、字符串流(StringReader/StringWriter)、标准流(Console)、文件流(File)等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言基本输入输出 Skill
 
 ## 1. I/O 流概述

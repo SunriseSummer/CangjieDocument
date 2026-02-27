@@ -1,3 +1,8 @@
+---
+name: cangjie-extension
+description: "仓颉语言扩展。当需要了解仓颉语言的直接扩展(extend)、接口扩展、泛型扩展、扩展中的访问规则、孤儿规则、导出与导入规则等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言扩展 Skill
 
 ## 1. 扩展概述

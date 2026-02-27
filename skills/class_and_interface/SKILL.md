@@ -1,3 +1,8 @@
+---
+name: cangjie-class-and-interface
+description: "仓颉语言类与接口。当需要了解仓颉语言的类定义、抽象类、构造函数、继承、重写(override)、重定义(redef)、接口定义与实现、属性(prop)、子类型关系、类型转换(is/as)、Any类型等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言类与接口 Skill
 
 ## 1. 类（class）

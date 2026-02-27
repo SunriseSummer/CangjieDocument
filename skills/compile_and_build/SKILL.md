@@ -1,3 +1,8 @@
+---
+name: cangjie-compile-and-build
+description: "仓颉语言编译与构建。当需要了解仓颉语言的cjc编译器用法、cjpm项目管理器(init/build/run/test)、cjpm.toml配置、条件编译(@When)等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言编译与构建 Skill
 
 ## 1. cjc 编译器

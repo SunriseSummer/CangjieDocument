@@ -1,3 +1,8 @@
+---
+name: cangjie-enum-and-pattern-match
+description: "仓颉语言枚举与模式匹配。当需要了解仓颉语言的enum定义、match表达式、Option类型(?T)、常量模式、通配符模式、绑定模式、元组模式、类型模式、枚举模式、模式可反驳性、模式守卫(where)等特性时，应使用此 Skill。"
+---
+
 # 仓颉语言枚举与模式匹配 Skill
 
 ## 1. 枚举类型

@@ -1,3 +1,8 @@
+---
+name: cangjie-basic-programming-concepts
+description: "仓颉语言基本编程概念。当需要了解仓颉语言的标识符命名规则、程序结构、变量定义(let/var/const)、值类型与引用类型、作用域规则、表达式(if/while/for-in/break/continue)等基本概念时，应使用此 Skill。"
+---
+
 # 仓颉语言基本编程概念 Skill
 
 ## 1. 标识符
