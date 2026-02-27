@@ -27,10 +27,10 @@ func functionName(param1: Type1, param2: Type2): ReturnType {
 - **作用域**：参数名从定义处到函数体结束有效。在函数体内重新定义同名变量会报错
 - **命名参数完整示例**：
   ```cangjie
-  // 定义：indent! 是命名参数，默认值为 2
+  // 函数定义，其中 indent 是命名参数，默认值为 2
   func serializePretty(value: JsonValue, indent!: Int64 = 2): String { ... }
 
-  // 调用：使用 indent: 前缀传值（注意调用时不带 !）
+  // 函数调用，命名参数 indent 使用前缀传值（注意不带 ! 符号）
   serializePretty(value, indent: 4)
 
   // 省略命名参数时使用默认值
