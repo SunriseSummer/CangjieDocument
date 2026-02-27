@@ -31,23 +31,28 @@ description: "仓颉语言枚举与模式匹配。当需要了解仓颉语言的
 **形式 1 — 有匹配值：**
 ```cangjie
 match (expr) {
-    case pattern1 => body1
-    case pattern2 => body2
-    case _ => defaultBody
+    case pattern1 => expr1
+    case pattern2 => expr2_line1
+                      expr2_line2
+    case _ => defaultExpr
 }
 ```
+- `=>` 后可以是**一个或多个表达式、变量定义和函数定义**，多个时各占一行即可，**不需要用 `{}` 包裹**
+- 每个 `case` 分支的代码块的值/类型 = 最后一个表达式的值/类型
 - 每个 `case` 可用 `|` 连接多个模式（须为同类模式）
-- `=>` 后的变量/函数定义作用域到下一个 `case` 为止
+- `=>` 后新定义的变量/函数的作用域从其定义处到下一个 `case` 之前结束
 
 **形式 2 — 无匹配值：**
 ```cangjie
 match {
-    case boolExpr1 => body1
-    case boolExpr2 => body2
-    case _ => defaultBody   // _ 表示 true
+    case boolExpr1 => expr1
+    case boolExpr2 => expr2_line1
+                      expr2_line2
+    case _ => defaultExpr   // _ 表示 true
 }
 ```
 - 每个 `case` 接受 `Bool` 表达式（非模式）
+- `=>` 后同样可以是一个或多个表达式/定义，各占一行，**不需要 `{}`**
 - 此形式不支持模式守卫
 
 ### 2.2 穷举性

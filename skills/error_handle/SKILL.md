@@ -48,6 +48,21 @@ description: "仓颉语言错误处理。当需要了解仓颉语言的异常层
 
 三个块：**try**、**catch**（0+）、**finally**（有 catch 时可选，无 catch 时须有）
 
+#### 语法示例
+```cangjie
+try {
+    throw NegativeArraySizeException("error!")
+} catch (e: NegativeArraySizeException) {
+    println(e)
+} catch (e: IllegalArgumentException | ArithmeticException) {
+    println("Other exception: ${e}")
+} catch (_) {
+    println("Unknown exception")
+} finally {
+    println("cleanup")
+}
+```
+
 #### 规则
 - `try` 块：包含可能抛出异常的代码。定义独立作用域
 - `catch` 块：使用 **catchPattern** 通过模式匹配捕获异常。首个匹配的 catch 执行；后续 catch 被跳过。编译器在 catch 不可达（被前面的 catch 遮蔽）时发出警告
