@@ -163,7 +163,10 @@ for (item in list) { println(item) }
 let map = HashMap<String, Int64>()
 map.add("a", 1)                     // 添加/更新
 map["b"] = 2                        // 下标添加/更新
-let v = map["a"]                    // 下标访问（键不存在会抛异常）
+let v = map["a"]                    // 下标访问（键不存在抛 NoneValueException）
+if (map.contains("a")) {            // 安全访问：先检查再取值
+    let v2 = map["a"]
+}
 let has = map.contains("a")         // 检查键是否存在
 map.remove("b")                     // 按键删除
 for ((k, v) in map) { println("${k}: ${v}") }
