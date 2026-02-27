@@ -137,7 +137,7 @@ sb.append(", ")
 sb.append("World!")
 let s = sb.toString()  // "Hello, World!"
 ```
-- `append()` 支持的参数类型：`String`、`Rune`、`Bool`、`Int8`/`Int16`/`Int32`/`Int64`、`UInt8`/`UInt16`/`UInt32`/`UInt64`、`Float16`/`Float32`/`Float64`、`Array<Rune>`、`StringBuilder`、`CString`，以及任何实现 `ToString` 接口的泛型类型
+- `append()` 支持的参数类型：`String`、`Rune`、`Bool`、`Int8`/`Int16`/`Int32`/`Int64`、`UInt8`/`UInt16`/`UInt32`/`UInt64`、`Float16`/`Float32`/`Float64`、`Array<Rune>`、`StringBuilder`、`CString`， 以及任何实现 `ToString` 接口的泛型类型
 - **注意**：所有 `append()` 方法返回 `Unit`
 
 ---
