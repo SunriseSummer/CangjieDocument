@@ -137,6 +137,8 @@ sb.append(", ")
 sb.append("World!")
 let s = sb.toString()  // "Hello, World!"
 ```
+- `append()` 支持的参数类型：`String`、`Rune`、`Bool`、`Int8`/`Int16`/`Int32`/`Int64`、`UInt8`/`UInt16`/`UInt32`/`UInt64`、`Float16`/`Float32`/`Float64`、`Array<Rune>`、`StringBuilder`、`CString`， 以及任何实现 `ToString` 接口的泛型类型
+- **注意**：所有 `append()` 方法返回 `Unit`
 
 ---
 
@@ -557,16 +559,37 @@ let exitCode = proc.wait()
 
 **导入**：`import std.convert.*`
 
+### 15.1 字符串解析为数值（Parsable 接口）
 ```cangjie
-// 字符串解析为数值
+import std.convert.*
+
+// parse：解析失败抛 IllegalArgumentException
 let n = Int64.parse("42")           // 42
 let f = Float64.parse("3.14")      // 3.14
+let b = Bool.parse("true")         // true
 
-// 格式化输出
-// 使用字符串插值：
-let hex = "${255:x}"                // "ff"（十六进制）
-let padded = "${42:>10}"            // "        42"（右对齐，宽度 10）
+// tryParse：解析失败返回 None
+let opt = Float64.tryParse("abc")  // None
+let val = Int64.tryParse("42")     // Some(42)
 ```
+- `parse(value: String): T` — 解析失败抛出 `IllegalArgumentException`
+- `tryParse(value: String): Option<T>` — 解析失败返回 `None`
+- 支持的类型：`Bool`、`Int8`/`Int16`/`Int32`/`Int64`、`UInt8`/`UInt16`/`UInt32`/`UInt64`、`Float16`/`Float32`/`Float64`、`Rune`
+
+### 15.2 格式化输出（Formattable 接口）
+```cangjie
+import std.convert.*  // format 方法需要导入此包
+
+let hex = UInt32(255).format("x")     // "ff"（十六进制）
+let padded = 42.format(">10")         // "        42"（右对齐，宽度 10）
+```
+- **`format()` 方法由 `Formattable` 接口提供，需要 `import std.convert.*`**
+- 支持的类型：所有整数类型、所有浮点类型、`Rune`
+- 也可使用字符串插值格式化：
+  ```cangjie
+  let hex = "${255:x}"                // "ff"
+  let padded = "${42:>10}"            // "        42"
+  ```
 
 ---
 
@@ -602,7 +625,10 @@ socket.close()
 
 **导入**：`import std.deriving.*`
 
+### 17.1 基本用法
 ```cangjie
+import std.deriving.*
+
 @Derive[ToString, Hashable, Equatable]
 struct Point {
     let x: Int64
@@ -614,6 +640,32 @@ struct Point {
 }
 // 自动生成 toString()、hashCode()、==、!= 实现
 ```
+
+### 17.2 支持派生的接口
+| 接口 | 自动生成 |
+|------|----------|
+| `ToString` | `toString()` 方法 |
+| `Hashable` | `hashCode()` 方法 |
+| `Equatable` | `==`、`!=` 运算符 |
+| `Comparable` | `<`、`>`、`<=`、`>=` 比较（自动包含 `Equatable`） |
+
+### 17.3 适用类型
+- `@Derive` 可用于 `struct`、`class` 和 `enum` 类型
+- **枚举类型默认不支持 `==` 比较**，须使用 `@Derive[Equatable]` 派生：
+  ```cangjie
+  import std.deriving.*
+
+  @Derive[Equatable]
+  enum TokenKind {
+      | Number | Plus | Minus | Eof
+  }
+  // 现在可以使用 == 比较 TokenKind 值
+  ```
+
+### 17.4 辅助宏
+- `@DeriveExclude`：排除某些成员不参与派生
+- `@DeriveInclude`：指定仅包含某些成员参与派生
+- `@DeriveOrder`：指定成员参与派生的顺序
 
 ---
 
@@ -660,3 +712,4 @@ try (file = File("data.txt", OpenMode.Read)) {
 - 使用字符串插值 `"${expr}"` 代替字符串拼接
 - 大量拼接时使用 `StringBuilder` 提高性能
 - 使用 `std.regex` 进行复杂文本匹配和处理
+- **注意**：`String` 实现了 `Collection<Byte>`，`for (c in s)` 迭代的是 UTF-8 编码字节（`UInt8`），而非字符。使用 `for (c in s.runes())` 迭代 Unicode 字符（`Rune`）

@@ -66,12 +66,22 @@ class AddTests {
 | `@FailExpect("msg")` | 强制失败，继续执行 | 强制标记失败 |
 | `@PowerAssert(expr)` | 快速失败 | 详细中间值图示 |
 
+- **`@Assert(a, b)` / `@Expect(a, b)` 要求 `a` 的类型实现 `Equatable<B>`**（`B` 为 `b` 的类型）。若类型未实现 `Equatable`（如自定义枚举），须先通过 `@Derive[Equatable]` 或手动实现 `Equatable` 接口
+
 ### 3.2 近似相等（浮点数）
 ```cangjie
 @Expect(1.0, 1.001, delta: 0.001)
 ```
 - 类型须实现 `NearEquatable<CT, D>`，内置支持 Float16/32/64
-- 也支持 `RelativeDelta` 相对误差
+- 也支持 `RelativeDelta` 相对误差：
+  ```cangjie
+  @Expect(1.0 != 1.901, delta: RelativeDelta(absoluteDelta: 0.001, relativeDelta: 0.02))
+  ```
+- 若 `delta` 参数不可用（取决于框架版本），可使用布尔断言替代：
+  ```cangjie
+  import std.math.*
+  @Expect(abs(actual - expected) < 0.001)
+  ```
 
 ### 3.3 自定义断言
 ```cangjie
