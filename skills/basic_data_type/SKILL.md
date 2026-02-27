@@ -313,12 +313,3 @@ description: "仓颉语言基本数据类型。当需要了解仓颉语言的整
 
 ---
 
-## 12. 仓颉关键字列表
-
-以下标识符是仓颉语言的关键字，不能直接用作变量名、函数名或枚举构造函数名（需用反引号 `` ` `` 转义）：
-
-- **类型关键字**：`Bool`、`Rune`、`Float16`、`Float32`、`Float64`、`Int8`、`Int16`、`Int32`、`Int64`、`IntNative`、`Nothing`、`Unit`、`UInt8`、`UInt16`、`UInt32`、`UInt64`、`UIntNative`、`VArray`、`String`
-- **控制流关键字**：`break`、`case`、`catch`、`continue`、`do`、`else`、`finally`、`for`、`if`、`match`、`return`、`spawn`、`try`、`throw`、`while`
-- **声明关键字**：`as`、`abstract`、`class`、`const`、`enum`、`extend`、`func`、`foreign`、`import`、`init`、`interface`、`let`、`macro`、`main`、`mut`、`open`、`operator`、`override`、`package`、`private`、`prop`、`protected`、`public`、`redef`、`static`、`struct`、`super`、`synchronized`、`this`、`This`、`type`、`unsafe`、`where`
-- **布尔关键字**：`false`、`true`
-- **其他**：`quote`
