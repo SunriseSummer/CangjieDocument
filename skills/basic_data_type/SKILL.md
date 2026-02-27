@@ -41,6 +41,21 @@ description: "仓颉语言基本数据类型。当需要了解仓颉语言的整
 - 算术运算、位运算、关系运算、自增/自减（`++`/`--`）、复合赋值
 - 可在整数类型之间转换、与浮点互转、转换为 `Rune`
 
+### 1.6 数值类型转换
+- 仓颉使用**类型构造函数**语法进行数值转换，没有 `.toInt64()` 等方法：
+  ```cangjie
+  let n = Int64(value)           // 将其他数值类型转换为 Int64
+  let u = UInt32(runeValue)      // 将 Rune 转换为 UInt32
+  let f = Float64(intValue)      // 将整数转换为 Float64
+  let r = Rune(intValue)         // 将整数转换为 Rune
+  ```
+- 字符串解析为数值使用 `parse` 静态方法（需导入 `std.convert.*`）：
+  ```cangjie
+  import std.convert.*
+  let n = Int64.parse("42")       // 解析失败抛异常
+  let f = Float64.parse("3.14")   // 解析失败抛异常
+  ```
+
 ---
 
 ## 2. 浮点类型
@@ -92,6 +107,17 @@ description: "仓颉语言基本数据类型。当需要了解仓颉语言的整
 ### 支持的运算
 - 关系运算：`<`、`>`、`<=`、`>=`、`==`、`!=`（比较 Unicode 值）
 - `Rune` → `UInt32` 转换；任意整数类型 → `Rune` 转换
+- **`Rune` 不支持算术运算**（`+`、`-`、`*`、`/` 等均不可用），需要先转换为整数类型再计算：
+  ```cangjie
+  // 错误：Rune 不支持减法
+  // let diff = c - r'0'  // 编译错误
+
+  // 正确：先转换为 UInt32
+  let diff = UInt32(c) - UInt32(r'0')
+
+  // 计算结果可通过 Rune(intValue) 转换回 Rune
+  let nextChar = Rune(UInt32(c) + 1)
+  ```
 
 ---
 
@@ -116,6 +142,19 @@ description: "仓颉语言基本数据类型。当需要了解仓颉语言的整
 ### 5.4 支持的运算
 - 关系运算符用于比较
 - `+` 用于拼接
+
+### 5.5 字符串迭代
+- **`for (c in s)` 迭代的是字节（`UInt8`/`Byte`）**，因为 `String` 实现了 `Collection<Byte>`（UTF-8 编码字节序列）
+- **`for (c in s.runes())` 迭代的是字符（`Rune`）**，返回 `Iterator<Rune>`
+- 这与大多数编程语言的行为不同，需要特别注意：
+  ```cangjie
+  // c 是 UInt8 类型（字节）
+  for (c in "你好") { ... }
+
+  // c 是 Rune 类型（Unicode 字符）
+  for (c in "你好".runes()) { ... }
+  ```
+- `toRuneArray()` 方法可将字符串转换为 `Array<Rune>`
 
 ---
 
@@ -271,3 +310,15 @@ description: "仓颉语言基本数据类型。当需要了解仓颉语言的整
 - `..` — 半开区间（左闭右开）
 - `..=` — 闭区间（左闭右闭）
 - 可选步长 `: step`
+
+---
+
+## 12. 仓颉关键字列表
+
+以下标识符是仓颉语言的关键字，不能直接用作变量名、函数名或枚举构造函数名（需用反引号 `` ` `` 转义）：
+
+- **类型关键字**：`Bool`、`Rune`、`Float16`、`Float32`、`Float64`、`Int8`、`Int16`、`Int32`、`Int64`、`IntNative`、`Nothing`、`Unit`、`UInt8`、`UInt16`、`UInt32`、`UInt64`、`UIntNative`、`VArray`、`String`
+- **控制流关键字**：`break`、`case`、`catch`、`continue`、`do`、`else`、`finally`、`for`、`if`、`match`、`return`、`spawn`、`try`、`throw`、`while`
+- **声明关键字**：`as`、`abstract`、`class`、`const`、`enum`、`extend`、`func`、`foreign`、`import`、`init`、`interface`、`let`、`macro`、`main`、`mut`、`open`、`operator`、`override`、`package`、`private`、`prop`、`protected`、`public`、`redef`、`static`、`struct`、`super`、`synchronized`、`this`、`This`、`type`、`unsafe`、`where`
+- **布尔关键字**：`false`、`true`
+- **其他**：`quote`
