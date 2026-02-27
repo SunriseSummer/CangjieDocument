@@ -1,21 +1,33 @@
 ---
 name: cangjie-basic-programming-concepts
-description: "仓颉语言基本编程概念。当需要了解仓颉语言的标识符命名规则、程序结构、变量定义(let/var/const)、值类型与引用类型、作用域规则、表达式(if/while/for-in/break/continue)等基本概念时，应使用此 Skill。"
+description: "仓颉语言基本编程概念。当需要了解仓颉语言的标识符命名规则、关键字、程序结构、变量定义(let/var/const)、值类型与引用类型、作用域规则、表达式(if/while/for-in/break/continue)等基本概念时，应使用此 Skill。"
 ---
 
 # 仓颉语言基本编程概念 Skill
 
-## 1. 标识符
+## 0. 标识符
 
-### 1.1 普通标识符
+### 0.1 普通标识符
 - 以 `XID_Start` 字符（包括中英文字母）开头，后跟 `XID_Continue` 字符；或以 `_` 开头后跟至少一个 `XID_Continue` 字符
 - 不能是仓颉关键字
 - 使用 Unicode 15.0.0 标准，NFC 规范化
 - 示例：`abc`、`_abc`、`仓颉`
 
-### 1.2 原始标识符
+### 0.2 原始标识符
 - 用反引号包裹普通标识符或关键字：`` `while` ``、`` `if` ``
 - 用于将关键字作为标识符使用
+
+---
+
+## 1. 关键字
+
+以下标识符是仓颉语言的关键字，不能直接用作变量名、函数名或枚举构造函数名（需用反引号 `` ` `` 转义）：
+
+- **类型关键字**：`Bool`、`Rune`、`Float16`、`Float32`、`Float64`、`Int8`、`Int16`、`Int32`、`Int64`、`IntNative`、`Nothing`、`Unit`、`UInt8`、`UInt16`、`UInt32`、`UInt64`、`UIntNative`、`VArray`、`String`
+- **控制流关键字**：`break`、`case`、`catch`、`continue`、`do`、`else`、`finally`、`for`、`if`、`match`、`return`、`spawn`、`try`、`throw`、`while`
+- **声明关键字**：`as`、`abstract`、`class`、`const`、`enum`、`extend`、`func`、`foreign`、`import`、`init`、`interface`、`let`、`macro`、`main`、`mut`、`open`、`operator`、`override`、`package`、`private`、`prop`、`protected`、`public`、`redef`、`static`、`struct`、`super`、`synchronized`、`this`、`This`、`type`、`unsafe`、`where`
+- **布尔关键字**：`false`、`true`
+- **其他**：`quote`
 
 ---
 
