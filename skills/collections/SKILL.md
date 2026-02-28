@@ -162,7 +162,7 @@ while (true) {
 | 规则 | 说明 |
 |------|------|
 | **类型安全** | 不同元素类型的集合不兼容 |
-| **引用语义** | ArrayList、HashSet、HashMap 为引用类型 — 赋值创建别名 |
+| **引用语义** | ArrayList、HashSet、HashMap 为引用类型 — 赋值创建别名。Array 虽为 struct 类型，但赋值也共享底层数据 |
 | **泛型约束** | HashSet 的 `T` 和 HashMap 的 `K` 须实现 `Hashable + Equatable`。ArrayList 的 `T` 和 HashMap 的 `V` 无约束 |
 | **有序性** | Array 和 ArrayList 有序（有索引）。HashSet 和 HashMap 无序 |
 | **下标访问** | Array/ArrayList：`Int64` 索引。HashMap：键。HashSet：无 |
