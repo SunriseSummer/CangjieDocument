@@ -1,9 +1,9 @@
 ---
-name: cangjie-basic-io
-description: "仓颉语言基本输入输出。当需要了解仓颉语言的I/O流模型(InputStream/OutputStream)、ByteBuffer、缓冲流(Buffered)、字符串流(StringReader/StringWriter)、链式流(Chained/Multi)、标准流(Console)、文件流(File)、目录(Directory)、路径(Path)、流工具函数(copy/readString/readToEnd)等特性时，应使用此 Skill。"
+name: cangjie-iostream
+description: "仓颉语言 I/O 流编程。当需要了解仓颉语言的I/O流模型(InputStream/OutputStream)、ByteBuffer、缓冲流(Buffered)、字符串流(StringReader/StringWriter)、链式流(Chained/Multi)、标准流(Console)、流工具函数(copy/readString/readToEnd)等特性时，应使用此 Skill。"
 ---
 
-# 仓颉语言基本输入输出 Skill
+# 仓颉语言 I/O 流 Skill
 
 ## 1. I/O 流概述
 
@@ -184,143 +184,19 @@ main(): Unit {
 
 ---
 
-## 6. 文件操作（`std.fs`）
-
-### 6.1 File 类
-- 实现 `Resource & IOStream & Seekable`
-- 构造：`File(path, OpenMode)` 或 `File(Path, OpenMode)`
-
-| 打开模式 | 行为 |
-|---------|------|
-| `Read` | 只读，文件不存在抛异常 |
-| `Write` | 只写，存在则截断，不存在则创建 |
-| `Append` | 追加写，不存在则创建 |
-| `ReadWrite` | 读写，不存在则创建，不截断 |
-
-- **静态方法**：
-
-| 方法 | 说明 |
-|------|------|
-| `File.create(path)` | 创建文件，返回只写 File |
-| `File.createTemp(dirPath)` | 创建临时文件 |
-| `File.readFrom(path): Array<Byte>` | 一次性读取整个文件 |
-| `File.writeTo(path, data)` | 一次性写入整个文件 |
-| `File.appendTo(path, data)` | 追加写入 |
-
-- 使用 `try-with-resource` 自动关闭
-
-```cangjie
-import std.fs.*
-import std.io.*
-
-main() {
-    let path = Path("./demo.txt")
-
-    // 写入文件
-    try (f = File(path, Write)) {
-        f.write("Hello 仓颉\n".toArray())
-    }
-
-    // 追加
-    File.appendTo(path, "第二行\n".toArray())
-
-    // 读取整个文件
-    let data = File.readFrom(path)
-    println(String.fromUtf8(data))
-
-    // 随机读取
-    try (f = File(path, Read)) {
-        f.seek(SeekPosition.Begin(6))
-        let buf = Array<Byte>(6, repeat: 0)
-        f.read(buf)
-        println(String.fromUtf8(buf))
-    }
-
-    remove(path)
-}
-```
-
-### 6.2 文件系统函数
-
-| 函数 | 说明 |
-|------|------|
-| `exists(path): Bool` | 检查文件/目录是否存在 |
-| `copy(src, to: dst, overwrite)` | 复制文件或目录 |
-| `rename(src, to: dst, overwrite)` | 重命名/移动 |
-| `remove(path, recursive)` | 删除文件或目录 |
-| `removeIfExists(path, recursive)` | 安全删除（不存在不报错） |
-
-### 6.3 Directory 操作
-
-| 方法 | 说明 |
-|------|------|
-| `Directory.create(path, recursive)` | 创建目录，`recursive: true` 递归创建 |
-| `Directory.createTemp(dirPath)` | 创建临时目录 |
-| `Directory.isEmpty(path): Bool` | 检查目录是否为空 |
-| `Directory.readFrom(path): Array<FileInfo>` | 列出目录内容 |
-| `Directory.walk(path, callback)` | 遍历目录（回调返回 false 停止） |
-
-```cangjie
-import std.fs.*
-
-main() {
-    let dir = Path("./mydir/sub")
-    Directory.create(dir, recursive: true)
-
-    File.create(dir.join("test.txt")).close()
-
-    let entries = Directory.readFrom(Path("./mydir"))
-    for (e in entries) {
-        println("${e.name} - ${e.size} bytes")
-    }
-
-    remove(Path("./mydir"), recursive: true)
-}
-```
-
-### 6.4 Path 操作
-- `Path` 是路径结构体，支持路径拼接和解析
-- 关键属性：`parent`、`fileName`、`extensionName`、`fileNameWithoutExtension`、`isAbsolute()`
-- `path.join(subPath)` — 拼接子路径
-- `canonicalize(path)` — 解析为绝对规范路径（处理 `.`、`..`、符号链接）
-
-```cangjie
-import std.fs.*
-
-main() {
-    let p = Path("/home/user/docs/readme.md")
-    println(p.parent)                     // "/home/user/docs"
-    println(p.fileName)                   // "readme.md"
-    println(p.extensionName)              // "md"
-    println(p.fileNameWithoutExtension)   // "readme"
-    println(p.isAbsolute())               // true
-    println(p.join("../notes"))           // "/home/user/docs/../notes"
-    println(canonicalize(Path(".")))      // 当前目录的绝对路径
-}
-```
-
-### 6.5 FileInfo
-- 通过 `File.info` 或 `Directory.readFrom()` 获取
-- 属性：`name`、`path`、`size`、`creationTime`、`lastAccessTime`、`lastModificationTime`、`parentDirectory`
-- **注意**：每次访问属性都从文件系统实时获取，注意并发竞态
-
----
-
-## 7. 异常类型
+## 6. 异常类型
 
 | 异常 | 说明 |
 |------|------|
 | `IOException` | 通用 I/O 错误 |
 | `ContentFormatException` | 无效 UTF-8 编码（`StringReader`/`readString` 抛出） |
-| `FSException` | 文件系统错误（继承自 `IOException`） |
 
 ---
 
-## 8. 关键规则速查
+## 7. 关键规则速查
 
 1. 所有实现 `Resource` 的流使用 `try-with-resource` 自动清理
 2. `BufferedOutputStream` 和 `StringWriter` **必须**显式调用 `flush()`
 3. `ByteBuffer.bytes()` 返回的切片在 ByteBuffer 被修改后**失效**
 4. `readByte()` 和 `StringReader.read()` 返回 Option 类型（`?Byte` / `?Rune`）
 5. `Seekable.position` 不能移到流起点前（抛异常），但可超过末尾
-6. `FileInfo` 每次属性访问都是实时文件系统查询
