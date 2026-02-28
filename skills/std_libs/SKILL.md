@@ -315,9 +315,9 @@ remove("temp.txt")
 | 模式 | 说明 |
 |------|------|
 | `OpenMode.Read` | 只读（文件须存在） |
-| `OpenMode.Write` | 只写（文件须存在，从头写） |
-| `OpenMode.Append` | 追加写入（文件须存在） |
-| `OpenMode.ReadWrite` | 读写（文件须存在） |
+| `OpenMode.Write` | 只写（文件不存在则创建，存在则截断为空） |
+| `OpenMode.Append` | 追加写入（文件不存在则创建） |
+| `OpenMode.ReadWrite` | 读写（文件不存在则创建，不截断） |
 
 ### 6.3 目录操作
 ```cangjie
