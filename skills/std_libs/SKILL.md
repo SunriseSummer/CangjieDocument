@@ -163,10 +163,11 @@ for (item in list) { println(item) }
 ### 4.2 HashMap — 哈希映射
 ```cangjie
 let map = HashMap<String, Int64>()
-map.add("a", 1)                     // 添加/更新
+map.add("a", 1)                     // 添加/更新，返回 Option<V>（旧值或 None）
 map["b"] = 2                        // 下标添加/更新
 let v = map["a"]                    // 下标访问（键不存在抛 NoneValueException）
-if (map.contains("a")) {            // 安全访问：先检查再取值
+let safe = map.get("a")             // 安全访问，返回 ?V（键不存在返回 None）
+if (map.contains("a")) {            // 另一种安全方式：先检查再取值
     let v2 = map["a"]
 }
 let has = map.contains("a")         // 检查键是否存在
