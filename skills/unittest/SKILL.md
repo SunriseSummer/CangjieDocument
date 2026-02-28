@@ -9,11 +9,11 @@ description: "仓颉语言单元测试。当需要了解如何使用仓颉单元
 
 ### 1.1 编译与运行
 ```bash
-# 单包编译
+# 基于 cjc 使用（处理简单文件或包）
 cjc code.cj test.cj --test -o test_binary
 ./test_binary
 
-# 多包项目
+# 基于 cjpm 使用（标准项目）
 cjpm test
 cjpm test src src/koo   # 测试指定包
 ```
