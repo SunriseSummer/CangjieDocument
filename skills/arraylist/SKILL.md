@@ -331,6 +331,8 @@ func iterator(): Iterator<T>
 ```
 
 ```cangjie
+import std.collection.*
+
 let list = ArrayList<String>(["a", "b", "c"])
 
 // for-in 遍历
@@ -339,12 +341,10 @@ for (item in list) {
 }
 
 // 函数式操作（通过迭代器）
-import std.collection.*
-
-let result = list.iterator()
-    |> filter<String> { s => s != "b" }
-    |> map<String, String> { s => s.toAsciiUpper() }
-    |> collectArrayList<String>
+let result = list
+    |> filter { s => s != "b" }
+    |> map { s => s.toAsciiUpper() }
+    |> collectArrayList
 // result = ["A", "C"]
 ```
 
