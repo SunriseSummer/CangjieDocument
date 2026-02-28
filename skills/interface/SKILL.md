@@ -17,7 +17,7 @@ description: "仓颉语言接口。当需要了解仓颉语言的接口定义、
 - `sealed interface` — 仅同包内可继承/实现/扩展
 - `sealed` 隐含 `public`/`open` 语义
 - 继承 `sealed` 接口的子接口仍可被 `sealed` 修饰或不使用 `sealed`
-- 若子接口被 `public` 修饰且不被 `sealed` 修饰，则其子接口可在包外被继承/实现/扩展
+- 若继承 `sealed` 接口的子接口被 `public` 修饰且不被 `sealed` 修饰，则该子接口可在包外被继承/实现/扩展
 
 ---
 
