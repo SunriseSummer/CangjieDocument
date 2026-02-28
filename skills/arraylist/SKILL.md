@@ -1,6 +1,6 @@
 ---
 name: cangjie-std-arraylist
-description: "仓颉标准库 ArrayList 类型详细指南。当需要了解 ArrayList 的构造、增删改查、容量管理、切片、排序、迭代、与 Array 互转等操作的完整 API 和用法时，应使用此 Skill。需要更底层或更完整的信息时请参阅 libs/standard/std/collection 目录下的原始文档。"
+description: "仓颉标准库 ArrayList 类型详细指南。当需要了解 ArrayList 的构造、增删改查、容量管理、切片、排序、迭代、与 Array 互转等操作的完整 API 和用法时，应使用此 Skill。"
 ---
 
 # 仓颉标准库 ArrayList 类型 Skill

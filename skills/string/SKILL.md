@@ -1,6 +1,6 @@
 ---
 name: cangjie-std-string
-description: "仓颉标准库 String 类型详细指南。当需要了解 String 的构造、搜索、替换、分割、拼接、裁剪、大小写转换、编码处理、下标访问、迭代等操作的完整 API 和用法时，应使用此 Skill。需要更底层或更完整的信息时请参阅 libs/standard/std/core 目录下的原始文档。"
+description: "仓颉标准库 String 类型详细指南。当需要了解 String 的构造、搜索、替换、分割、拼接、裁剪、大小写转换、编码处理、下标访问、迭代等操作的完整 API 和用法时，应使用此 Skill。"
 ---
 
 # 仓颉标准库 String 类型 Skill

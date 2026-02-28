@@ -1,6 +1,6 @@
 ---
 name: cangjie-std-hashmap
-description: "仓颉标准库 HashMap 类型详细指南。当需要了解 HashMap 的构造、增删改查、键值遍历、容量管理、条件删除、相等比较等操作的完整 API 和用法时，应使用此 Skill。需要更底层或更完整的信息时请参阅 libs/standard/std/collection 目录下的原始文档。"
+description: "仓颉标准库 HashMap 类型详细指南。当需要了解 HashMap 的构造、增删改查、键值遍历、容量管理、条件删除、相等比较等操作的完整 API 和用法时，应使用此 Skill。"
 ---
 
 # 仓颉标准库 HashMap 类型 Skill

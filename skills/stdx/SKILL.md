@@ -1,6 +1,6 @@
 ---
 name: cangjie-stdx
-description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 的下载配置、HTTP 服务/客户端、JSON 编解码、Base64/Hex 编码、URL 处理、TLS 安全通信、加密解密、数字证书、日志、序列化、压缩、面向切面编程、模糊测试等能力时，应使用此 Skill。需要详细 API 信息时请参阅 libs/standard-extension/libs_stdx 目录下的原始文档。"
+description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 的下载配置、HTTP 服务/客户端、JSON 编解码、Base64/Hex 编码、URL 处理、TLS 安全通信、加密解密、数字证书、日志、序列化、压缩、面向切面编程、模糊测试等能力时，应使用此 Skill。"
 ---
 
 # 仓颉扩展标准库（stdx）使用指南 Skill
