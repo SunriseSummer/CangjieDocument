@@ -1,6 +1,6 @@
 ---
 name: cangjie-appendix
-description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字列表、运算符优先级与结合性、运算符重载函数签名、cjc编译器完整选项、运行时环境变量配置、包兼容性规则、TokenKind枚举类型、Linux工具链安装依赖等参考信息时，应使用此 Skill。"
+description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字列表、运算符优先级与结合性、运算符重载函数签名、运行时环境变量配置、包兼容性规则、TokenKind枚举类型时，应使用此 Skill。"
 ---
 
 # 仓颉语言附录参考 Skill
@@ -60,65 +60,7 @@ description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字
 
 ---
 
-## 4. cjc 编译器完整选项
-
-### 基本选项
-| 选项 | 说明 |
-|------|------|
-| `--output-type=[exe\|staticlib\|dylib]` | 输出类型 |
-| `-o` | 指定输出文件名 |
-| `-p`、`--package` | 编译包目录 |
-| `--module-name <value>` | 指定模块名 |
-| `-l`、`-L` | 链接库和库搜索路径 |
-| `-g` | 生成调试信息（须配合 `-O0`） |
-| `--coverage` | 生成覆盖率检测 |
-| `--int-overflow=[throwing\|wrapping\|saturating]` | 整数溢出策略 |
-| `-V`、`--verbose` | 详细输出 |
-| `--import-path <value>` | 导入模块搜索路径 |
-| `--scan-dependency` | 输出包依赖 JSON |
-
-### 链接选项
-| 选项 | 说明 |
-|------|------|
-| `--static` | 全静态链接（仅 Linux） |
-| `--static-std` / `--dy-std` | 标准库静态/动态链接 |
-| `--static-libs` / `--dy-libs` | 非标准模块静态/动态链接 |
-| `--lto=[full\|thin]` | 链接时优化 |
-| `--target <value>` | 交叉编译目标三元组 |
-| `--strip-all`、`-s` | 移除符号表 |
-
-### 优化选项
-| 选项 | 说明 |
-|------|------|
-| `-O0` | 无优化（默认） |
-| `-O1` | 基础优化 |
-| `-O2` | 完整优化 |
-| `-Os` | 优化大小 |
-| `-Oz` | 进一步优化大小 |
-| `--fast-math` | 激进浮点优化 |
-
-### 测试与宏选项
-| 选项 | 说明 |
-|------|------|
-| `--test` | 编译单元测试 |
-| `--mock <on\|off>` | 启用/禁用 mock |
-| `--compile-macro` | 编译宏包 |
-| `--debug-macro` | 宏调试 |
-| `--parallel-macro-expansion` | 并行宏展开 |
-
-### 代码混淆选项
-| 选项 | 说明 |
-|------|------|
-| `--fobf-string` | 字符串常量混淆 |
-| `--fobf-const` | 数值常量混淆 |
-| `--fobf-layout` | 布局混淆 |
-| `--fobf-cf-flatten` | 控制流展平 |
-| `--fobf-cf-bogus` | 虚假控制流 |
-| `--fobf-all` | 启用全部混淆 |
-
----
-
-## 5. 运行时环境变量
+## 4. 运行时环境变量
 
 ### 堆与内存配置
 | 变量 | 说明 | 默认值 |
@@ -144,7 +86,7 @@ description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字
 
 ---
 
-## 6. 包兼容性规则
+## 5. 包兼容性规则
 
 - 运行时版本 `a.b.c` 与包版本 `x.y.z`：
   - 当 `a` 和 `x` 均为 0 时：三个分量须完全匹配
@@ -154,7 +96,7 @@ description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字
 
 ---
 
-## 7. TokenKind 枚举类型
+## 6. TokenKind 枚举类型
 
 `TokenKind` 枚举定义了仓颉语言的所有词法 token 类型，包括：
 - **标点/分隔符**：`DOT`、`COMMA`、`LPAREN`、`RPAREN`、`LSQUARE`、`RSQUARE`、`LCURL`、`RCURL`、`COLON`、`SEMI` 等
@@ -170,18 +112,3 @@ description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字
 
 ---
 
-## 8. Linux 工具链安装依赖
-
-### 已测试发行版
-- Ubuntu 18.04 / 20.04、UnionTech OS Server 20、Kylin Linux Advanced Server V10
-
-### 依赖
-- `binutils`、`libc-dev`、`libc++-dev`、`libgcc-*-dev`（Ubuntu）
-- `binutils`、`glibc-devel`、`libstdc++-devel`、`gcc`（UnionTech/Kylin）
-- OpenSSL 3（所有平台须手动安装）
-
-### OpenSSL 3 源码编译
-1. 下载并解压 openssl-3.0.7+
-2. `./Configure --libdir=lib`
-3. `make && make test && make install`
-4. 若使用自定义前缀：设置 `LIBRARY_PATH` 和 `LD_LIBRARY_PATH`
