@@ -142,8 +142,14 @@ match (p) {
 
 | 异常 | 说明 |
 |------|------|
-| `ConcurrentModificationException` | 并发修改错误 |
+| `ArithmeticException` | 算术错误（如除以零） |
+| `ConcurrentModificationException` | 迭代过程中集合被修改 |
 | `IllegalArgumentException` | 非法或不正确的参数 |
+| `IllegalStateException` | 对象处于非法状态 |
+| `IndexOutOfBoundsException` | 数组/集合索引越界 |
 | `NegativeArraySizeException` | 以负数大小创建数组 |
-| `NoneValueException` | 值不存在 |
+| `NoneValueException` | 尝试访问不存在的值（如对 `None` 解包） |
+| `NullPointerException` | 空指针访问 |
 | `OverflowException` | 算术溢出 |
+| `UnsupportedException` | 不支持的操作 |
+| `TimeoutException` | 操作超时 |
