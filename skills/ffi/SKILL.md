@@ -1,9 +1,9 @@
 ---
 name: cangjie-ffi
-description: "仓颉语言外部函数接口(FFI)。当需要了解仓颉语言与C语言互操作的foreign声明、CFunc、inout参数、unsafe块、调用约定、类型映射(CPointer/VArray/CString)、C调用仓颉、内存管理(LibC/CPointerResource/CStringResource/acquireArrayRawData)、编译构建（cjc链接静态库/动态库、cjpm ffi.c配置）等特性时，应使用此 Skill。"
+description: "仓颉语言外部函数接口(FFI)。当需要了解仓颉与C程序互操作，包括foreign声明、CFunc、inout参数、unsafe块、调用约定、类型映射(基础类型/结构体/CPointer/VArray/CString)、C回调仓颉、内存管理(LibC/CPointerResource/CStringResource/acquireArrayRawData)、编译构建（cjc/cjpm链接静态库/动态库）等特性时，应使用此 Skill"
 ---
 
-# 仓颉语言外部函数接口（FFI）Skill
+# 仓颉 C 互操作 Skill
 
 ## 1. 从仓颉调用 C
 
@@ -47,13 +47,13 @@ foreign {
 
 ### 1.2 CFunc 类型
 
-`CFunc` 对应 C 的函数指针类型，有三种形式：
+`CFunc` 对应 C 的函数指针类型，有三种方式声明/定义：
 
 ```cangjie
-// 形式 1：@C foreign 函数
+// 形式 1：@C foreign 声明的外部 C 函数
 foreign func free(ptr: CPointer<Int8>): Unit
 
-// 形式 2：@C 修饰的仓颉函数（定义在仓颉侧，可从 C 调用）
+// 形式 2：@C 修饰的仓颉函数（定义在仓颉侧，可被 C 调用）
 @C
 func callableInC(ptr: CPointer<Int8>) {
     println("defined in Cangjie")
@@ -65,18 +65,20 @@ let f1: CFunc<(CPointer<Int8>) -> Unit> = { ptr =>
 }
 ```
 
-以上三种的类型均为 `CFunc<(CPointer<Int8>) -> Unit>`。`CFunc` 的参数和返回类型须满足 `CType` 约束，调用时须在 `unsafe` 上下文中。
+以上三个示例函数的类型均为 `CFunc<(CPointer<Int8>) -> Unit>`。
 
-类型转换：
+`CFunc` 的参数和返回类型须满足 `CType` 约束，调用时须在 `unsafe` 上下文中。
+
+CFunc 和 CPointer 互转：
 
 ```cangjie
-// CPointer<T> → CFunc（T 可以是任意满足 CType 的类型）
-var ptr = CPointer<Int8>()
-var f = CFunc<() -> Unit>(ptr)  // 须确保指针指向有效函数地址
+// CPointer<T> → CFunc 其中 T <: CType
+var ptr: CPointer<Int8> = getXXCFuncPtr()
+var f = CFunc<() -> Unit>(ptr) // 须确保指针指向有效函数地址
 
 // CFunc → CPointer<T>
 foreign func rand(): Int32
-var p = CPointer<Int8>(rand)    // 安全，但不应对转换后的指针 read/write
+var p = CPointer<Int8>(rand) // 安全，但不应对转换后的指针 read/write
 ```
 
 ### 1.3 inout 参数
@@ -84,19 +86,24 @@ var p = CPointer<Int8>(rand)    // 安全，但不应对转换后的指针 read/
 调用 `CFunc` 时，用 `inout` 修饰实参变量，自动取变量地址转为 `CPointer<T>` 传递：
 
 ```cangjie
-foreign func foo(ptr: CPointer<Int32>): Unit
-
 @C
-struct Data {
-    var n: Int32 = 0
+struct Point {
+    var x: Int32 = 0
+    var y: Int32 = 0
 }
 
-main() {
-    var n: Int32 = 42
-    unsafe { foo(inout n) }  // 自动将 &n 作为 CPointer<Int32> 传递
+foreign func f(ptr: CPointer<Int32>): Unit
+foreign func g(ptr: CPointer<Point>): Unit
 
-    var data = Data()
-    unsafe { foo(inout data.n) }  // struct 成员变量也可以
+main() {
+    var n: Int32 = 42 // 值类型，存储在栈上
+    unsafe { f(inout n) }  // 取 n 的地址作为 CPointer<Int32> 传递
+
+    var pt = Point() // 值类型，存储在栈上
+    unsafe {
+        g(inout pt) // 取结构体指针
+        f(inout pt.x) // 取结构体可变成员变量的指针
+    }
 }
 ```
 
@@ -104,7 +111,7 @@ main() {
 
 - 仅用于 `CFunc` 调用处
 - 修饰对象须满足 `CType` 约束，且不能是 `CString`
-- 须为 `var` 定义的可变变量，不能是 `let` 变量、字面量、入参或临时值
+- 修饰对象只能是 `var` 定义的可变变量（传递指针，可变语义），不能是不可变变量、字面量或临时值
 - 不能直接或间接来源于 `class` 实例成员变量
 - 指针仅在函数调用期间有效，C 侧不应保存该指针留作后用
 
@@ -115,21 +122,20 @@ main() {
 ```cangjie
 foreign func rand(): Int32
 
+// 修饰函数
+unsafe func doUnsafeWork() {
+    return rand()
+}
+
 // 修饰作用域块
 main() {
     unsafe {
-        let r = rand()
+        let r = doUnsafeWork() // unsafe 传染性
+        println(r)
     }
-}
-
-// 修饰函数
-unsafe func doUnsafeWork() {
-    rand()
-}
-
-// 修饰单个表达式
-main() {
+    // 修饰单个表达式
     let r = unsafe { rand() }
+    println(r)
 }
 ```
 
@@ -206,7 +212,14 @@ struct Point3D {
 foreign func addPoint(p1: Point3D, p2: Point3D): Point3D
 ```
 
-限制：成员类型须满足 `CType` 约束、不能实现或扩展接口、不能作为 `enum` 关联值类型、不允许被闭包捕获、不能有泛型参数。`@C struct` 自动满足 `CType` 约束。
+限制：
+
+- 成员类型须满足 `CType` 约束
+- 不能实现或扩展接口
+- 不能作为 `enum` 关联值类型
+- 不允许被闭包捕获
+- 不能有泛型参数
+- `@C struct` 自动满足 `CType` 约束
 
 ### 2.3 CPointer\<T> 指针
 
@@ -556,18 +569,17 @@ main() {
 clang -shared -fPIC -fstack-protector-all draw.c -o libdraw.so
 # Linux 静态库
 clang -c -fstack-protector-all draw.c -o draw.o && ar rcs libdraw.a draw.o
-# Windows 动态库（导出函数需加 __declspec(dllexport)）
+# Windows 动态库，注意导出函数需加 __declspec(dllexport) 修饰
 clang -shared -fstack-protector-all draw.c -o draw.dll
 
 # 步骤 2：编译仓颉代码并链接
 cjc -L . -l draw main.cj -o main
 
 # 步骤 3：运行
-LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./main     # Linux 动态库
-./main                                         # 静态库可直接运行
+./main  # 确保依赖的动态库在搜索路径上，静态库可直接运行
 ```
 
-### 5.3 使用 cjpm 项目编译
+### 5.3 基于 cjpm 项目编译
 
 ```shell
 cjpm init          # 初始化项目
@@ -578,17 +590,16 @@ cjpm init          # 初始化项目
 ```toml
 [package]
   name = "myproject"
-  cjc-version = "0.1.0"
+  cjc-version = "1.0.5"
   version = "1.0.0"
   output-type = "executable"
 
 [ffi.c]
-draw = { path = "./libs/" }  # 库名 = { path = "libdraw.so/.a 所在目录" }
+draw = { path = "./libs/" }  # path 是 C 动态/静态库所在路径
 ```
 
 ```shell
-cjpm build     # 构建（自动链接 [ffi.c] 中的 C 库）
-cjpm run       # 构建并运行
+cjpm build # 构建时自动链接 [ffi.c] 设置的 C 库
 ```
 
 `cjpm.toml` 其他相关配置项：
@@ -610,7 +621,7 @@ cjpm run       # 构建并运行
 
 typedef struct { int64_t x; int64_t y; } Point;
 
-// windows 要加上 __declspec(dllexport)
+// windows 平台加上 __declspec(dllexport) 修饰
 void drawPoint(Point* point) {
     point->x = 10;
     point->y = 20;
@@ -646,7 +657,7 @@ main() {
 
 typedef struct { float x; float y; float z; } Cube;
 
-// windows 要加上 __declspec(dllexport)
+// windows 平台加上 __declspec(dllexport) 修饰
 void initCube(Cube* cube) {
     printf("before: %f, %f, %f\n", cube->x, cube->y, cube->z);
     cube->x = 4.4;
@@ -689,7 +700,7 @@ main() {
 
 typedef int (*transform_fn)(int);
 
-// windows 要加上 __declspec(dllexport)
+// windows 平台加上 __declspec(dllexport) 修饰
 void apply(int* arr, int len, transform_fn fn) {
     for (int i = 0; i < len; i++) {
         arr[i] = fn(arr[i]);
