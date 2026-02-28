@@ -34,7 +34,7 @@ description: "仓颉语言网络编程。当需要了解仓颉语言的TCP/UDP S
 
 ## 3. HTTP 编程
 
-- 使用 `stdx.net.http.*`
+- 需要导入 `stdx.net.http`，关于扩展标准库 `stdx` 的配置用法，请参阅 `cangjie-stdx` Skill
 
 ### 3.1 服务端
 ```cangjie
@@ -58,7 +58,7 @@ response.body  // 读取响应体
 
 ## 4. WebSocket 编程
 
-- 在 `stdx.net.http.*` 中
+- 需要导入 `stdx.net.http`
 
 ### 4.1 帧类型
 - **控制帧**：Close、Ping、Pong
