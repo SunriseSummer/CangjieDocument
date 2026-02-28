@@ -97,7 +97,8 @@ description: "仓颉语言类。当需要了解仓颉语言的类定义、抽象
 - `sealed abstract class` — 仅同包内可继承
 - `sealed` 隐含 `public`/`open` 语义
 - `sealed` 的子类可不是 `sealed`，仍可被 `open`/`sealed` 修饰
-- 若子类被 `open` 修饰，则其子类可在包外被继承
+- 若子类被 `open` 修饰且不被 `sealed` 修饰，则其子类可在包外被继承
+- `sealed` 类适用于限定继承范围，常与 `match` 穷举检查配合使用
 
 ### 3.3 父类构造函数调用
 - 在子类 `init` 中：使用 `super(args)` 或 `this(args)` 作为函数体**第一个表达式**（互斥）

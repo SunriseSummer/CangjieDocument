@@ -100,6 +100,8 @@ description: "仓颉语言基本编程概念。当需要了解仓颉语言的标
 - `break` 退出循环，`continue` 跳至下一次迭代
 - 二者的类型均为 `Nothing`
 
+> **相关 Skill**：`match` 表达式和模式匹配详见 `cangjie-pattern-match` Skill；异常处理（`try`/`catch`/`throw`）详见 `cangjie-error-handle` Skill；Lambda 表达式和闭包详见 `cangjie-function` Skill
+
 ---
 
 ## 4. 函数（基本概念）
