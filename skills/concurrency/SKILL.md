@@ -171,6 +171,21 @@ public class ThreadLocal<T> {
 
 ### 5.2 `SyncCounter`
 - 用于线程协调：`SyncCounter(n)`，配合 `dec()` 和 `waitUntilZero()` 使用
+- 来自 `std.sync` 包
+```cangjie
+import std.sync.*
+
+main() {
+    let counter = SyncCounter(3)
+    for (i in 0..3) {
+        spawn { =>
+            // 执行工作...
+            counter.dec()     // 完成后计数减 1
+        }
+    }
+    counter.waitUntilZero()   // 等待所有线程完成
+}
+```
 
 ---
 
