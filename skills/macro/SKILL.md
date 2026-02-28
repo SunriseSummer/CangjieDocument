@@ -203,3 +203,273 @@ cjc main.cj -o main -L. -lB                 # 编译主程序
 
 ### 8.4 简单 DSL（类 LINQ 查询）
 - `@linq(from x in 1..=10 where x % 2 == 1 select x * x)` 实现迷你查询语言
+
+---
+
+## 9. std.ast 常用 API 速查
+
+### 9.1 解析函数
+
+| 函数 | 说明 |
+|------|------|
+| `parseExpr(Tokens)` | 解析为表达式节点 `Expr` |
+| `parseDecl(Tokens)` | 解析为声明节点 `Decl` |
+| `parseType(Tokens)` | 解析为类型节点 `TypeNode` |
+| `parsePattern(Tokens)` | 解析为模式节点 `Pattern` |
+| `parseProgram(Tokens)` | 解析整个源文件为 `Program` 节点 |
+| `parseExprFragment(Tokens, Int64)` | 部分解析表达式，返回 `(Expr, Int64)` |
+| `parseDeclFragment(Tokens, Int64)` | 部分解析声明，返回 `(Decl, Int64)` |
+
+### 9.2 常用节点类型
+
+| 节点类 | 常用属性 |
+|--------|----------|
+| `FuncDecl` | `identifier`、`funcParams`、`declType`、`block`、`modifiers` |
+| `ClassDecl` | `identifier`、`body`、`modifiers`、`superTypes` |
+| `StructDecl` | `identifier`、`body`、`modifiers` |
+| `VarDecl` | `identifier`、`declType`、`expr`、`keyword`（`var`/`let`） |
+| `BinaryExpr` | `leftExpr`、`op`、`rightExpr` |
+| `CallExpr` | `callExpr`、`arguments` |
+| `Block` | `nodes: ArrayList<Node>` |
+| `Body` | `decls: ArrayList<Decl>` |
+| `FuncParam` | `identifier`、`paramType` |
+
+### 9.3 Visitor 遍历模式
+```cangjie
+import std.ast.*
+
+class MyVisitor <: Visitor {
+    public override func visit(varDecl: VarDecl) {
+        println("Found var: ${varDecl.identifier.value}")
+        breakTraverse()  // 不继续遍历子节点
+        return
+    }
+}
+
+// 使用方式：node.traverse(MyVisitor())
+```
+
+### 9.4 辅助工具函数
+
+| 函数 | 说明 |
+|------|------|
+| `cangjieLex(String)` | 字符串转 `Tokens` |
+| `compareTokens(Tokens, Tokens)` | 比较两个 `Tokens` |
+| `diagReport(level, tokens, msg, hint)` | 宏展开阶段报错（`ERROR`/`WARNING`） |
+
+---
+
+## 10. 基于 cjpm 的宏项目配置与构建
+
+### 10.1 项目结构
+```text
+my_project/
+├── cjpm.toml              # 主项目配置
+├── src/
+│   └── main.cj            # 调用宏的代码
+└── macros/                 # 宏模块
+    ├── cjpm.toml           # 宏模块配置
+    └── src/
+        └── my_macros.cj    # 宏定义
+```
+
+### 10.2 宏模块 cjpm.toml
+```toml
+[package]
+cjc-version = "0.55.3"
+name = "macros"
+version = "1.0.0"
+output-type = "static"
+compile-option = "--compile-macro"
+```
+
+### 10.3 主项目 cjpm.toml
+```toml
+[package]
+cjc-version = "0.55.3"
+name = "my_project"
+version = "1.0.0"
+output-type = "executable"
+
+[dependencies]
+macros = { path = "./macros" }
+```
+
+### 10.4 构建与运行
+```bash
+cjpm build      # 自动按依赖顺序编译宏包和主包
+cjpm run        # 构建并运行
+cjpm test       # 运行测试
+```
+
+---
+
+## 11. 典型示例代码
+
+### 11.1 非属性宏：自动生成 toString
+
+宏定义（`macros/src/my_macros.cj`）：
+```cangjie
+macro package macros
+
+import std.ast.*
+
+public macro AutoToString(input: Tokens): Tokens {
+    let decl = parseDecl(input)
+    let classDecl = match (decl as ClassDecl) {
+        case Some(v) => v
+        case None =>
+            diagReport(DiagReportLevel.ERROR, input,
+                "AutoToString 只能用于 class 声明", "此处不是 class")
+            return input
+    }
+    let className = classDecl.identifier
+
+    // 收集所有 var/let 成员变量名
+    var fields = ArrayList<Token>()
+    for (d in classDecl.body.decls) {
+        if (let Some(varDecl) <- (d as VarDecl)) {
+            fields.add(varDecl.identifier)
+        }
+    }
+
+    // 构建 toString 方法体中的字段拼接
+    var parts = quote(var result = "${$(className)}{")
+    for (f in fields) {
+        parts = quote($(parts)
+            result += " $(f)=" + this.$(f).toString()
+        )
+    }
+    parts = quote($(parts)
+        result += " }"
+        return result
+    )
+
+    // 添加 toString 方法到 class
+    let toStringFunc = FuncDecl(quote(
+        public func toString(): String {
+            $(parts)
+        }
+    ))
+    classDecl.body.decls.add(toStringFunc)
+    return classDecl.toTokens()
+}
+```
+
+调用处（`src/main.cj`）：
+```cangjie
+import macros.*
+
+@AutoToString
+class User {
+    var name: String = ""
+    var age: Int64 = 0
+    init(name: String, age: Int64) {
+        this.name = name
+        this.age = age
+    }
+}
+
+main() {
+    let u = User("Alice", 30)
+    println(u.toString())
+    // 输出: User{ name=Alice age=30 }
+}
+```
+
+### 11.2 属性宏：条件日志
+
+```cangjie
+macro package macros
+
+import std.ast.*
+
+public macro Log(attrTokens: Tokens, inputTokens: Tokens): Tokens {
+    let level = attrTokens.toString().trimAscii()
+    let funcDecl = FuncDecl(inputTokens)
+    let funcName = funcDecl.identifier
+
+    let logStmt = quote(
+        println("[$(level)] entering $(funcName)")
+    )
+
+    // 在函数体开头插入日志语句
+    let oldNodes = funcDecl.block.nodes
+    funcDecl.block.nodes = ArrayList<Node>()
+    funcDecl.block.nodes.add(parseExpr(logStmt))
+    for (n in oldNodes) {
+        funcDecl.block.nodes.add(n)
+    }
+    return funcDecl.toTokens()
+}
+```
+
+调用处：
+```cangjie
+import macros.*
+
+@Log[DEBUG]
+func compute(x: Int64): Int64 {
+    return x * 2
+}
+```
+
+### 11.3 AST 操作：遍历并修改节点
+
+```cangjie
+import std.ast.*
+
+// 查找所有函数声明并打印函数名
+class FuncCollector <: Visitor {
+    public var funcNames = ArrayList<String>()
+    public override func visit(funcDecl: FuncDecl) {
+        funcNames.add(funcDecl.identifier.value)
+    }
+}
+
+main() {
+    let code = quote(
+        class Calc {
+            func add(a: Int64, b: Int64): Int64 { a + b }
+            func sub(a: Int64, b: Int64): Int64 { a - b }
+        }
+    )
+    let decl = parseDecl(code)
+    let collector = FuncCollector()
+    decl.traverse(collector)
+    for (name in collector.funcNames) {
+        println("Found function: ${name}")
+    }
+    // 输出: Found function: add
+    //       Found function: sub
+}
+```
+
+---
+
+## 12. 最优实践指导
+
+### 12.1 项目组织
+- 宏定义必须在 `macro package` 中，与调用代码分离为独立模块
+- 使用 cjpm 管理宏模块依赖，避免手动 `cjc --compile-macro` 编译
+- 宏包中仅宏定义可为 `public`，辅助函数保持包内可见
+
+### 12.2 输入验证
+- 始终验证输入节点类型，使用 `as` 模式匹配 + `diagReport` 报告错误
+- 提供清晰的错误信息和位置提示，而非让编译器产生难以理解的错误
+
+### 12.3 代码生成
+- 优先使用 `quote(...)` + `$(...)` 插值生成代码，保持模板可读性
+- 避免手动拼接 `Token`，除非需要动态构造标识符
+- 插值不会自动添加括号，必要时手动包裹 `ParenExpr`
+
+### 12.4 AST 操作
+- 使用 `parseDecl`/`parseExpr` 将 `Tokens` 转为强类型节点后再操作
+- 修改节点后用 `node.toTokens()` 转回 `Tokens` 返回
+- 利用 `Visitor` 模式遍历复杂 AST，避免手动递归
+- 使用 `dump()` 调试 AST 结构
+
+### 12.5 调试与安全
+- 开发阶段使用 `--debug-macro` 查看展开结果
+- 避免在宏中使用全局可变状态（并行展开不安全）
+- 嵌套宏通信使用 `setItem`/`getChildMessages`，而非全局变量
