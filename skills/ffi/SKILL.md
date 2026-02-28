@@ -604,12 +604,13 @@ cjpm run       # 构建并运行
 ### 6.1 结构体指针传递（inout 方式）
 
 ```c
-// draw.c
+// native.c
 #include <stdio.h>
 #include <stdint.h>
 
 typedef struct { int64_t x; int64_t y; } Point;
 
+// windows 要加上 __declspec(dllexport)
 void drawPoint(Point* point) {
     point->x = 10;
     point->y = 20;
@@ -639,12 +640,13 @@ main() {
 ### 6.2 堆内存分配（LibC.malloc 方式）
 
 ```c
-// draw.c
+// native.c
 #include <stdio.h>
 #include <stdint.h>
 
 typedef struct { float x; float y; float z; } Cube;
 
+// windows 要加上 __declspec(dllexport)
 void initCube(Cube* cube) {
     printf("before: %f, %f, %f\n", cube->x, cube->y, cube->z);
     cube->x = 4.4;
@@ -682,11 +684,12 @@ main() {
 ### 6.3 回调函数传递
 
 ```c
-// callback.c
+// native.c
 #include <stdio.h>
 
 typedef int (*transform_fn)(int);
 
+// windows 要加上 __declspec(dllexport)
 void apply(int* arr, int len, transform_fn fn) {
     for (int i = 0; i < len; i++) {
         arr[i] = fn(arr[i]);
@@ -704,9 +707,13 @@ func doubleIt(x: Int32): Int32 { x * 2 }
 main() {
     let buf = unsafe { LibC.malloc<Int32>(count: 3) }
     unsafe {
-        buf.write(0, 1); buf.write(1, 2); buf.write(2, 3)
+        buf.write(0, 1)
+        buf.write(1, 2)
+        buf.write(2, 3)
         apply(buf, 3, doubleIt)
-        for (i in 0..3) { print("${buf.read(i)} ") }  // 2 4 6
+        for (i in 0..3) {
+            print("${buf.read(i)} ") // 2 4 6
+        }
         println()
         LibC.free(buf)
     }
@@ -715,13 +722,26 @@ main() {
 
 ### 6.4 编译运行
 
+**Linux**
 ```shell
-# 使用 cjc 直接编译（Linux）
-clang -shared -fPIC -fstack-protector-all draw.c -o libdraw.so
-cjc -L . -l draw main.cj -o main
-LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH ./main
+# 使用 cjc 直接编译
+clang -shared -fPIC -fstack-protector-all native.c -o libnative.so
+cjc -L . -l native main.cj -o main
+./main
 
-# 使用 cjpm 项目编译
+# 基于 cjpm 项目编译
+# cjpm.toml 中配置 [ffi.c] draw = { path = "./libs/" }
+cjpm build && cjpm run
+```
+
+**Windows**
+```shell
+# 使用 cjc 直接编译
+clang -shared -fstack-protector-all native.c -o libnative.dll
+cjc -L . -l native main.cj -o main.exe
+./main
+
+# 基于 cjpm 项目编译
 # cjpm.toml 中配置 [ffi.c] draw = { path = "./libs/" }
 cjpm build && cjpm run
 ```
