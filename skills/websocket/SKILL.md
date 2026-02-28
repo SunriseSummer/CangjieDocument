@@ -7,7 +7,7 @@ description: "仓颉语言 WebSocket 编程。当需要了解仓颉语言的WebS
 
 ## 1. 概述
 
-- 导入 `stdx.net.http`，关于扩展标准库 `stdx` 的配置用法，请参阅 `cangjie-stdx` Skill
+- 依赖包 `stdx.net.http`，关于扩展标准库 `stdx` 的配置用法，请参阅 `cangjie-stdx` Skill
 - 帧类型：**控制帧**（`CloseWebFrame`、`PingWebFrame`、`PongWebFrame`）、**数据帧**（`TextWebFrame`、`BinaryWebFrame`、`ContinuationWebFrame`）
 - 帧属性：`fin`（是否最后一帧）、`frameType`、`payload`
 
