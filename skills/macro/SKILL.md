@@ -115,8 +115,8 @@ description: "仓颉语言宏。当需要了解仓颉语言的Token/Tokens类型
 | `parseType(Tokens)` | 解析为类型节点 `TypeNode` |
 | `parsePattern(Tokens)` | 解析为模式节点 `Pattern` |
 | `parseProgram(Tokens)` | 解析整个源文件为 `Program` 节点 |
-| `parseExprFragment(Tokens, Int64)` | 部分解析表达式，返回 `(Expr, Int64)` |
-| `parseDeclFragment(Tokens, Int64)` | 部分解析声明，返回 `(Decl, Int64)` |
+| `parseExprFragment(Tokens, Int64)` | 从指定偏移处部分解析表达式，返回 `(Expr, Int64)` — 第二个 `Int64` 为解析结束后的新偏移 |
+| `parseDeclFragment(Tokens, Int64)` | 从指定偏移处部分解析声明，返回 `(Decl, Int64)` — 第二个 `Int64` 为解析结束后的新偏移 |
 
 也可通过直接构造函数创建节点：`BinaryExpr(quote(a + b))`、`FuncDecl(quote(func f1(...) {...}))` 等
 

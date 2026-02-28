@@ -127,8 +127,18 @@ public mut operator func +(rhs: A): A { A() }  // 合法
 
 ### 3.6 `mut` 函数中 `this` 的限制
 - `this` **不能被** Lambda 或嵌套函数捕获
-- `this` **不能作为表达式使用**（如返回值）
+- `this` **不能作为表达式使用**（如返回值、赋给变量）
 - 实例成员变量**不能被** `mut` 函数内的 Lambda 捕获
+```cangjie
+struct Foo {
+    var i = 0
+    public mut func f(): Unit {
+        // let t = this   // 错误：this 不能作为表达式
+        // let f = { => i }  // 错误：不能捕获 mut 函数中的实例成员
+        i += 1  // 正确：可以直接修改
+    }
+}
+```
 
 ### 3.7 接口中的 `mut`
 - 接口函数可声明为 `mut`
