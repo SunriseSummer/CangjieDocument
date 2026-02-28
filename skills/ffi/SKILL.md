@@ -9,9 +9,10 @@ description: "仓颉语言外部函数接口(FFI)。当需要了解仓颉与C程
 
 ### 1.1 foreign 函数声明
 
-使用 `foreign func` 声明 C 函数，`@C` 修饰符可省略。调用须在 `unsafe {}` 块中。
+使用 `@C` 和 `foreign` 修饰符，结合仓颉函数语法声明 C 函数，`@C` 修饰符可省略。调用时须在 `unsafe {}` 块中。
 
 ```cangjie
+@C
 foreign func rand(): Int32
 foreign func printf(fmt: CString, ...): Int32  // 变长参数用 ... 表示，须在参数列表末尾
 
@@ -28,11 +29,11 @@ main() {
 
 规则：
 
-- `foreign` 函数只能有声明，不能有函数体
+- `foreign` 函数只是声明，不涉及函数体
 - 参数和返回类型须满足 `CType` 约束
 - 不支持命名参数和参数默认值
-- 变长参数（`...`）各参数须满足 `CType` 约束，但不必是同一类型
-- `@C` 只支持修饰 `foreign` 函数、顶层非泛型函数和 `struct` 类型
+- 变长参数（`...`）的各实参须满足 `CType` 约束，但不必是同一类型
+- `@C` 只支持修饰 `foreign` 函数、顶层非泛型函数和 `struct`
 
 可使用 `foreign` 块批量声明多个外部函数：
 
@@ -47,19 +48,19 @@ foreign {
 
 ### 1.2 CFunc 类型
 
-`CFunc` 对应 C 的函数指针类型，有三种方式声明/定义：
+`CFunc` 类型用来映射 C 的函数指针，函数实体可能在 C 侧或仓颉侧定义，但两侧都能调用这类函数，有三种方式声明/定义：
 
 ```cangjie
-// 形式 1：@C foreign 声明的外部 C 函数
+// 形式 1：@C foreign 声明的外部 C 函数，定义在 C 侧
 foreign func free(ptr: CPointer<Int8>): Unit
 
-// 形式 2：@C 修饰的仓颉函数（定义在仓颉侧，可被 C 调用）
+// 形式 2：@C 修饰的仓颉函数，定义在仓颉侧
 @C
 func callableInC(ptr: CPointer<Int8>) {
     println("defined in Cangjie")
 }
 
-// 形式 3：CFunc Lambda（不能捕获变量）
+// 形式 3：CFunc Lambda，定义在仓颉侧，不能捕获变量
 let f1: CFunc<(CPointer<Int8>) -> Unit> = { ptr =>
     println("CFunc lambda")
 }
