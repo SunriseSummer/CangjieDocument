@@ -144,8 +144,21 @@ description: "仓颉语言基本数据类型。当需要了解仓颉语言的整
 ### 5.4 支持的运算
 - 关系运算符用于比较
 - `+` 用于拼接
+- `*` 用于重复：`"ab" * 3` → `"ababab"`
 
-### 5.5 字符串迭代
+### 5.5 常用方法
+- `s.size` — UTF-8 字节长度（非字符数）
+- `s.isEmpty()` — 是否为空串
+- `s.contains(sub)` — 是否包含子串
+- `s.split(sep)` — 按分隔符分割，返回 `Array<String>`
+- `s.replace(old, new)` — 替换所有匹配子串
+- `s.trimAscii()` — 裁剪两端 ASCII 空白
+- `s.startsWith(prefix)` / `s.endsWith(suffix)` — 前缀/后缀检查
+- `s.indexOf(sub)` — 查找子串位置，返回 `?Int64`
+
+> 完整 String API 请参阅 `cangjie-std-string` Skill
+
+### 5.6 字符串迭代
 - **`for (c in s)` 迭代的是字节（`UInt8`/`Byte`）**，因为 `String` 实现了 `Collection<Byte>`（UTF-8 编码字节序列）
 - **`for (c in s.runes())` 迭代的是字符（`Rune`）**，返回 `Iterator<Rune>`
 - 这与大多数编程语言的行为不同，需要特别注意：
