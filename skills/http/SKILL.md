@@ -253,7 +253,7 @@ main() {
 
 ### 4.2 HTTPS 客户端（TrustAll 模式 — 快速上手）
 
-在开发测试阶段，可使用 `verifyMode = TrustAll` 跳过证书验证，方便快速调试 HTTPS 接口。**生产环境不应使用此模式**。
+> **⚠️ 警告**：`TrustAll` 模式跳过证书验证，**仅限开发测试环境使用**，生产环境请使用 `Default` 或 `CustomCA` 模式。
 
 ```cangjie
 import stdx.net.http.*
