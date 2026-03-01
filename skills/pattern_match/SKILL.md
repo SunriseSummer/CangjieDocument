@@ -267,7 +267,7 @@ main() {
 let a = Num(1)
 let b: Expr = Error
 if (let Num(_) <- a || let Num(_) <- b) {
-    println("至少一个有值")  // 匹配
+    println("至少一个是 Num")  // 匹配
 }
 ```
 
@@ -281,7 +281,7 @@ if (let Num(_) <- a || let Num(_) <- b) {
 
 ```cangjie
 // ❌ 错误示例
-// if (let Num(a) <- x || a > 1) {}     // || 不能绑定变量
+// if (let Num(a) <- x || a > 1) {}     // || 连接的模式不能绑定变量
 // if (a > 3 && let Num(a) <- x) {}     // a 在绑定前使用
 // if (let Num(a) <- x where a > 3) {}  // 应使用 && 而非 where
 // if (let Num(a) <- x && a > 0) {
