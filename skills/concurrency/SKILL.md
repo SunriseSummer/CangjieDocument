@@ -169,8 +169,8 @@ main() {
     // 消费者线程
     let consumer = spawn { =>
         synchronized(mtx) {
-            while (!ready) {
-                cond.wait()       // 等待通知，须在循环中以防虚假唤醒
+            while (!ready) { // 可避免虚假唤醒
+                cond.wait()  // 等待通知
             }
             println("Consumer: data is ready!")
         }
@@ -178,10 +178,10 @@ main() {
 
     // 生产者线程
     let producer = spawn { =>
-        sleep(Duration.second)    // 模拟准备数据
+        sleep(Duration.second) // 模拟生产耗时
         synchronized(mtx) {
             ready = true
-            cond.notifyAll()      // 唤醒所有等待线程
+            cond.notifyAll() // 唤醒所有等待线程
         }
         println("Producer: notified!")
     }
