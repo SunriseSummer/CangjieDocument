@@ -1,6 +1,6 @@
 ---
 name: cangjie-std-libs
-description: "仓颉标准库速查指南。当需要了解仓颉标准库有哪些包、各包提供的核心类型与函数时，应使用此 Skill。此 Skill 以表格形式列出每个包的接口、类、结构体和函数等，方便快速定位 API。需要详细文档时请参阅 libs/standard/std 目录下的原始文档；部分常用包已拆分为独立 Skill（如 collections、concurrency、string 等），可直接查阅对应 Skill 获取用法示例。"
+description: "仓颉标准库核心接口速查。当需要了解仓颉标准库有哪些包、各包提供的核心类型与函数时，应使用此 Skill。本 Skill 仅用于速查目的，并未覆盖每个包的全部接口和细节信息，如果存在信息不足或接口遗漏，可以引用拆解标准库特定能力的 Skill，如果暂无相关细分 Skill，则请查阅标准库原始文档。"
 ---
 
 # 仓颉标准库速查指南 Skill
