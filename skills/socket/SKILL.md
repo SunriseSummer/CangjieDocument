@@ -200,76 +200,7 @@ main(): Int64 {
 
 ---
 
-## 6. TLS/SSL 加密通信
-
-- 导入 `stdx.net.tls`，需要 **OpenSSL 3** 动态库
-- 支持 TLS 1.2、TLS 1.3
-
-### 6.1 TLS 服务端
-```cangjie
-import std.net.*
-import std.io.*
-import std.fs.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
-import stdx.net.tls.*
-
-main() {
-    let pem = String.fromUtf8(readToEnd(File("./server.crt", Read)))
-    let key = String.fromUtf8(readToEnd(File("./server.key", Read)))
-    let config = TlsServerConfig(
-        X509Certificate.decodeFromPem(pem),
-        PrivateKey.decodeFromPem(key)
-    )
-
-    try (server = TcpServerSocket(bindAt: 8443)) {
-        server.bind()
-        while (true) {
-            let client = server.accept()
-            spawn {
-                try (tls = TlsSocket.server(client, serverConfig: config)) {
-                    tls.handshake()
-                    let buf = Array<Byte>(100, repeat: 0)
-                    tls.read(buf)
-                    tls.write("OK".toArray())
-                } finally {
-                    client.close()
-                }
-            }
-        }
-    }
-}
-```
-
-### 6.2 TLS 客户端
-```cangjie
-import std.net.TcpSocket
-import stdx.net.tls.*
-
-main() {
-    var config = TlsClientConfig()
-    config.verifyMode = TrustAll         // 或 CustomCA(cert)
-    config.alpnProtocolsList = ["h2"]    // ALPN 协议协商
-
-    try (sock = TcpSocket("127.0.0.1", 8443)) {
-        sock.connect()
-        try (tls = TlsSocket.client(sock, clientConfig: config)) {
-            tls.handshake()
-            tls.write("Hello TLS".toArray())
-        }
-    }
-}
-```
-
-### 6.3 关键配置
-- `TlsServerConfig(cert, privateKey)` — 服务端证书配置
-- `TlsClientConfig` — 客户端配置
-  - `verifyMode`：`TrustAll`（不校验）、`CustomCA(cert)`（自定义 CA）
-  - `alpnProtocolsList` — ALPN 协议列表
-- `TlsSessionContext.fromName(name)` — 会话恢复上下文
-
----
-
-## 7. 异常类型
+## 6. 异常类型
 
 | 异常 | 说明 |
 |------|------|
@@ -278,7 +209,7 @@ main() {
 
 ---
 
-## 8. 关键规则速查
+## 7. 关键规则速查
 
 1. 所有 Socket/Server 使用 `try-with-resource` 自动清理
 2. TCP 服务端模式：`TcpServerSocket` → `bind()` → 循环 `accept()`
