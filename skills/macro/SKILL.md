@@ -1,6 +1,6 @@
 ---
 name: cangjie-macro
-description: "仓颉语言宏。当需要了解仓颉语言的Token/Tokens类型、quote表达式与插值、非属性宏、属性宏、嵌套宏与通信、std.ast包与语法节点(AST)解析、宏包编译构建(cjc/cjpm)、仓颉SDK预置宏(@sourceFile/@When/@FastNative/@Frozen/@Deprecated等)时，应使用此 Skill。"
+description: "仓颉语言宏。当需要了解仓颉语言的Token/Tokens类型、quote表达式与插值、非属性宏、属性宏、嵌套宏与通信、std.ast包与语法节点(AST)解析、仓颉SDK预置宏(@sourceFile/@When/@FastNative/@Frozen/@Deprecated等)时，应使用此 Skill。宏包编译构建（cjc/cjpm）的详细指导请使用 cangjie-macro-build Skill。"
 ---
 
 # 仓颉语言宏 Skill
@@ -166,76 +166,12 @@ class MyVisitor <: Visitor {
 
 ## 5. 宏包编译与构建
 
-### 5.1 包规则
-- 宏须在 `macro package` 声明的包中
-- 宏包中仅宏定义可为 `public`；其他声明为包内部可见
-- 宏包**可以**重新导出宏包和非宏包的符号。非宏包**不能**重新导出宏包符号
-- 宏定义和调用**须**在不同包中
+> **详细的编译构建指导**请参考 `cangjie-macro-build` Skill，包含 cjc/cjpm 编译命令、项目结构、不同平台配置、并行宏展开、调试模式等完整说明。
 
-### 5.2 使用 cjc 编译
-
-宏包须**先编译**，使用 `--compile-macro` 标志，然后编译调用包并链接宏包：
-
-```shell
-cjc macros/m.cj --compile-macro --output-dir ./target   # 编译宏包
-cjc src/demo.cj -o demo --import-path ./target           # 编译调用包
-
-# 多模块场景
-cjc A.cj --compile-macro                    # 编译宏包
-cjc B.cj --output-type=dylib -o libB.so     # 编译依赖
-cjc C.cj --compile-macro -L. -lB            # 编译带依赖的宏包
-cjc main.cj -o main -L. -lB                 # 编译主程序
-```
-
-### 5.3 使用 cjpm 构建（推荐）
-
-#### 项目结构
-```text
-my_project/
-├── cjpm.toml              # 主项目配置
-├── src/
-│   └── main.cj            # 调用宏的代码
-└── macros/                 # 宏模块
-    ├── cjpm.toml           # 宏模块配置
-    └── src/
-        └── my_macros.cj    # 宏定义
-```
-
-#### 宏模块 cjpm.toml
-```toml
-[package]
-cjc-version = "0.55.3"
-name = "macros"
-version = "1.0.0"
-output-type = "static"
-compile-option = "--compile-macro"
-```
-
-#### 主项目 cjpm.toml
-```toml
-[package]
-cjc-version = "0.55.3"
-name = "my_project"
-version = "1.0.0"
-output-type = "executable"
-
-[dependencies]
-macros = { path = "./macros" }
-```
-
-#### 构建与运行
-```bash
-cjpm build      # 自动按依赖顺序编译宏包和主包
-cjpm run        # 构建并运行
-cjpm test       # 运行测试
-```
-
-### 5.4 并行宏展开
-- 使用 `--parallel-macro-expansion` 标志启用
-- **警告**：使用全局变量的宏在并行展开时不安全
-
-### 5.5 调试模式
-- `--debug-macro` 生成 `.macrocall` 临时文件显示完全展开的宏代码
+### 基本规则
+- 宏须在 `macro package` 声明的包中，宏定义和调用**须**在不同包中
+- 宏包须**先编译**（`cjc --compile-macro`），再编译调用包
+- 推荐使用 cjpm 管理宏模块依赖，在宏模块 `cjpm.toml` 中设置 `compile-option = "--compile-macro"`
 
 ---
 

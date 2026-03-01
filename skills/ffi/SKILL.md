@@ -1,6 +1,6 @@
 ---
 name: cangjie-ffi
-description: "仓颉语言外部函数接口(FFI)。当需要了解仓颉与C程序互操作，包括foreign声明、CFunc、inout参数、unsafe块、调用约定、类型映射(基础类型/结构体/CPointer/VArray/CString)、C回调仓颉、内存管理(LibC/CPointerResource/CStringResource/acquireArrayRawData)、编译构建（cjc/cjpm链接静态库/动态库）等特性时，应使用此 Skill"
+description: "仓颉语言外部函数接口(FFI)。当需要了解仓颉与C程序互操作，包括foreign声明、CFunc、inout参数、unsafe块、调用约定、类型映射(基础类型/结构体/CPointer/VArray/CString)、C回调仓颉、内存管理(LibC/CPointerResource/CStringResource/acquireArrayRawData)等特性时，应使用此 Skill。编译构建（cjc/cjpm链接静态库/动态库）的详细指导请使用 cangjie-ffi-build Skill。"
 ---
 
 # 仓颉 C 互操作 Skill
@@ -555,59 +555,11 @@ main() {
 
 ## 5. 编译构建
 
-### 5.1 cjc 编译器链接选项
+> **详细的编译构建指导**请参考 `cangjie-ffi-build` Skill，包含 cjc/cjpm 编译命令、不同平台（Linux/macOS/Windows）的 C 库编译方式、cjpm.toml 中 `[ffi.c]` 配置、链接安全加固选项等完整说明。
 
-| 选项 | 说明 |
-|------|------|
-| `-L <path>` / `--library-path <path>` | 指定库文件搜索目录（优先级高于 `LIBRARY_PATH` 环境变量） |
-| `-l <name>` / `--library <name>` | 链接库文件，格式为 `lib[name].[extension]`（如 `-l draw` 链接 `libdraw.so/.a/.dll`） |
-
-### 5.2 使用 cjc 直接编译
-
-```shell
-# 步骤 1：编译 C 代码为库
-# Linux 动态库
-clang -shared -fPIC -fstack-protector-all draw.c -o libdraw.so
-# Linux 静态库
-clang -c -fstack-protector-all draw.c -o draw.o && ar rcs libdraw.a draw.o
-# Windows 动态库，注意导出函数需加 __declspec(dllexport) 修饰
-clang -shared -fstack-protector-all draw.c -o draw.dll
-
-# 步骤 2：编译仓颉代码并链接
-cjc -L . -l draw main.cj -o main
-
-# 步骤 3：运行
-./main  # 确保依赖的动态库在搜索路径上，静态库可直接运行
-```
-
-### 5.3 基于 cjpm 项目编译
-
-```shell
-cjpm init          # 初始化项目
-```
-
-在 `cjpm.toml` 中配置 C 库依赖：
-
-```toml
-[package]
-  name = "myproject"
-  cjc-version = "1.0.5"
-  version = "1.0.0"
-  output-type = "executable"
-
-[ffi.c]
-draw = { path = "./libs/" }  # path 是 C 动态/静态库所在路径
-```
-
-```shell
-cjpm build # 构建时自动链接 [ffi.c] 设置的 C 库
-```
-
-`cjpm.toml` 其他相关配置项：
-
-- `output-type`：`"executable"` | `"static"` | `"dynamic"`
-- `compile-option`：传给 `cjc` 的额外编译选项，如 `"-O1"`
-- `link-option`：传给链接器的选项，如 `"-z noexecstack -z relro -z now"`
+### 基本流程
+- 先将 C 代码编译为动态库或静态库（使用 clang 等编译器，建议启用 `-fstack-protector-all`）
+- 使用 `cjc -L <path> -l <name>` 链接，或在 `cjpm.toml` 中配置 `[ffi.c]` 依赖后用 `cjpm build` 构建
 
 ---
 
@@ -734,28 +686,20 @@ main() {
 
 ### 6.4 编译运行
 
+> 完整的编译构建命令请参考 `cangjie-ffi-build` Skill。以下为上述示例的快速编译参考：
+
 **Linux**
 ```shell
-# 使用 cjc 直接编译
 clang -shared -fPIC -fstack-protector-all native.c -o libnative.so
 cjc -L . -l native main.cj -o main
 ./main
-
-# 基于 cjpm 项目编译
-# cjpm.toml 中配置 [ffi.c] draw = { path = "./libs/" }
-cjpm build && cjpm run
 ```
 
 **Windows**
 ```shell
-# 使用 cjc 直接编译
-clang -shared -fstack-protector-all native.c -o libnative.dll
+clang -shared -fstack-protector-all native.c -o native.dll
 cjc -L . -l native main.cj -o main.exe
-./main
-
-# 基于 cjpm 项目编译
-# cjpm.toml 中配置 [ffi.c] draw = { path = "./libs/" }
-cjpm build && cjpm run
+./main.exe
 ```
 
 ---
