@@ -1,6 +1,6 @@
 ---
 name: cangjie-pattern-match
-description: "仓颉语言模式匹配。当需要了解仓颉语言的match表达式（有匹配值/无匹配值）、case分支代码块写法、穷举性、模式守卫(where)、常量模式、通配符模式、绑定模式、元组模式、类型模式、枚举模式、模式嵌套、模式可反驳性(refutability)、模式在变量定义和for-in中的使用等特性时，应使用此 Skill。关于枚举类型定义和Option类型，请参阅 cangjie-enum Skill。"
+description: "仓颉语言模式匹配。当需要了解仓颉语言的match表达式（有匹配值/无匹配值）、case分支代码块写法、穷举性、模式守卫(where)、常量模式、通配符模式、绑定模式、元组模式、类型模式、枚举模式、模式嵌套、模式可反驳性(refutability)、模式在变量定义和for-in中的使用等特性时，应使用此 Skill。关于枚举类型定义，请参阅 cangjie-enum Skill。关于 Option 类型及其解构方式，请参阅 cangjie-option Skill。"
 ---
 
 # 仓颉语言模式匹配 Skill
