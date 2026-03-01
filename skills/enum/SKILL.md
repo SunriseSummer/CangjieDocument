@@ -60,8 +60,12 @@ enum Expr {
 enum RGBColor2 {
     | Red | Green | Blue
 
-    public static func printType() {
-        print("RGBColor")
+    public func getName() {
+        match (this) { // this 表示当前枚举实例
+            case Red => "Red"
+            case Green => "Green"
+            case Blue => "Blue"
+        }
     }
 }
 ```
@@ -157,10 +161,17 @@ enum Expr {
     | Neg(Expr)
 }
 
-// 枚举可以定义成员函数
-@Derive[ToString]
-enum Color {
-    | Red | Green | Blue
+// 为枚举实现 ToString 接口
+enum Color <: ToString { // 也可用 @Derive[ToString] 自动实现
+    Red | Green | Blue
+
+    public func toString() { // 枚举中可以定义成员函数
+        match (this) {
+            case Red => "Red"
+            case Green => "Green"
+            case Blue => "Blue"
+        }
+    }
 }
 
 main() {
@@ -173,12 +184,5 @@ main() {
     // 实现 ToString 接口的枚举类型可打印
     let color = Red
     println(color)
-    // 如果未使用 @Derive[ToString]，则需要用模式匹配
-    let name = match (color) {
-        case Red => "Red"
-        case Green => "Green"
-        case Blue => "Blue"
-    }
-    println(name)
 }
 ```
