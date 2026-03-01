@@ -80,7 +80,8 @@ main(args: Array<String>): Unit {
 ```cangjie
 // ❌ 错误：返回类型不能是 String
 main(): String { return "" }
-
+```
+```cangjie
 // ❌ 错误：参数类型只能是 Array<String>
 main(args: Array<Int8>): Int64 { return 0 }
 ```
@@ -112,7 +113,8 @@ package pkga
 public struct R {}
 public func f(a: Int32) {}
 public func f(a: Bool) {}
-
+```
+```cangjie
 // package pkgb
 package pkgb
 import pkga.*

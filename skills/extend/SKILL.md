@@ -241,10 +241,12 @@ main() {
 ```cangjie
 // package a
 public class Foo {}
-
+```
+```cangjie
 // package b
 public interface Bar {}
-
+```
+```cangjie
 // package c
 import a.Foo
 import b.Bar
@@ -371,7 +373,8 @@ public class Foo {}
 extend Foo {
     public func f() {}
 }
-
+```
+```cangjie
 // package b
 package b
 import a.Foo
@@ -379,7 +382,8 @@ public interface I { func g(): Unit }
 extend Foo <: I {
     public func g() { this.f() }  // OK
 }
-
+```
+```cangjie
 // package c — 使用扩展
 package c
 import a.Foo
