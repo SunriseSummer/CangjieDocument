@@ -227,7 +227,7 @@ while (true) {
 | 场景 | 推荐方式 | 示例 |
 |------|---------|------|
 | 提供默认值 | `??` | `let name = getName() ?? "unknown"` |
-| 安全访问成员 | `?.` | `let len = str?.size()` |
+| 安全访问成员 | `?.` | `let len = buffer?.size()` |
 | 条件取值并使用 | `if-let` | `if (let Some(v) <- opt) { use(v) }` |
 | 遍历迭代器 | `while-let` | `while (let Some(i) <- it.next()) { ... }` |
 | 强制取值（确信有值） | `getOrThrow()` | `let v = opt.getOrThrow()` |

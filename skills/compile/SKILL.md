@@ -8,6 +8,7 @@ description: "仓颉语言编译与构建。当需要了解仓颉语言的编译
 ## 1. cjc 编译器
 
 ### 1.1 基本用法
+
 - `cjc` 是仓颉编译器
 - 用法：`cjc [option] file...`
 - 编译为可执行文件，默认名称为 `main`
@@ -28,11 +29,11 @@ description: "仓颉语言编译与构建。当需要了解仓颉语言的编译
 - `--test` 启用测试模式
 - `--debug-macro` 启用宏调试
 
+> 如需了解 cjc 更多细节，请引用 `cangjie-cjc` Skill
+
 ---
 
 ## 2. cjpm 项目管理器
-
-> 如需了解仓颉项目结构和 cjpm 更多细节用法，请参阅 `cangjie-project-management` Skill
 
 ### 2.1 功能
 - 管理仓颉项目：模块系统、依赖解析（多版本冲突解决）、自定义构建脚本
@@ -74,6 +75,8 @@ description: "仓颉语言编译与构建。当需要了解仓颉语言的编译
 - `[ffi.c]` — C 库依赖
 - `[profile]` — 构建/测试/基准配置
 - `[target.<triple>]` — 平台特定设置
+
+> 如需了解仓颉项目的组织构建和 cjpm 更多细节，请引用 `cangjie-project-management` Skill
 
 ---
 

@@ -5,9 +5,7 @@ description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字
 
 # 仓颉语言附录参考 Skill
 
-## 1. 关键字列表
-
-仓颉语言的所有保留关键字（不能用作普通标识符，可用反引号包裹作为原始标识符）：
+## 1. 仓颉语言关键字
 
 `as`、`abstract`、`break`、`Bool`、`case`、`catch`、`class`、`const`、`continue`、`Rune`、`do`、`else`、`enum`、`extend`、`for`、`func`、`false`、`finally`、`foreign`、`Float16`、`Float32`、`Float64`、`if`、`in`、`is`、`init`、`import`、`interface`、`Int8`、`Int16`、`Int32`、`Int64`、`IntNative`、`let`、`mut`、`main`、`macro`、`match`、`Nothing`、`open`、`operator`、`override`、`prop`、`public`、`package`、`private`、`protected`、`quote`、`redef`、`return`、`spawn`、`super`、`static`、`struct`、`synchronized`、`try`、`this`、`true`、`type`、`throw`、`This`、`unsafe`、`Unit`、`UInt8`、`UInt16`、`UInt32`、`UInt64`、`UIntNative`、`var`、`VArray`、`where`、`while`
 
@@ -15,7 +13,7 @@ description: "仓颉语言附录参考。当需要查阅仓颉语言的关键字
 
 ## 2. 运算符优先级与结合性
 
-共 **19 个优先级级别**（0 = 最高）：
+共 **19 个优先级级别**（0 = 最高）
 
 | 优先级 | 运算符 | 说明 | 结合性 |
 |--------|--------|------|--------|

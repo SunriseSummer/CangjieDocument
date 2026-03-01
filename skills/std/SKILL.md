@@ -203,10 +203,10 @@ import std.collection.*
 
 let list = ArrayList<Int64>([1, 2, 3, 4, 5])
 // 通过迭代器使用函数式操作
-let result = list.iterator()
-    |> filter<Int64> { v => v % 2 == 1 }
-    |> map<Int64, String> { v => v.toString() }
-    |> collectArrayList<String>
+let result = list
+    |> filter { v => v % 2 == 1 }
+    |> map { v => v.toString() }
+    |> collectArrayList
 ```
 
 常用迭代函数（应用于 `Iterator<T>`）：
@@ -655,7 +655,7 @@ struct Point {
 - **枚举类型默认不支持 `==` 比较**，须使用 `@Derive[Equatable]` 派生：
   ```cangjie
   import std.deriving.*
-
+  
   @Derive[Equatable]
   enum TokenKind {
       | Number | Plus | Minus | Eof
