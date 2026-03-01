@@ -294,7 +294,7 @@ main() {
 
 | 类别 | 类型 |
 |------|------|
-| 整数 | `Int8`~`Int64`、`UInt8`~`UInt64` |
+| 整数 | `Int8` ~ `Int64`，`UInt8` ~ `UInt64` |
 | 浮点 | `Float16`~`Float64` |
 | 布尔 | `Bool` |
 | 字符串 | `String` |
