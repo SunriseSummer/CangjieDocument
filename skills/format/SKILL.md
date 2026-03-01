@@ -107,7 +107,7 @@ main() {
 
     // 科学计数法
     println(f.format(".2e"))           // "1.23e+03"
-    println(f.format("G"))            // "1234.5"
+    println(f.format("G"))            // "1234.5"（G 自动选择精简表示）
 
     // 补零
     println("\"${f.format("012.2")}\"") // "0000001234.50"
