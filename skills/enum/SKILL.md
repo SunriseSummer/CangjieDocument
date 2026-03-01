@@ -1,6 +1,6 @@
 ---
 name: cangjie-enum
-description: "仓颉语言枚举类型。当需要了解仓颉语言的enum定义规则、构造器（有参/无参/同名/非穷举）、枚举的使用与名称冲突、枚举成员函数和属性、递归枚举、枚举与Equatable接口、Option类型(?T)及其自动包装等特性时，应使用此 Skill。关于模式匹配和match表达式，请参阅 cangjie-pattern-match Skill。"
+description: "仓颉语言枚举类型。当需要了解仓颉语言的enum定义规则、构造器（有参/无参/同名/非穷举）、枚举的使用与名称冲突、枚举成员函数和属性、递归枚举、枚举与Equatable接口等特性时，应使用此 Skill。关于 Option 类型(?T)及其解构方式，请参阅 cangjie-option Skill。关于模式匹配和match表达式，请参阅 cangjie-pattern-match Skill。"
 ---
 
 # 仓颉语言枚举类型 Skill
@@ -159,38 +159,7 @@ enum Status2 {
 
 ## 4. Option 类型
 
-### 4.1 定义
-```cangjie
-enum Option<T> {
-    | Some(T)
-    | None
-}
-```
-- `Some(v)` = 有值；`None` = 无值
-
-### 4.2 简写语法
-- `?Ty` 等价于 `Option<Ty>`
-
-### 4.3 自动包装
-- 当上下文期望 `Option<T>` 时，可直接传 `T` 值 — 编译器自动包装为 `Some`
-```cangjie
-let a: ?Int64 = 100      // 自动包装为 Some(100)
-let b: ?String = "hello"  // 自动包装为 Some("hello")
-```
-
-### 4.4 显式 `None` 带类型
-- 无上下文类型时使用 `None<T>` 语法
-```cangjie
-let a = None<Int64>   // a: Option<Int64>
-let b = None<Bool>    // b: Option<Bool>
-```
-
-### 4.5 Option 的使用
-- 使用 `??` 提供默认值：`let name = getName() ?? "unknown"`
-- 使用 `match` 进行模式匹配解构（详见 `cangjie-pattern-match` Skill）
-- 使用 `if let` 条件解构：`if (let Some(v) <- opt) { ... }`
-
-> **跨 Skill 引用**：`??` 运算符的优先级低于比较运算符，使用时需注意加括号，详见 `cangjie-basic-data-type` Skill 的运算符优先级部分。
+> **详见 `cangjie-option` Skill**：`Option<T>` 的定义、`?T` 简写、自动包装、`??`、`?.`、`getOrThrow()`、`if-let`、`while-let` 等完整用法已独立为专门的 Skill。
 
 ---
 
