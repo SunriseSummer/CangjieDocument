@@ -1,6 +1,6 @@
 ---
 name: cangjie-http-server
-description: "仓颉语言 HTTP 服务端编程。当需要了解仓颉语言的HTTP服务端开发，包括 ServerBuilder 配置、路由注册与请求分发、HttpContext 请求处理、HttpResponseBuilder 响应构建、分块传输与 Trailer、静态文件服务、重定向、HTTPS/TLS 配置、HTTP/2 Server Push、日志、优雅关闭、证书热更新等特性时，应使用此 Skill。"
+description: "仓颉语言 HTTP 服务端编程。当需要了解仓颉语言的HTTP服务端开发，包括 ServerBuilder 配置、路由注册与请求分发、HttpContext 请求处理、HttpResponseBuilder 响应构建、分块传输与 Trailer、静态文件服务、重定向、日志、优雅关闭、Gzip 压缩等特性时，应使用此 Skill。HTTPS/TLS 相关内容请参阅 cangjie-https-server Skill。"
 ---
 
 # 仓颉语言 HTTP 服务端编程 Skill
@@ -9,9 +9,8 @@ description: "仓颉语言 HTTP 服务端编程。当需要了解仓颉语言的
 
 - 依赖包 `stdx.net.http`，关于扩展标准库 `stdx` 的配置用法，请参阅 `cangjie-stdx` Skill
 - 支持 HTTP/1.0、1.1、2.0（RFC 9110/9112/9113/9218/7541）
-- HTTP/2 需 TLS + ALPN `h2` 配置；如果 HTTP/2 握手失败，自动回退 HTTP/1.1
-- 依赖 OpenSSL 3（libssl + libcrypto），使用前需安装
 - 核心模式：`ServerBuilder` 构建 → `Server` 注册路由 → `serve()` 阻塞运行
+- HTTPS/TLS 配置、证书热更新、双向认证、HTTP/2 Server Push 等内容，请参阅 `cangjie-https-server` Skill
 
 ---
 
@@ -48,7 +47,7 @@ main() {
 |------|------|------|
 | `addr` | `addr(String): ServerBuilder` | 监听地址（如 `"0.0.0.0"`） |
 | `port` | `port(UInt16): ServerBuilder` | 监听端口（0 表示随机端口） |
-| `tlsConfig` | `tlsConfig(TlsServerConfig): ServerBuilder` | TLS 配置（启用 HTTPS） |
+| `tlsConfig` | `tlsConfig(TlsServerConfig): ServerBuilder` | TLS 配置（启用 HTTPS，详见 `cangjie-https-server` Skill） |
 | `distributor` | `distributor(HttpRequestDistributor): ServerBuilder` | 自定义请求分发器 |
 | `readTimeout` | `readTimeout(Duration): ServerBuilder` | 读取整个请求超时 |
 | `writeTimeout` | `writeTimeout(Duration): ServerBuilder` | 写响应超时 |
@@ -118,8 +117,8 @@ main() {
 | `logger` | `logger: Logger` | 获取日志记录器 |
 | `afterBind` | `afterBind(() -> Unit): Unit` | 绑定端口后的回调 |
 | `onShutdown` | `onShutdown(() -> Unit): Unit` | 关闭时回调 |
-| `updateCert` | `updateCert(String, String): Unit` | 热更新证书（证书路径, 密钥路径） |
-| `updateCA` | `updateCA(String): Unit` | 热更新 CA 证书 |
+| `updateCert` | `updateCert(String, String): Unit` | 热更新证书（详见 `cangjie-https-server` Skill） |
+| `updateCA` | `updateCA(String): Unit` | 热更新 CA 证书（详见 `cangjie-https-server` Skill） |
 
 ---
 
@@ -401,172 +400,7 @@ main() {
 
 ---
 
-## 11. HTTPS 服务端
-
-### 11.1 基本 HTTPS 配置
-
-```cangjie
-import std.io.*
-import std.fs.*
-import stdx.net.http.*
-import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
-
-main() {
-    // 加载证书和私钥
-    let pem = String.fromUtf8(readToEnd(File("./server.crt", Read)))
-    let key = String.fromUtf8(readToEnd(File("./server.key", Read)))
-    var tlsConfig = TlsServerConfig(
-        X509Certificate.decodeFromPem(pem),
-        PrivateKey.decodeFromPem(key)
-    )
-    tlsConfig.supportedAlpnProtocols = ["h2"]  // 启用 HTTP/2
-
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(8443)
-        .tlsConfig(tlsConfig)
-        .build()
-
-    server.distributor.register("/", {
-        ctx => ctx.responseBuilder.body("Secure HTTPS response!")
-    })
-    server.serve()
-}
-```
-
-### 11.2 证书热更新
-
-运行时无需重启服务即可更新证书：
-
-```cangjie
-import std.io.*
-import std.fs.*
-import stdx.net.http.*
-import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
-
-main() {
-    let pem = String.fromUtf8(readToEnd(File("./server.crt", Read)))
-    let key = String.fromUtf8(readToEnd(File("./server.key", Read)))
-    var tlsConfig = TlsServerConfig(
-        X509Certificate.decodeFromPem(pem),
-        PrivateKey.decodeFromPem(key)
-    )
-    // 使用 ["h2"] 启用 HTTP/2，使用 ["http/1.1"] 仅启用 HTTPS (HTTP/1.1)
-    tlsConfig.supportedAlpnProtocols = ["http/1.1"]
-
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(8443)
-        .tlsConfig(tlsConfig)
-        .build()
-
-    // 在后台线程启动服务
-    spawn { server.serve() }
-
-    // 热更新证书和私钥，新连接将使用新证书
-    server.updateCert("./new_server.crt", "./new_server.key")
-    // 热更新 CA（双向认证场景）
-    server.updateCA("./new_ca.crt")
-}
-```
-
-### 11.3 双向 TLS 认证
-
-```cangjie
-import std.io.*
-import std.fs.*
-import stdx.net.http.*
-import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
-
-main() {
-    let pem = String.fromUtf8(readToEnd(File("./server.crt", Read)))
-    let key = String.fromUtf8(readToEnd(File("./server.key", Read)))
-    let caPem = String.fromUtf8(readToEnd(File("./ca.crt", Read)))
-
-    var tlsConfig = TlsServerConfig(
-        X509Certificate.decodeFromPem(pem),
-        PrivateKey.decodeFromPem(key)
-    )
-    // 要求客户端提供证书
-    tlsConfig.clientIdentityRequired = Required
-    tlsConfig.verifyMode = CustomCA(X509Certificate.decodeFromPem(caPem))
-
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(8443)
-        .tlsConfig(tlsConfig)
-        .build()
-
-    server.distributor.register("/secure", {
-        ctx =>
-        // 获取客户端证书信息
-        let cert = ctx.clientCertificate
-        ctx.responseBuilder.body("Mutual TLS OK")
-    })
-
-    server.serve()
-}
-```
-
----
-
-## 12. HTTP/2 Server Push
-
-仅用于 HTTP/2 协议，允许服务端主动推送资源给客户端：
-
-```cangjie
-import std.io.*
-import std.fs.*
-import stdx.net.http.*
-import stdx.net.tls.*
-import stdx.crypto.x509.{X509Certificate, PrivateKey}
-
-main() {
-    let pem = String.fromUtf8(readToEnd(File("./server.crt", Read)))
-    let key = String.fromUtf8(readToEnd(File("./server.key", Read)))
-    var tlsConfig = TlsServerConfig(
-        X509Certificate.decodeFromPem(pem),
-        PrivateKey.decodeFromPem(key)
-    )
-    tlsConfig.supportedAlpnProtocols = ["h2"]
-
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(8443)
-        .tlsConfig(tlsConfig)
-        .build()
-
-    // 主请求 handler：推送关联资源
-    server.distributor.register("/index.html", {
-        ctx =>
-        let pusher = HttpResponsePusher.getPusher(ctx)
-        match (pusher) {
-            case Some(p) =>
-                // 主动推送 CSS 资源给客户端
-                p.push("/style.css", "GET", ctx.request.headers)
-            case None => ()
-        }
-        ctx.responseBuilder.body("<html><link rel='stylesheet' href='/style.css'></html>")
-    })
-
-    // 被推送资源的 handler
-    server.distributor.register("/style.css", {
-        ctx =>
-        ctx.responseBuilder
-            .header("Content-Type", "text/css")
-            .body("body { color: red; }")
-    })
-
-    server.serve()
-}
-```
-
----
-
-## 13. 日志
+## 11. 日志
 
 ```cangjie
 import stdx.log.*
@@ -588,7 +422,7 @@ main() {
 
 ---
 
-## 14. 后台启动与优雅关闭
+## 12. 后台启动与优雅关闭
 
 `serve()` 是阻塞调用，可在新线程中启动：
 
@@ -623,7 +457,7 @@ main() {
 
 ---
 
-## 15. Gzip 压缩响应
+## 13. Gzip 压缩响应
 
 ```cangjie
 import stdx.compress.zlib.*
@@ -652,7 +486,7 @@ main() {
 
 ---
 
-## 16. 异常类型
+## 14. 异常类型
 
 | 异常 | 说明 |
 |------|------|
@@ -663,7 +497,7 @@ main() {
 
 ---
 
-## 17. 关键规则速查
+## 15. 关键规则速查
 
 | 规则 | 说明 |
 |------|------|
@@ -672,8 +506,7 @@ main() {
 | 阻塞调用 | `server.serve()` 阻塞当前线程；需后台运行时用 `spawn { server.serve() }` |
 | 获取实际端口 | 端口设为 0 时，`server.port` 获取系统分配的实际端口 |
 | 路由注册时机 | 默认分发器非线程安全，只能在 `serve()` 之前注册 |
-| HTTP/2 | 需 TLS + ALPN `h2` 配置；握手失败自动回退 HTTP/1.1 |
 | 日志 | `server.logger.level = LogLevel.DEBUG` 开启调试日志 |
 | 优雅关闭 | `closeGracefully()` 等待进行中请求完成；`close()` 立即关闭 |
-| 证书热更新 | `updateCert()` / `updateCA()` 更新后新连接使用新证书 |
 | Handler 安全 | Handler 中应对 Host 请求头进行合法性校验，防止 DNS 重绑定攻击 |
+| HTTPS/TLS | HTTPS 配置、证书热更新、双向认证、HTTP/2 Server Push 等，详见 `cangjie-https-server` Skill |

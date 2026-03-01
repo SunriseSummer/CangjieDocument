@@ -1,6 +1,6 @@
 ---
 name: cangjie-http-client
-description: "仓颉语言 HTTP 客户端编程。当需要了解仓颉语言的HTTP客户端开发，包括 ClientBuilder 配置、GET/POST/PUT/DELETE 快捷请求、HttpRequestBuilder 自定义请求、响应读取与处理、Cookie 管理（CookieJar）、代理配置、连接池、自动重定向、分块上传与 Trailer、HTTPS/TLS 客户端配置、HTTP/2 Server Push 接收、请求级超时等特性时，应使用此 Skill。"
+description: "仓颉语言 HTTP 客户端编程。当需要了解仓颉语言的HTTP客户端开发，包括 ClientBuilder 配置、GET/POST/PUT/DELETE 快捷请求、HttpRequestBuilder 自定义请求、响应读取与处理、Cookie 管理（CookieJar）、代理配置、连接池、自动重定向、分块上传与 Trailer、请求级超时等特性时，应使用此 Skill。HTTPS/TLS 相关内容请参阅 cangjie-https-client Skill。"
 ---
 
 # 仓颉语言 HTTP 客户端编程 Skill
@@ -9,9 +9,8 @@ description: "仓颉语言 HTTP 客户端编程。当需要了解仓颉语言的
 
 - 依赖包 `stdx.net.http`，关于扩展标准库 `stdx` 的配置用法，请参阅 `cangjie-stdx` Skill
 - 支持 HTTP/1.0、1.1、2.0（RFC 9110/9112/9113/9218/7541）
-- HTTP/2 需 TLS + ALPN `h2` 配置；如果 HTTP/2 握手失败，自动回退 HTTP/1.1
-- 依赖 OpenSSL 3（libssl + libcrypto），使用前需安装
 - 核心模式：`ClientBuilder` 构建 → `Client` 发送请求 → 读取响应 → `close()` 释放
+- HTTPS/TLS 配置、证书验证、HTTP/2 ALPN、Server Push 接收等内容，请参阅 `cangjie-https-client` Skill
 
 ---
 
@@ -47,7 +46,7 @@ main() {
 | 方法 | 签名 | 说明 |
 |------|------|------|
 | `build` | `build(): Client` | 构建 Client 实例 |
-| `tlsConfig` | `tlsConfig(TlsClientConfig): ClientBuilder` | TLS 配置（启用 HTTPS） |
+| `tlsConfig` | `tlsConfig(TlsClientConfig): ClientBuilder` | TLS 配置（启用 HTTPS，详见 `cangjie-https-client` Skill） |
 | `httpProxy` | `httpProxy(String): ClientBuilder` | HTTP 代理（格式：`"http://host:port"`） |
 | `httpsProxy` | `httpsProxy(String): ClientBuilder` | HTTPS 代理 |
 | `noProxy` | `noProxy(): ClientBuilder` | 不使用代理（忽略环境变量） |
@@ -439,94 +438,7 @@ class FileBody <: InputStream {
 
 ---
 
-## 10. HTTPS 客户端
-
-### 10.1 TrustAll 模式（快速测试）
-
-> **⚠️ 警告**：`TrustAll` 模式跳过证书验证，**仅限开发测试环境使用**。
-
-```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
-import std.io.StringReader
-
-main() {
-    var tlsConfig = TlsClientConfig()
-    tlsConfig.verifyMode = TrustAll
-
-    let client = ClientBuilder()
-        .tlsConfig(tlsConfig)
-        .build()
-
-    let resp = client.get("https://127.0.0.1:8443/api")
-    println(StringReader(resp.body).readToEnd())
-
-    client.close()
-}
-```
-
-### 10.2 自定义 CA 证书（生产环境）
-
-```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
-import stdx.crypto.x509.X509Certificate
-import std.io.*
-import std.fs.*
-
-main() {
-    // 加载自定义 CA 证书
-    let caPem = String.fromUtf8(readToEnd(File("./ca.crt", Read)))
-    let caCerts = X509Certificate.decodeFromPem(caPem)
-
-    var tlsConfig = TlsClientConfig()
-    tlsConfig.verifyMode = CustomCA(caCerts)
-
-    let client = ClientBuilder()
-        .tlsConfig(tlsConfig)
-        .build()
-
-    let resp = client.get("https://myserver.example.com/api")
-    println(StringReader(resp.body).readToEnd())
-
-    client.close()
-}
-```
-
-### 10.3 启用 HTTP/2
-
-```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
-import std.io.StringReader
-
-main() {
-    var tlsConfig = TlsClientConfig()
-    tlsConfig.verifyMode = TrustAll
-    tlsConfig.alpnProtocolsList = ["h2"]   // 协商 HTTP/2
-
-    let client = ClientBuilder()
-        .tlsConfig(tlsConfig)
-        .build()
-
-    let resp = client.get("https://127.0.0.1:8443/api")
-    println(StringReader(resp.body).readToEnd())
-
-    client.close()
-}
-```
-
-### 10.4 TLS 验证模式说明
-
-| 模式 | 说明 | 适用场景 |
-|------|------|----------|
-| `Default` | 使用系统 CA 验证证书 | 生产环境（默认） |
-| `CustomCA(certs)` | 使用自定义 CA 列表验证 | 自签名证书或私有 CA |
-| `TrustAll` | 信任所有证书，不验证 | **仅限开发测试** |
-
----
-
-## 11. 自定义 TCP 连接
+## 10. 自定义 TCP 连接
 
 ```cangjie
 import std.net.{TcpSocket, SocketAddress}
@@ -554,48 +466,7 @@ main() {
 
 ---
 
-## 12. HTTP/2 Server Push 接收
-
-```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
-import std.io.*
-import std.fs.*
-import stdx.crypto.x509.X509Certificate
-import std.collection.ArrayList
-
-main() {
-    let pem = String.fromUtf8(readToEnd(File("./ca.crt", Read)))
-    var tlsConfig = TlsClientConfig()
-    tlsConfig.verifyMode = CustomCA(X509Certificate.decodeFromPem(pem))
-    tlsConfig.alpnProtocolsList = ["h2"]
-
-    let client = ClientBuilder()
-        .tlsConfig(tlsConfig)
-        .enablePush(true)
-        .build()
-
-    let resp = client.get("https://127.0.0.1:8443/index.html")
-    println("Main response: ${resp.status}")
-
-    // 获取服务端推送的响应
-    let pushResponses: Option<ArrayList<HttpResponse>> = resp.getPush()
-    match (pushResponses) {
-        case Some(pushList) =>
-            for (pushResp in pushList) {
-                println("Pushed: ${pushResp.status}")
-            }
-        case None =>
-            println("Server push not enabled")
-    }
-
-    client.close()
-}
-```
-
----
-
-## 13. 日志
+## 11. 日志
 
 ```cangjie
 import stdx.log.*
@@ -614,7 +485,7 @@ main() {
 
 ---
 
-## 14. 异常类型
+## 12. 异常类型
 
 | 异常 | 说明 |
 |------|------|
@@ -623,11 +494,10 @@ main() {
 | `HttpStatusException` | 响应状态异常 |
 | `ConnectionException` | TCP 连接异常（读数据时对端已关闭） |
 | `UrlSyntaxException` | URL 格式错误 |
-| `TlsException` | TLS 连接建立或通信异常 |
 
 ---
 
-## 15. 关键规则速查
+## 13. 关键规则速查
 
 | 规则 | 说明 |
 |------|------|
@@ -638,8 +508,7 @@ main() {
 | Content-Length | 使用 `String` / `Array<UInt8>` 设置 body 时自动补充；使用自定义 `InputStream` 时需手动设置 |
 | 自动重定向 | 默认启用，304 状态码不重定向 |
 | Cookie 管理 | 默认启用 `CookieJar`，自动处理 `Set-Cookie` / `Cookie` 头 |
-| HTTPS 快速测试 | `tlsConfig.verifyMode = TrustAll`（**仅测试用**） |
-| HTTP/2 | 需 TLS + `alpnProtocolsList = ["h2"]`；握手失败自动回退 HTTP/1.1 |
 | 代理 | 默认使用环境变量 `http_proxy` / `https_proxy`；`noProxy()` 禁用 |
 | TRACE 请求 | 协议规定 TRACE 请求不能携带 body |
 | 请求级超时 | `HttpRequestBuilder.readTimeout()` / `writeTimeout()` 覆盖 Client 级别设置 |
+| HTTPS/TLS | HTTPS 配置、证书验证、HTTP/2 启用、Server Push 等，详见 `cangjie-https-client` Skill |
