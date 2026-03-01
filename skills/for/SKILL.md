@@ -118,9 +118,12 @@ for ((x, y) in points) {
 - HashMap 迭代天然使用元组解构：
 ```cangjie
 import std.collection.*
-let map = HashMap<String, Int64>([("a", 1), ("b", 2)])
-for ((key, value) in map) {
-    println("${key}: ${value}")
+
+main() {
+    let map = HashMap<String, Int64>([("a", 1), ("b", 2)])
+    for ((key, value) in map) {
+        println("${key}: ${value}")
+    }
 }
 ```
 
@@ -152,10 +155,20 @@ for (i in 0..100) {
 ```
 
 ### 4.4 String 迭代
-- String 实现 `Iterable<Rune>`，逐字符迭代：
+
+**注意** String 只实现了 `Iterable<Byte>`，**逐字节而不是逐字符**迭代：
+
 ```cangjie
-for (ch in "仓颉ABC") {
-    println(ch)  // 逐个输出：仓、颉、A、B、C
+for (ch in "Hi仓颉") {
+    println(ch)  // 逐个输出：72 105 228 187 147 233 162 137
+}
+```
+
+如果需要逐字符（Rune）迭代，可以先调用 `toRuneArray()` 转为字符数组后再使用：
+
+```cangjie
+for (ch in "Hi仓颉".toRuneArray()) {
+    println(ch)  // 逐个输出：H i 仓 颉
 }
 ```
 
