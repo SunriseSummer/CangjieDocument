@@ -1,6 +1,6 @@
 ---
 name: cangjie-stdx
-description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 各包的功能以及各模块的使用示例时，应使用此 Skill。项目配置与构建运行（含不同平台和静/动态依赖）的详细指导请使用 cangjie-stdx-config Skill。"
+description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 各包的功能以及各模块的使用示例时，应使用此 Skill。"
 ---
 
 # 仓颉扩展标准库（stdx）使用指南
