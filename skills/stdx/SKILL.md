@@ -1,22 +1,224 @@
 ---
 name: cangjie-stdx
-description: "仓颉扩展标准库（stdx）能力查询入口与项目配置指南。当需要了解 stdx 的下载配置与构建运行（含不同平台和静/动态依赖）、或需要快速查询 stdx 各包的接口、类型和函数时，应使用此 Skill。HTTP/JSON/TLS/WebSocket 等核心包的详细用法，请参考对应的细分 Skill。"
+description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 各包的功能、项目配置与构建运行（含不同平台和静/动态依赖）、以及各模块的使用示例时，应使用此 Skill。"
 ---
 
-# 仓颉扩展标准库（stdx）能力查询与项目配置指南
-
-> **定位**：本 Skill 是 stdx 的**能力查询入口**与**项目配置指南**。各核心包（HTTP、JSON、TLS、WebSocket 等）已有独立细分 Skill 提供详细使用指导，本文不重复，仅以表格速查各包的接口、类型和函数。
+# 仓颉扩展标准库（stdx）使用指南
 
 ---
 
-## 1. stdx 项目配置、构建与运行
+## 1. stdx 概述
 
-### 1.1 stdx 与标准库的区别
+### 1.1 简介
+
+stdx 是仓颉编程语言的**扩展标准库**（非核心标准库，但由官方提供的附加功能集），是仓颉语言生态的重要组成部分，为仓颉补充了更多实用能力，涵盖面向切面编程、压缩和解压缩、安全加密、消息摘要、非对称加解密和签名、数字证书、编解码（Base64/Hex/JSON/URL）、网络通信（HTTP/TLS）、日志、序列化、模糊测试、参数化测试数据加载等多个领域。
+
+### 1.2 与标准库的区别
 
 - **标准库（std）**：随 SDK 一起发布，开箱即用。
 - **扩展标准库（stdx）**：需要**单独下载**并配置，不随 SDK 自带。
 
-### 1.2 下载 stdx
+### 1.3 版本与平台支持
+
+- 支持 Ubuntu/macOS（x86_64, aarch64），Windows 部分功能受限。
+- 需要 Cangjie SDK 1.0.0 及以上版本。
+- crypto 和 net 模块依赖 **OpenSSL 3**。
+- stdx 后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性。
+
+---
+
+## 2. stdx 包功能详解
+
+stdx 包含以下 18 个包，覆盖网络通信、编解码、安全加密、日志、测试等多个领域：
+
+| 包名 | 功能 | 导入语句 |
+|------|------|----------|
+| `stdx.net.http` | HTTP 客户端与服务端 | `import stdx.net.http.*` |
+| `stdx.net.tls` | TLS 安全传输 | `import stdx.net.tls.*` |
+| `stdx.encoding.json` | JSON 解析与构建 | `import stdx.encoding.json.*` |
+| `stdx.encoding.json.stream` | JSON 流式序列化 | `import stdx.encoding.json.stream.*` |
+| `stdx.encoding.base64` | Base64 编解码 | `import stdx.encoding.base64.*` |
+| `stdx.encoding.hex` | 十六进制编解码 | `import stdx.encoding.hex.*` |
+| `stdx.encoding.url` | URL 解析与编解码 | `import stdx.encoding.url.*` |
+| `stdx.crypto.crypto` | 对称加密与安全随机数 | `import stdx.crypto.crypto.*` |
+| `stdx.crypto.digest` | 消息摘要算法 | `import stdx.crypto.digest.*` |
+| `stdx.crypto.keys` | 非对称加密与签名 | `import stdx.crypto.keys.*` |
+| `stdx.crypto.x509` | 数字证书处理 | `import stdx.crypto.x509.*` |
+| `stdx.log` | 抽象日志接口 | `import stdx.log.*` |
+| `stdx.logger` | 日志实现 | `import stdx.logger.*` |
+| `stdx.serialization.serialization` | 序列化框架 | `import stdx.serialization.serialization.*` |
+| `stdx.compress.zlib` | 压缩与解压缩 | `import stdx.compress.zlib.*` |
+| `stdx.aspectCJ` | 面向切面编程 | `import stdx.aspectCJ.*` |
+| `stdx.fuzz.fuzz` | 模糊测试 | `import stdx.fuzz.fuzz.*` |
+| `stdx.unittest.data` | 参数化测试数据 | `import stdx.unittest.data.*` |
+
+### 2.1 stdx.net.http — HTTP 客户端与服务端
+
+提供 HTTP/1.1、HTTP/2 协议的 Server 端和 Client 端完整实现，同时支持 WebSocket 协议。主要能力包括：
+
+- **服务端**：通过 `ServerBuilder` 构建 HTTP 服务器，支持路由注册、请求处理器（`HttpRequestHandler`）、请求分发（`HttpRequestDistributor`）、文件上传下载（`FileHandler`）、分块传输编码、HTTPS（集成 TLS）等。
+- **客户端**：通过 `ClientBuilder` 构建 HTTP 客户端，支持 GET/POST/PUT/DELETE 等方法、自动重定向、Cookie 管理（`CookieJar`）、HTTP 代理、连接超时配置等。
+- **WebSocket**：支持客户端和服务端的 WebSocket 升级，提供文本帧、二进制帧、Ping/Pong 控制帧的收发能力。
+- **HTTP/2 特性**：支持 Server Push（`HttpResponsePusher`）和多路复用。
+
+### 2.2 stdx.net.tls — TLS 安全传输
+
+提供 TLS 1.2 和 TLS 1.3 安全加密的网络通信能力，包括：
+
+- 创建 TLS 服务器和客户端（`TlsSocket`），基于协议进行 TLS 握手。
+- 收发加密数据，支持双向认证。
+- 支持 TLS 会话恢复（`TlsSessionContext`），减少重复握手开销。
+- 灵活的证书验证模式（`CertificateVerifyMode`）和签名算法配置。
+- 客户端和服务端 TLS 配置通过 `TlsClientConfig` 和 `TlsServerConfig` 结构体指定。
+- 通常通过 HTTP 模块的 `tlsConfig()` 方法集成使用，实现 HTTPS。
+
+### 2.3 stdx.encoding.json — JSON 解析与构建
+
+用于 JSON 数据的处理，实现 String、JsonValue、DataModel 之间的相互转换。主要能力包括：
+
+- **解析**：通过 `JsonValue.fromStr(str)` 将 JSON 字符串解析为 `JsonValue` 对象树。
+- **构建**：使用 `JsonObject`、`JsonArray`、`JsonString`、`JsonInt`、`JsonFloat`、`JsonBool`、`JsonNull` 等类型构建 JSON 结构。
+- **类型判断**：通过 `.kind()` 方法获取 `JsonKind` 枚举，结合 `match` 表达式处理不同 JSON 类型。
+- **与序列化框架集成**：通过 `ToJson` 接口实现 JsonValue 与 `DataModel`（序列化中间层）之间的互转，支持 `DataModel.fromJson(jv)` 和 `dm.toJson()`。
+- **格式化输出**：`toString()` 输出紧凑格式，`toJsonString()` 输出格式化的 JSON 字符串。
+
+### 2.4 stdx.encoding.json.stream — JSON 流式序列化
+
+提供仓颉对象和 JSON 数据流之间的互相转换能力，适合大数据量场景和自定义类型的 JSON 序列化：
+
+- **JsonWriter**：将仓颉对象序列化为 JSON 数据流，支持链式调用 `.startObject()` `.writeName()` `.writeValue()` `.endObject()` 等方法。支持的值类型包括基本类型、Array、ArrayList、HashMap、Option、BigInt、Decimal 等。
+- **JsonReader**：从 JSON 数据流反序列化为仓颉对象，通过 `.startObject()` `.readName()` `.readValue<T>()` `.peek()` `.skip()` 等方法逐步读取。
+- **自定义类型**：实现 `JsonSerializable` 接口（`toJson` 方法）和 `JsonDeserializable<T>` 接口（`fromJson` 静态方法），即可支持自定义类型与 JSON 的互转。
+- **格式控制**：通过 `WriteConfig` 控制输出格式（紧凑或美化）。
+
+### 2.5 stdx.encoding.base64 — Base64 编解码
+
+提供 Base64 编码与解码功能，将二进制数据转换为由 64 个可打印字符（A-Z、a-z、0-9、+、/）组成的文本格式，适用于在文本协议中安全传输二进制数据。
+
+- `toBase64String(data: Array<Byte>): String` — 将字节数组编码为 Base64 字符串。
+- `fromBase64String(str: String): Array<Byte>` — 将 Base64 字符串解码为字节数组。
+
+### 2.6 stdx.encoding.hex — 十六进制编解码
+
+提供十六进制（Hex）编码与解码功能，使用 16 个字符（0-9、A-F，大小写不敏感）表示二进制数据。
+
+- `toHexString(data: Array<Byte>): String` — 将字节数组编码为十六进制字符串。
+- `fromHexString(str: String): Array<Byte>` — 将十六进制字符串解码为字节数组。
+
+### 2.7 stdx.encoding.url — URL 解析与编解码
+
+提供 URL 相关的能力，包括解析 URL 的各个组件（scheme、host、port、path、query、fragment）、对 URL 进行编解码、合并 URL 或路径等。
+
+- **URL 类**：通过 `URL.parse(rawUrl)` 解析 URL 字符串，或通过构造函数 `URL(scheme!, hostName!, path!)` 构建 URL 对象。
+- **Form 类**：用于处理 URL 查询参数（key-value 形式），支持 `.add(key, value)` 和 `.get(key)` 操作。
+- **UserInfo 类**：表示 URL 中的用户信息（用户名和密码）。
+- 对包含非 ASCII 字符的 URL 进行百分号编码。
+
+### 2.8 stdx.crypto.crypto — 对称加密与安全随机数
+
+提供安全加密能力，包括：
+
+- **SecureRandom**：密码学安全的随机数生成器，可生成安全随机字节序列。构造函数 `SecureRandom(priv!: Bool = false)` 中 `priv` 参数指定是否使用私有随机源。
+- **SM4**：中国国密标准 SM4 对称加密/解密算法，支持 ECB、CBC、CTR、GCM 等操作模式（`OperationMode`），以及 PKCS7Padding、NoPadding 等填充模式（`PaddingMode`）。
+
+### 2.9 stdx.crypto.digest — 消息摘要算法
+
+提供常用的消息摘要（哈希）算法，支持对任意数据计算固定长度的摘要值：
+
+- **MD5**：128 位摘要（注意：已不推荐用于安全场景）。
+- **SHA 系列**：SHA1（160 位）、SHA224、SHA256（256 位）、SHA384、SHA512（512 位）。
+- **SM3**：中国国密标准哈希算法，256 位摘要。
+- **HMAC**：基于哈希的消息认证码，通过 `HMAC(key, algorithm)` 构建，支持所有上述哈希算法。
+- 所有算法通用方法：`write(Array<Byte>)` 输入数据、`finish(): Array<Byte>` 获取摘要、`reset()` 重置状态。
+
+### 2.10 stdx.crypto.keys — 非对称加密与签名
+
+提供非对称加密和数字签名算法：
+
+- **RSA**：`RSAPrivateKey(bits)` / `RSAPublicKey(pri)` — 支持公钥加密/私钥解密、私钥签名/公钥验签，支持 OAEP 和 PSS 填充模式。
+- **SM2**：`SM2PrivateKey()` / `SM2PublicKey(pri)` — 中国国密非对称加密算法。
+- **ECDSA**：`ECDSAPrivateKey(curve)` / `ECDSAPublicKey(pri)` — 椭圆曲线数字签名，支持 P224、P256、P384、P521 等曲线。
+- 所有密钥类型支持 PEM 格式的编解码。
+
+### 2.11 stdx.crypto.x509 — 数字证书处理
+
+提供 X509 数字证书的完整处理能力：
+
+- **证书解析**：从 PEM 或 DER 格式解析证书（`X509Certificate.decodeFromPem()` / `.decodeFromDer()`）。
+- **证书验证**：验证证书签名和有效期，支持证书链验证。
+- **证书创建**：创建自签名证书、构建证书链。
+- **证书签名请求（CSR）**：通过 `X509CertificateRequest` 创建和解析 CSR。
+- **证书信息**：访问证书的主体（`X509Name`）、颁发者、序列号、有效期、密钥用途（`KeyUsage`/`ExtKeyUsage`）等。
+
+### 2.12 stdx.log — 抽象日志接口
+
+提供一个**抽象**的日志 API，不绑定具体的日志实现，让库开发者可以在不依赖特定日志框架的情况下输出日志：
+
+- **Logger**（抽象类）：提供 `.trace()` `.debug()` `.info()` `.warn()` `.error()` `.fatal()` 等日志方法，每个方法接受消息字符串和可选的键值属性 `Attr`（类型为 `(String, LogValue)` 元组）。
+- **日志级别**：`LogLevel.TRACE` < `DEBUG` < `INFO` < `WARN` < `ERROR` < `FATAL` < `OFF`。
+- **全局 Logger**：通过 `setGlobalLogger(logger)` 设置，通过 `getGlobalLogger(attrs)` 获取（可附加属性）。
+- **惰性求值**：支持 `logger.trace({=> "expensive: ${compute()}"})` 形式，仅在日志级别启用时才计算消息内容。
+- **NoopLogger**：空实现，所有方法不执行任何操作。
+
+### 2.13 stdx.logger — 日志实现
+
+提供三种内置的 Logger 实现，均接受 `OutputStream` 参数用于指定输出目标：
+
+- **SimpleLogger**：传统文本格式 — `2025-04-15T10:30:00Z INFO msg key=value`
+- **TextLogger**：键值对文本格式 — `time=... level=INFO msg="..." key=value`
+- **JsonLogger**：JSON 格式 — `{"time":"...","level":"INFO","msg":"...","key":"value"}`
+
+### 2.14 stdx.serialization.serialization — 序列化框架
+
+提供通用的序列化与反序列化能力，通过中间层 `DataModel` 实现仓颉对象与各种数据格式的互转：
+
+- **Serializable\<T\> 接口**：自定义类型实现 `serialize(): DataModel` 和 `static deserialize(DataModel): T` 方法即可支持序列化。
+- **DataModel 类型体系**：`DataModelBool`、`DataModelInt`、`DataModelFloat`、`DataModelString`、`DataModelNull`（基本类型）、`DataModelSeq`（序列/数组）、`DataModelStruct`（结构体/对象）。
+- **Field**：`DataModelStruct` 的字段单元，通过 `field<T>(name, data)` 辅助函数创建。
+- 与 JSON 包联动：`DataModel.fromJson(jsonValue)` 和 `dataModel.toJson()` 实现与 JSON 的互转。
+
+### 2.15 stdx.compress.zlib — 压缩与解压缩
+
+提供基于 deflate 算法的数据压缩与解压缩功能，支持 deflate-raw 和 gzip 两种格式，采用流式 API：
+
+- **CompressInputStream / CompressOutputStream**：压缩流，将数据压缩后写入或读出。
+- **DecompressInputStream / DecompressOutputStream**：解压流，将压缩数据解压后写入或读出。
+- **压缩级别**（`CompressLevel`）：`DefaultCompression`（默认平衡）等。
+- **数据格式**（`WrapType`）：`DeflateFormat`（deflate-raw 格式）、`GzipFormat`（gzip 格式）。
+
+### 2.16 stdx.aspectCJ — 面向切面编程（AOP）
+
+提供仓颉中面向切面编程（Aspect Oriented Programming）相关的注解能力，通过编译器插件在编译期将切面逻辑织入目标函数：
+
+- **@InsertAtEntry**：在目标函数入口插入指定函数调用。
+- **@InsertAtExit**：在目标函数出口插入指定函数调用。
+- **@ReplaceFuncBody**：将目标函数体替换为指定函数调用。
+
+需要编译器插件 `libcollect-aspects.so`（收集阶段）和 `libwave-aspects.so`（织入阶段）配合使用。有泛型、可见性、参数类型匹配等约束条件。
+
+### 2.17 stdx.fuzz.fuzz — 模糊测试
+
+提供基于覆盖率反馈的模糊测试（Fuzzing）引擎，用于自动化发现 API 中的潜在缺陷：
+
+- **Fuzzer**：模糊测试引擎，由 `FuzzerBuilder` 构建。
+- **FuzzDataProvider**：将变异的字节流转换为标准仓颉类型（Int64、String、Bool、Array\<Byte\> 等），方便编写测试代码。
+- **DebugDataProvider**：带调试信息的数据提供者。
+- 仅支持 Linux 和 macOS，依赖 LLVM 的 `libclang_rt.fuzzer_no_main.a`。
+
+### 2.18 stdx.unittest.data — 参数化测试数据加载
+
+为参数化单元测试提供外部数据源加载能力，支持从文件加载测试数据并自动反序列化为仓颉对象：
+
+- `json<T>(filePath)` — 从 JSON 文件加载测试数据。
+- `csv<T>(filePath, ...)` — 从 CSV 文件加载测试数据（支持自定义分隔符、引号、注释字符等）。
+- `tsv<T>(filePath, ...)` — 从 TSV 文件加载测试数据。
+- 类型 T 需实现 `Serializable` 接口。
+
+---
+
+## 3. 项目配置、构建与运行
+
+### 3.1 下载 stdx
 
 **发行版下载页面**：<https://gitcode.com/Cangjie/cangjie_stdx/releases>
 
@@ -42,7 +244,7 @@ stdx/
 
 动态库和静态库**二选一**使用。
 
-### 1.3 获取系统架构信息
+### 3.2 获取系统架构信息
 
 在配置前，先确认编译器目标架构：
 
@@ -55,9 +257,9 @@ cjc -v
 
 其中 `Target` 后的字符串（如 `x86_64-unknown-linux-gnu`）即为后续配置所需的架构标识。
 
-### 1.4 使用 cjpm 构建（推荐）
+### 3.3 使用 cjpm 构建（推荐）
 
-#### 1.4.1 动态库配置
+#### 3.3.1 动态库配置
 
 在项目 `cjpm.toml` 中添加 `bin-dependencies` 配置，`path-option` 指向 `dynamic/stdx` 目录：
 
@@ -108,7 +310,7 @@ cjpm run
 | macOS | `DYLD_LIBRARY_PATH` | `export DYLD_LIBRARY_PATH=/path/to/stdx/dynamic/stdx:$DYLD_LIBRARY_PATH` |
 | Windows | `PATH` | 将 stdx 动态库目录添加到 `PATH` 中 |
 
-#### 1.4.2 静态库配置
+#### 3.3.2 静态库配置
 
 将 `path-option` 指向 `static/stdx` 目录。使用 crypto 和 net 包的静态库时，由于依赖系统符号，需要额外添加 `compile-option`：
 
@@ -162,7 +364,7 @@ cjpm build
 cjpm run
 ```
 
-#### 1.4.3 静态库与动态库选择指南
+#### 3.3.3 静态库与动态库选择指南
 
 | 维度 | 动态库 | 静态库 |
 |------|--------|--------|
@@ -170,7 +372,7 @@ cjpm run
 | 部署便利性 | 需随产物分发动态库或配置搜索路径 | 单文件部署，无外部依赖 |
 | 额外配置 | 运行前设置 `LD_LIBRARY_PATH` 等 | Linux 需 `-ldl`，Windows 需 `-lcrypt32`（仅 crypto/net） |
 
-### 1.5 使用 cjc 直接编译
+### 3.4 使用 cjc 直接编译
 
 如果不使用 cjpm，可通过 `cjc` 命令直接编译，需手动指定库路径和链接选项。
 
@@ -230,7 +432,7 @@ export DYLD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$DYLD_LIBRARY_PATH
 # Windows — 将 stdx 路径添加到 PATH
 ```
 
-### 1.6 包依赖关系
+### 3.5 包依赖关系
 
 使用 cjc 直接编译时需注意包的依赖关系。使用 cjpm 则无需关注。
 
@@ -255,7 +457,7 @@ export DYLD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$DYLD_LIBRARY_PATH
 | `stdx.net.tls` | `stdx.crypto.x509`、`stdx.encoding.hex`、`stdx.crypto.crypto`、`stdx.crypto.digest`、`stdx.encoding.base64` |
 | `stdx.net.http` | `stdx.net.tls`、`stdx.logger`、`stdx.log`、`stdx.encoding.url`、`stdx.encoding.json.stream`、`stdx.crypto.x509`、`stdx.encoding.hex`、`stdx.crypto.crypto`、`stdx.crypto.digest`、`stdx.encoding.base64` |
 
-### 1.7 OpenSSL 依赖
+### 3.6 OpenSSL 依赖
 
 crypto 和 net 模块依赖 **OpenSSL 3** 库，需确保系统已安装：
 
@@ -265,7 +467,7 @@ crypto 和 net 模块依赖 **OpenSSL 3** 库，需确保系统已安装：
 | macOS | `brew install openssl@3` |
 | Windows | 下载 OpenSSL 3 安装包并配置 PATH |
 
-### 1.8 从源码构建 stdx
+### 3.7 从源码构建 stdx
 
 ```shell
 git clone https://gitcode.com/Cangjie/cangjie_stdx.git
@@ -276,579 +478,522 @@ python3 build.py build -t release --target-lib=<openssl lib 路径>  # 如 --tar
 python3 build.py install     # 产物输出到 target 目录
 ```
 
-### 1.9 导入使用
+---
 
-```cangjie
-import stdx.net.http.*           // HTTP 包
-import stdx.encoding.json.*     // JSON 包
-import stdx.encoding.base64.*   // Base64 包
-import stdx.log.*               // 日志 API 包
-import stdx.crypto.digest.*     // 摘要算法包
-// 按需导入其他包...
+## 4. 完整示例
+
+### 4.1 HTTP 服务端 + 客户端
+
+**cjpm.toml 配置**（Linux x86_64 动态库）：
+
+```toml
+[package]
+  name = "http_demo"
+  version = "1.0.0"
+  output-type = "executable"
+
+[dependencies]
+
+[target.x86_64-unknown-linux-gnu]
+  [target.x86_64-unknown-linux-gnu.bin-dependencies]
+    path-option = ["/path/to/stdx/dynamic/stdx"]
 ```
 
----
-
-## 2. stdx 包功能总表
-
-| 包名 | 功能 | 导入语句 |
-|------|------|----------|
-| `stdx.net.http` | HTTP/1.1、HTTP/2 客户端与服务端、WebSocket | `import stdx.net.http.*` |
-| `stdx.net.tls` | TLS 1.2/1.3 安全传输 | `import stdx.net.tls.*` |
-| `stdx.encoding.json` | JSON 解析、构建与转换 | `import stdx.encoding.json.*` |
-| `stdx.encoding.json.stream` | JSON 流式序列化与反序列化 | `import stdx.encoding.json.stream.*` |
-| `stdx.encoding.base64` | Base64 编码与解码 | `import stdx.encoding.base64.*` |
-| `stdx.encoding.hex` | 十六进制编码与解码 | `import stdx.encoding.hex.*` |
-| `stdx.encoding.url` | URL 解析与编解码 | `import stdx.encoding.url.*` |
-| `stdx.crypto.crypto` | 安全随机数、SM4 对称加密 | `import stdx.crypto.crypto.*` |
-| `stdx.crypto.digest` | MD5/SHA/SM3/HMAC 消息摘要 | `import stdx.crypto.digest.*` |
-| `stdx.crypto.keys` | RSA/SM2/ECDSA 非对称加密与签名 | `import stdx.crypto.keys.*` |
-| `stdx.crypto.x509` | X509 数字证书解析与验证 | `import stdx.crypto.x509.*` |
-| `stdx.log` | 抽象日志接口 | `import stdx.log.*` |
-| `stdx.logger` | SimpleLogger/TextLogger/JsonLogger 日志实现 | `import stdx.logger.*` |
-| `stdx.serialization.serialization` | 通用序列化/反序列化框架 | `import stdx.serialization.serialization.*` |
-| `stdx.compress.zlib` | zlib/gzip 压缩与解压缩 | `import stdx.compress.zlib.*` |
-| `stdx.aspectCJ` | 面向切面编程（AOP）注解 | `import stdx.aspectCJ.*` |
-| `stdx.fuzz.fuzz` | 覆盖率引导的模糊测试 | `import stdx.fuzz.fuzz.*` |
-| `stdx.unittest.data` | 参数化测试数据加载（JSON/CSV/TSV） | `import stdx.unittest.data.*` |
-
----
-
-## 3. stdx.net.http — HTTP 服务与客户端
-
-> 详细用法请参考 `cangjie-http` / `cangjie-websocket` Skill。
-
-### 3.1 接口
-
-| 接口 | 说明 |
-|------|------|
-| `HttpRequestHandler` | HTTP 请求处理器 |
-| `HttpRequestDistributor` | 请求分发器（路由） |
-| `CookieJar` | Cookie 存储管理 |
-| `ProtocolServiceFactory` | 协议服务工厂 |
-
-### 3.2 类
-
-| 类 | 构造 / 工厂方法 | 说明 |
-|------|----------------|------|
-| `ServerBuilder` | `ServerBuilder()` | 服务端构建器，链式调用 `.addr()` `.port()` `.build()` |
-| `Server` | 由 `ServerBuilder.build()` 创建 | HTTP 服务端，`.serve()` 启动、`.close()` / `.closeGracefully()` 关闭 |
-| `ClientBuilder` | `ClientBuilder()` | 客户端构建器，链式调用 `.readTimeout()` `.build()` |
-| `Client` | 由 `ClientBuilder.build()` 创建 | HTTP 客户端，`.get(url)` `.post(url, body)` `.send(req)` |
-| `HttpRequestBuilder` | `HttpRequestBuilder()` | 请求构建器，`.url()` `.method()` `.header()` `.body()` `.build()` |
-| `HttpRequest` | 由 Builder 或服务端接收 | HTTP 请求对象 |
-| `HttpResponseBuilder` | 由 `HttpContext.responseBuilder` 获取 | 响应构建器 |
-| `HttpResponse` | 由客户端请求返回 | HTTP 响应对象 |
-| `HttpContext` | 由服务端框架提供 | 请求上下文，含 `request` 和 `responseBuilder` |
-| `HttpHeaders` | `HttpHeaders()` | HTTP 头部管理 |
-| `Cookie` | `Cookie(name: String, value: String)` | Cookie 对象 |
-| `WebSocket` | `WebSocket.upgradeFromClient(...)` / `WebSocket.upgradeFromServer(...)` | WebSocket 连接 |
-| `WebSocketFrame` | 由 `WebSocket.read()` 返回 | WebSocket 帧 |
-| `FuncHandler` | `FuncHandler((HttpContext) -> Unit)` | 函数式请求处理器 |
-| `FileHandler` | `FileHandler(String, FileHandlerType)` | 文件上传/下载处理器 |
-| `RedirectHandler` | `RedirectHandler(String)` | 重定向处理器 |
-| `NotFoundHandler` | `NotFoundHandler()` | 404 处理器 |
-| `OptionsHandler` | `OptionsHandler()` | OPTIONS 请求处理器 |
-| `HttpResponsePusher` | 由 HTTP/2 服务端提供 | HTTP/2 Server Push |
-| `HttpResponseWriter` | 由框架提供 | 流式响应写入 |
-| `ProtocolService` | 由框架提供 | 协议服务实例 |
-
-### 3.3 枚举
-
-| 枚举 | 值 | 说明 |
-|------|------|------|
-| `Protocol` | `HTTP1_1`, `HTTP2` | HTTP 协议版本 |
-| `WebSocketFrameType` | `TextWebFrame`, `BinaryWebFrame`, `PingWebFrame`, `PongWebFrame`, `CloseWebFrame` | WebSocket 帧类型 |
-| `FileHandlerType` | `Upload`, `Download` | 文件处理类型 |
-
-### 3.4 结构体
-
-| 结构体 | 说明 |
-|--------|------|
-| `HttpStatusCode` | HTTP 状态码常量（如 `HttpStatusCode.OK`、`HttpStatusCode.NOT_FOUND`） |
-| `ServicePoolConfig` | 服务线程池配置 |
-| `TransportConfig` | 传输层配置 |
-
-### 3.5 异常
-
-| 异常 | 说明 |
-|------|------|
-| `HttpException` | HTTP 通用异常 |
-| `HttpStatusException` | HTTP 状态码异常 |
-| `HttpTimeoutException` | HTTP 超时异常 |
-| `ConnectionException` | 连接异常 |
-| `WebSocketException` | WebSocket 异常 |
-| `CoroutinePoolRejectException` | 协程池拒绝异常 |
-
-### 3.6 函数
-
-| 函数 | 原型 | 说明 |
-|------|------|------|
-| `upgrade` | `upgrade(...)` | WebSocket 升级辅助 |
-| `notFound` | `notFound(...)` | 返回 404 响应 |
-| `handleError` | `handleError(...)` | 错误处理辅助 |
-
----
-
-## 4. stdx.net.tls — TLS 安全传输
-
-> 详细用法请参考 `cangjie-tls` Skill。
-
-### 4.1 类
-
-| 类 | 工厂方法 | 说明 |
-|------|----------|------|
-| `TlsSocket` | `TlsSocket.client(socket, session?, clientConfig?)` / `TlsSocket.server(socket, sessionContext?, serverConfig)` | 加密套接字通信 |
-| `TlsSessionContext` | `TlsSessionContext.fromName(name: String)` | 服务端会话恢复上下文 |
-
-### 4.2 枚举
-
-| 枚举 | 值 | 说明 |
-|------|------|------|
-| `TlsVersion` | `TLS12`, `TLS13` | TLS 版本 |
-| `CertificateVerifyMode` | `Default`, `NoVerify`, `CustomVerify` 等 | 证书验证模式 |
-| `SignatureAlgorithm` | RSA/ECDSA/SM2 等 | 签名算法 |
-| `SignatureType` | 具体签名类型 | 签名类型 |
-| `SignatureSchemeType` | 签名方案类型 | 签名方案 |
-| `TlsClientIdentificationMode` | 客户端认证模式 | 是否要求客户端证书 |
-
-### 4.3 结构体
-
-| 结构体 | 构造方式 | 说明 |
-|--------|----------|------|
-| `TlsClientConfig` | `TlsClientConfig(...)` | 客户端 TLS 配置（CA 证书、验证模式等） |
-| `TlsServerConfig` | `TlsServerConfig(...)` | 服务端 TLS 配置（证书、私钥等） |
-| `CipherSuite` | — | 密码套件 |
-| `TlsSession` | — | TLS 会话信息（用于会话恢复） |
-
-### 4.4 异常
-
-| 异常 | 说明 |
-|------|------|
-| `TlsException` | TLS 通信异常 |
-
----
-
-## 5. stdx.encoding.json — JSON 解析与构建
-
-> 详细用法请参考 `cangjie-json` Skill。
-
-### 5.1 接口
-
-| 接口 | 说明 |
-|------|------|
-| `ToJson` | JsonValue 与 DataModel 之间的互转 |
-
-### 5.2 类
-
-| 类 | 构造函数 | 说明 |
-|------|----------|------|
-| `JsonValue` | `JsonValue.fromStr(s: String): JsonValue` | JSON 值基类，从字符串解析 |
-| `JsonObject` | `JsonObject()` / `JsonObject(map: HashMap<String, JsonValue>)` | JSON 对象，`.put(key, val)` `.get(key)` `operator[]` |
-| `JsonArray` | `JsonArray()` / `JsonArray(list: ArrayList<JsonValue>)` / `JsonArray(list: Array<JsonValue>)` | JSON 数组，`.add(val)` `.get(idx)` `operator[]` |
-| `JsonString` | `JsonString(value: String)` | JSON 字符串，`.getValue(): String` |
-| `JsonInt` | `JsonInt(value: Int64)` | JSON 整数，`.getValue(): Int64` |
-| `JsonFloat` | `JsonFloat(value: Float64)` | JSON 浮点数，`.getValue(): Float64` |
-| `JsonBool` | `JsonBool(value: Bool)` | JSON 布尔值，`.getValue(): Bool` |
-| `JsonNull` | `JsonNull()` | JSON null |
-
-### 5.3 枚举
-
-| 枚举 | 值 | 说明 |
-|------|------|------|
-| `JsonKind` | `JsObject`, `JsArray`, `JsString`, `JsInt`, `JsFloat`, `JsBool`, `JsNull` | JSON 值类型标识，通过 `.kind()` 获取 |
-
-### 5.4 异常
-
-| 异常 | 说明 |
-|------|------|
-| `JsonException` | JSON 解析/操作异常 |
-
----
-
-## 6. stdx.encoding.json.stream — JSON 流式序列化
-
-> 详细用法请参考 `cangjie-json` Skill。
-
-### 6.1 接口
-
-| 接口 | 关键方法 | 说明 |
-|------|----------|------|
-| `JsonSerializable` | `toJson(writer: JsonWriter): Unit` | 对象 → JSON 流 |
-| `JsonDeserializable<T>` | `static fromJson(reader: JsonReader): T` | JSON 流 → 对象 |
-
-### 6.2 类
-
-| 类 | 构造函数 | 关键方法 | 说明 |
-|------|----------|----------|------|
-| `JsonWriter` | `JsonWriter(out: OutputStream)` | `.startObject()` `.endObject()` `.startArray()` `.endArray()` `.writeName(String)` `.writeValue(...)` `.flush()` | JSON 流式写入 |
-| `JsonReader` | `JsonReader(inputStream: InputStream)` | `.startObject()` `.endObject()` `.startArray()` `.endArray()` `.readName()` `.readValue<T>()` `.peek()` `.skip()` | JSON 流式读取 |
-
-### 6.3 枚举
-
-| 枚举 | 值 | 说明 |
-|------|------|------|
-| `JsonToken` | `BeginArray`, `EndArray`, `BeginObject`, `EndObject`, `Name`, `Value`, `None` | JSON 流 Token 类型 |
-
-### 6.4 结构体
-
-| 结构体 | 说明 |
-|--------|------|
-| `WriteConfig` | 序列化格式控制（紧凑 / 美化），`WriteConfig.compact` / `WriteConfig.pretty` |
-
----
-
-## 7. stdx.encoding.base64 — Base64 编解码
-
-### 函数
-
-| 函数 | 原型 | 说明 |
-|------|------|------|
-| `toBase64String` | `toBase64String(data: Array<Byte>): String` | 字节数组 → Base64 字符串 |
-| `fromBase64String` | `fromBase64String(str: String): Array<Byte>` | Base64 字符串 → 字节数组 |
-
----
-
-## 8. stdx.encoding.hex — 十六进制编解码
-
-### 函数
-
-| 函数 | 原型 | 说明 |
-|------|------|------|
-| `toHexString` | `toHexString(data: Array<Byte>): String` | 字节数组 → 十六进制字符串 |
-| `fromHexString` | `fromHexString(str: String): Array<Byte>` | 十六进制字符串 → 字节数组 |
-
----
-
-## 9. stdx.encoding.url — URL 处理
-
-### 9.1 类
-
-| 类 | 构造函数 | 关键属性/方法 | 说明 |
-|------|----------|--------------|------|
-| `URL` | `URL(scheme!: String, hostName!: String, path!: String)` / `URL.parse(rawUrl: String): URL` | `.scheme` `.host` `.port` `.path` `.query` `.fragment` `.userInfo` | URL 解析与构建 |
-| `Form` | `Form()` / `Form(queryComponent: String)` | `.add(key, value)` `.get(key)` `.toString()` | URL 表单参数处理 |
-| `UserInfo` | `UserInfo()` / `UserInfo(userName: String)` / `UserInfo(userName: String, passWord: String)` | `.userName` `.passWord` | URL 用户信息 |
-
-### 9.2 异常
-
-| 异常 | 说明 |
-|------|------|
-| `UrlSyntaxException` | URL 格式错误 |
-
----
-
-## 10. stdx.crypto.digest — 消息摘要
-
-### 10.1 类
-
-| 类 | 构造函数 | 通用方法 | 说明 |
-|------|----------|----------|------|
-| `MD5` | `MD5()` | `update(Array<Byte>)` `finish(): Array<Byte>` `reset()` | MD5 摘要 |
-| `SHA1` | `SHA1()` | 同上 | SHA-1 摘要 |
-| `SHA224` | `SHA224()` | 同上 | SHA-224 摘要 |
-| `SHA256` | `SHA256()` | 同上 | SHA-256 摘要 |
-| `SHA384` | `SHA384()` | 同上 | SHA-384 摘要 |
-| `SHA512` | `SHA512()` | 同上 | SHA-512 摘要 |
-| `SM3` | `SM3()` | 同上 | 国密 SM3 摘要 |
-| `HMAC` | `HMAC(key: Array<Byte>, digest: () -> Digest)` / `HMAC(key: Array<Byte>, algorithm: HashType)` | 同上 | HMAC 消息认证码 |
-
-### 10.2 结构体
-
-| 结构体 | 说明 |
-|--------|------|
-| `HashType` | 哈希算法类型标识（`HashType.MD5` / `HashType.SHA256` 等） |
-
-### 10.3 异常
-
-| 异常 | 说明 |
-|------|------|
-| `CryptoException` | 加密操作异常 |
-
----
-
-## 11. stdx.crypto.crypto — 对称加密与安全随机数
-
-### 11.1 类
-
-| 类 | 构造函数 | 关键方法 | 说明 |
-|------|----------|----------|------|
-| `SM4` | `SM4(optMode: OperationMode, key: Array<Byte>, iv!: Array<Byte>, paddingMode!: PaddingMode, aad!: Array<Byte>, tagSize!: Int64)` | `.encrypt(Array<Byte>): Array<Byte>` `.decrypt(Array<Byte>): Array<Byte>` | SM4 对称加密 |
-| `SecureRandom` | `SecureRandom(priv!: Bool = false)` | `.nextBytes(Array<Byte>)` `.nextUInt64()` | 安全随机数生成 |
-
-### 11.2 结构体
-
-| 结构体 | 说明 |
-|--------|------|
-| `OperationMode` | 操作模式（`OperationMode.ECB` / `.CBC` / `.CTR` / `.GCM` 等） |
-| `PaddingMode` | 填充模式（`PaddingMode.PKCS7Padding` / `.NoPadding`） |
-
-### 11.3 异常
-
-| 异常 | 说明 |
-|------|------|
-| `SecureRandomException` | 安全随机数异常 |
-
----
-
-## 12. stdx.crypto.keys — 非对称加密与签名
-
-### 12.1 类
-
-| 类 | 构造函数 | 关键方法 | 说明 |
-|------|----------|----------|------|
-| `RSAPrivateKey` | `RSAPrivateKey(bits: Int32)` / `RSAPrivateKey(bits: Int32, e: BigInt)` | `.decrypt(...)` `.sign(...)` `.encodeToPem()` | RSA 私钥 |
-| `RSAPublicKey` | `RSAPublicKey(pri: RSAPrivateKey)` | `.encrypt(...)` `.verify(...)` `.encodeToPem()` | RSA 公钥 |
-| `SM2PrivateKey` | `SM2PrivateKey()` | `.decrypt(...)` `.sign(...)` | SM2 私钥 |
-| `SM2PublicKey` | `SM2PublicKey(pri: SM2PrivateKey)` | `.encrypt(...)` `.verify(...)` | SM2 公钥 |
-| `ECDSAPrivateKey` | `ECDSAPrivateKey(curve: Curve)` | `.sign(...)` `.encodeToPem()` | ECDSA 私钥 |
-| `ECDSAPublicKey` | `ECDSAPublicKey(pri: ECDSAPrivateKey)` | `.verify(...)` `.encodeToPem()` | ECDSA 公钥 |
-
-### 12.2 枚举
-
-| 枚举 | 值 | 说明 |
-|------|------|------|
-| `Curve` | `P224`, `P256`, `P384`, `P521` 等 | 椭圆曲线类型 |
-| `PadOption` | `OAEP`, `PKCS1` 等 | RSA 填充选项 |
-
-### 12.3 结构体
-
-| 结构体 | 说明 |
-|--------|------|
-| `OAEPOption` | OAEP 填充配置 |
-| `PSSOption` | PSS 签名配置 |
-
----
-
-## 13. stdx.crypto.x509 — 数字证书
-
-### 13.1 接口
-
-| 接口 | 说明 |
-|------|------|
-| `Key` | 密钥基接口 |
-| `PrivateKey` | 私钥接口 |
-| `PublicKey` | 公钥接口 |
-| `DHParameters` | DH 参数接口 |
-
-### 13.2 类
-
-| 类 | 构造函数 | 关键方法 | 说明 |
-|------|----------|----------|------|
-| `X509Certificate` | `X509Certificate(certificateInfo, parent?, publicKey?, privateKey?, signatureAlgorithm?)` / `X509Certificate.decodeFromPem(pem)` / `X509Certificate.decodeFromDer(der)` | `.verify()` `.subject` `.issuer` `.serialNumber` `.notBefore` `.notAfter` | X509 证书 |
-| `X509CertificateRequest` | — | `.subject` `.publicKey` `.verify()` | 证书签名请求（CSR） |
-| `X509Name` | — | `.commonName` `.organization` `.country` | 证书主体/颁发者名称 |
-
-### 13.3 枚举
-
-| 枚举 | 说明 |
-|------|------|
-| `PublicKeyAlgorithm` | 公钥算法（RSA / ECDSA / SM2 等） |
-| `SignatureAlgorithm` | 签名算法 |
-
-### 13.4 结构体
-
-| 结构体 | 说明 |
-|--------|------|
-| `DerBlob` | DER 编码数据 |
-| `Pem` | PEM 编码数据 |
-| `PemEntry` | PEM 条目 |
-| `KeyUsage` | 密钥用途 |
-| `ExtKeyUsage` | 扩展密钥用途 |
-| `SerialNumber` | 证书序列号 |
-| `Signature` | 签名数据 |
-| `VerifyOption` | 证书验证选项 |
-| `X509CertificateInfo` | 证书创建信息 |
-| `X509CertificateRequestInfo` | CSR 创建信息 |
-
-### 13.5 异常
-
-| 异常 | 说明 |
-|------|------|
-| `X509Exception` | 证书操作异常 |
-
----
-
-## 14. stdx.log — 日志 API
-
-### 14.1 函数
-
-| 函数 | 原型 | 说明 |
-|------|------|------|
-| `getGlobalLogger` | `getGlobalLogger(attrs: Array<Attr>): Logger` | 获取全局 Logger |
-| `setGlobalLogger` | `setGlobalLogger(logger: Logger): Unit` | 设置全局 Logger |
-
-### 14.2 接口
-
-| 接口 | 关键方法 | 说明 |
-|------|----------|------|
-| `LogValue` | 序列化到日志输出 | 日志值类型接口 |
-
-### 14.3 类
-
-| 类 | 构造函数 | 关键方法 | 说明 |
-|------|----------|----------|------|
-| `Logger`（抽象） | — | `.trace(...)` `.debug(...)` `.info(...)` `.warn(...)` `.error(...)` `.fatal(...)` `.level` | 抽象日志基类 |
-| `LogRecord` | — | `.message` `.level` `.attrs` | 日志记录 |
-| `LogWriter` | — | 序列化日志到目标 | 日志写入器 |
-| `NoopLogger` | `NoopLogger()` | 所有方法空实现 | 空日志实现 |
-
-### 14.4 结构体
-
-| 结构体 | 常量 | 说明 |
-|--------|------|------|
-| `LogLevel` | `TRACE` < `DEBUG` < `INFO` < `WARN` < `ERROR` < `FATAL` < `OFF` | 日志级别 |
-
-### 14.5 类型别名
-
-| 别名 | 定义 | 说明 |
-|------|------|------|
-| `Attr` | `(String, LogValue)` | 日志属性键值对 |
-
-### 14.6 异常
-
-| 异常 | 说明 |
-|------|------|
-| `LogException` | 日志操作异常 |
-
----
-
-## 15. stdx.logger — 日志实现
-
-### 类
-
-| 类 | 构造函数 | 输出格式 | 说明 |
-|------|----------|----------|------|
-| `SimpleLogger` | `SimpleLogger(output: OutputStream)` | `2025-04-15T10:30:00Z INFO msg key=value` | 简单文本格式 |
-| `TextLogger` | `TextLogger(output: OutputStream)` | `time=... level=INFO msg="..." key=value` | 键值对文本格式 |
-| `JsonLogger` | `JsonLogger(output: OutputStream)` | `{"time":"...","level":"INFO","msg":"..."}` | JSON 格式 |
-
----
-
-## 16. stdx.serialization.serialization — 序列化框架
-
-### 16.1 接口
-
-| 接口 | 关键方法 | 说明 |
-|------|----------|------|
-| `Serializable<T>` | `serialize(): DataModel` / `static deserialize(DataModel): T` | 序列化/反序列化接口 |
-
-### 16.2 类
-
-| 类 | 构造函数 | 说明 |
-|------|----------|------|
-| `DataModel`（抽象） | — | 中间数据模型基类 |
-| `DataModelBool` | `DataModelBool(bv: Bool)` | 布尔值 |
-| `DataModelInt` | `DataModelInt(iv: Int64)` | 整数值 |
-| `DataModelFloat` | `DataModelFloat(fv: Float64)` / `DataModelFloat(v: Int64)` | 浮点值 |
-| `DataModelString` | `DataModelString(sv: String)` | 字符串值 |
-| `DataModelNull` | `DataModelNull()` | 空值 |
-| `DataModelSeq` | `DataModelSeq()` / `DataModelSeq(list: ArrayList<DataModel>)` | 序列（数组） |
-| `DataModelStruct` | `DataModelStruct()` / `DataModelStruct(list: ArrayList<Field>)` | 结构体（键值映射） |
-| `Field` | `Field(name: String, data: DataModel)` | 结构体字段 |
-
-### 16.3 函数
-
-| 函数 | 原型 | 说明 |
-|------|------|------|
-| `field` | `field<T>(name: String, data: T): Field` | 创建 Field 的辅助函数 |
-
-### 16.4 异常
-
-| 异常 | 说明 |
-|------|------|
-| `DataModelException` | 数据模型操作异常 |
-
----
-
-## 17. stdx.compress.zlib — 压缩与解压缩
-
-### 17.1 类
-
-| 类 | 构造函数 | 实现接口 | 说明 |
-|------|----------|----------|------|
-| `CompressInputStream` | `CompressInputStream(inputStream: InputStream, wrap!: WrapType = DeflateFormat, compressLevel!: CompressLevel = DefaultCompression, bufLen!: Int64 = 512)` | `InputStream` | 压缩输入流 |
-| `CompressOutputStream` | `CompressOutputStream(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, compressLevel!: CompressLevel = DefaultCompression, bufLen!: Int64 = 512)` | `OutputStream` | 压缩输出流 |
-| `DecompressInputStream` | `DecompressInputStream(inputStream: InputStream, wrap!: WrapType = DeflateFormat, bufLen!: Int64 = 512)` | `InputStream` | 解压输入流 |
-| `DecompressOutputStream` | `DecompressOutputStream(outputStream: OutputStream, wrap!: WrapType = DeflateFormat, bufLen!: Int64 = 512)` | `OutputStream` | 解压输出流 |
-
-### 17.2 枚举
-
-| 枚举 | 值 | 说明 |
-|------|------|------|
-| `CompressLevel` | `DefaultCompression`, 其他级别 | 压缩级别 |
-| `WrapType` | `DeflateFormat`（deflate-raw）, `GzipFormat`（gzip） | 数据格式 |
-
-### 17.3 异常
-
-| 异常 | 说明 |
-|------|------|
-| `ZlibException` | 压缩/解压异常 |
-
----
-
-## 18. stdx.aspectCJ — 面向切面编程
-
-### 类（注解）
-
-| 注解类 | 说明 |
-|--------|------|
-| `InsertAtEntry` | 在方法入口插入函数调用 |
-| `InsertAtExit` | 在方法出口插入函数调用 |
-| `ReplaceFuncBody` | 替换方法体为指定函数 |
-
-> 需要编译器插件 `libcollect-aspects.so`（收集阶段）和 `libwave-aspects.so`（织入阶段）。
-
----
-
-## 19. stdx.fuzz.fuzz — 模糊测试
-
-### 19.1 类
-
-| 类 | 构造函数 | 关键方法 | 说明 |
-|------|----------|----------|------|
-| `FuzzerBuilder` | `FuzzerBuilder()` | `.build(): Fuzzer` | 构建器模式配置 Fuzzer |
-| `Fuzzer` | 由 `FuzzerBuilder.build()` 创建 | `.startFuzz(...)` | 模糊测试引擎 |
-| `FuzzDataProvider` | — | `.consumeInt64()` `.consumeString()` `.consumeBool()` `.consumeBytes(Int64)` | 将变异字节转换为标准类型 |
-| `DebugDataProvider` | — | 继承 FuzzDataProvider 的所有方法 | 带调试信息的数据提供者 |
-
-### 19.2 异常
-
-| 异常 | 说明 |
-|------|------|
-| `ExhaustedException` | 数据不足以完成类型转换 |
-
-> 仅支持 Linux 和 macOS，依赖 LLVM `libclang_rt.fuzzer_no_main.a`。
-
----
-
-## 20. stdx.unittest.data — 参数化测试数据
-
-### 20.1 函数
-
-| 函数 | 原型 | 说明 |
-|------|------|------|
-| `json<T>` | `json<T>(filePath: String): SerializableProvider<T> where T: Serializable` | 从 JSON 文件加载测试数据 |
-| `csv<T>` | `csv<T>(filePath: String, delimiter!: Rune, quote!: Rune, escape!: Rune, commentChar!: Option<Rune>, headers!: Option<Array<String>>, includeRows!: Array<UInt64>, excludeRows!: Array<UInt64>, hasHeader!: Bool): SerializableProvider<T> where T: Serializable` | 从 CSV 文件加载测试数据 |
-| `tsv<T>` | `tsv<T>(filePath: String, quote!: Rune, escape!: Rune, commentChar!: Option<Rune>, headers!: Option<Array<String>>, includeRows!: Array<UInt64>, excludeRows!: Array<UInt64>, hasHeader!: Bool): SerializableProvider<T> where T: Serializable` | 从 TSV 文件加载测试数据 |
-
-### 20.2 类
-
-| 类 | 说明 |
-|------|------|
-| `SerializableProvider<T>` | DataProvider 接口实现，提供测试数据迭代 |
-| `JsonStrategy` | JSON 格式序列化策略 |
-| `CsvStrategy` | CSV 格式序列化策略 |
-
----
-
-## 21. 注意事项
-
-| 要点 | 说明 |
-|------|------|
-| **版本兼容性** | stdx 后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性 |
-| **OpenSSL 依赖** | crypto 和 net 模块依赖 OpenSSL 3 库 |
-| **平台支持** | 支持 Ubuntu/macOS（x86_64, aarch64），Windows 部分功能受限 |
-| **静态库额外配置** | 使用 crypto/net 静态库时，Linux 需 `-ldl`，Windows 需 `-lcrypt32` |
-| **动态库搜索路径** | 使用动态库时运行前需设置 `LD_LIBRARY_PATH`（Linux）/ `DYLD_LIBRARY_PATH`（macOS）/ `PATH`（Windows） |
-| **模糊测试平台** | `stdx.fuzz` 仅支持 Linux 和 macOS |
+**HTTP 服务端**（创建一个简单的 HTTP 服务器并注册多个路由）：
+
+```cangjie
+import stdx.net.http.{ServerBuilder, HttpRequestHandler, FuncHandler}
+
+main() {
+    // 1. 构建 Server 实例
+    let server = ServerBuilder()
+                    .addr("127.0.0.1")
+                    .port(8080)
+                    .build()
+
+    // 2. 注册多个路由处理器
+    server.distributor.register("/index", {httpContext =>
+        httpContext.responseBuilder.body("Hello 仓颉!")
+    })
+    server.distributor.register("/id", {httpContext =>
+        httpContext.responseBuilder.body("id page")
+    })
+    server.distributor.register("/help", {httpContext =>
+        httpContext.responseBuilder.body("help page")
+    })
+
+    // 3. 启动服务
+    server.serve()
+}
+```
+
+**HTTP 客户端**（发送 GET 请求并读取响应）：
+
+```cangjie
+import stdx.net.http.*
+import std.io.*
+
+main() {
+    // 1. 构建 Client 实例
+    let client = ClientBuilder().build()
+
+    // 2. 发送 GET 请求
+    let rsp = client.get("http://127.0.0.1:8080/index")
+
+    // 3. 读取响应体
+    let buf = Array<UInt8>(1024, repeat: 0)
+    let len = rsp.body.read(buf)
+    println(String.fromUtf8(buf[..len]))
+
+    // 4. 关闭客户端
+    client.close()
+}
+```
+
+### 4.2 HTTP 服务端设置 Cookie
+
+```cangjie
+import stdx.net.http.*
+import std.net.*
+import std.sync.*
+
+main(): Unit {
+    let serverOn = SyncCounter(1)
+    spawn {
+        serverSetCookie(serverOn)
+    }
+    serverOn.waitUntilZero()
+    clientPacketCapture()
+}
+
+func serverSetCookie(serverOn: SyncCounter): Unit {
+    let server = ServerBuilder()
+                    .addr("127.0.0.1")
+                    .port(8080)
+                    .build()
+    server.afterBind({=> serverOn.dec()})
+    server.distributor.register("/index", {httpContext =>
+        let cookie = Cookie("name", "value")
+        httpContext.responseBuilder
+            .header("Set-Cookie", cookie.toSetCookieString())
+            .body("Hello 仓颉!")
+    })
+    server.serve()
+}
+
+func clientPacketCapture(): Unit {
+    let client = TcpSocket("127.0.0.1", 8080)
+    client.connect()
+    let request = "GET /index HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n".toArray()
+    client.write(request)
+    let buf = Array<UInt8>(500, repeat: 0)
+    var len = client.read(buf)
+    println(String.fromUtf8(buf[..len]))
+}
+```
+
+### 4.3 JSON 解析与构建
+
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
+
+main() {
+    // === 从字符串解析 JSON ===
+    var str = ##"[true,"kjjjke\"eed",{"sdfd":"ggggg","eeeee":[341,false,{"nnnn":55.87}]},3422,22.341,false,[22,22.22,true,"ddd"],43]"##
+    var jv: JsonValue = JsonValue.fromStr(str)
+
+    // 紧凑格式输出
+    println(jv.toString())
+    // 格式化输出
+    println(jv.toJsonString())
+
+    // === 构建 JSON ===
+    var obj = JsonObject()
+    obj.put("name", JsonString("Alice"))
+    obj.put("age", JsonInt(30))
+    obj.put("active", JsonBool(true))
+
+    var arr = JsonArray()
+    arr.add(JsonInt(1))
+    arr.add(JsonInt(2))
+    arr.add(JsonString("hello"))
+    obj.put("tags", arr)
+
+    println(obj.toJsonString())
+}
+```
+
+### 4.4 JSON 与自定义类型互转（通过 DataModel 序列化）
+
+```cangjie
+import stdx.serialization.serialization.*
+import stdx.encoding.json.*
+
+class Location <: Serializable<Location> {
+    var country: String = ""
+    var province: String = ""
+
+    public func serialize(): DataModel {
+        return DataModelStruct()
+            .add(field<String>("country", country))
+            .add(field<String>("province", province))
+    }
+
+    public static func deserialize(dm: DataModel): Location {
+        var dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        var result = Location()
+        result.country = String.deserialize(dms.get("country"))
+        result.province = String.deserialize(dms.get("province"))
+        return result
+    }
+}
+
+class Person <: Serializable<Person> {
+    var name: String = ""
+    var age: Int64 = 0
+    var loc: Option<Location> = Option<Location>.None
+
+    public func serialize(): DataModel {
+        return DataModelStruct()
+            .add(field<String>("name", name))
+            .add(field<Int64>("age", age))
+            .add(field<Option<Location>>("loc", loc))
+    }
+
+    public static func deserialize(dm: DataModel): Person {
+        var dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        var result = Person()
+        result.name = String.deserialize(dms.get("name"))
+        result.age = Int64.deserialize(dms.get("age"))
+        result.loc = Option<Location>.deserialize(dms.get("loc"))
+        return result
+    }
+}
+
+main() {
+    // JSON 字符串 → Person 对象
+    var js = ##"{
+    "name": "A",
+    "age": 30,
+    "loc": {
+        "country": "China",
+        "province": "Beijing"
+    }
+}"##
+
+    var jv = JsonValue.fromStr(js)
+    var dm = DataModel.fromJson(jv)
+    var person = Person.deserialize(dm)
+    println("name == ${person.name}")
+    println("age == ${person.age}")
+    println("country == ${person.loc.getOrThrow().country}")
+    println("province == ${person.loc.getOrThrow().province}")
+    println("====================")
+
+    // Person 对象 → JSON 字符串
+    dm = person.serialize()
+    var jo = dm.toJson().asObject()
+    println(jo.toJsonString())
+}
+```
+
+### 4.5 JSON 流式序列化与反序列化
+
+**序列化（对象 → JSON 流）**：
+
+```cangjie
+import stdx.encoding.json.stream.*
+import std.io.{ByteBuffer, readToEnd}
+
+class Image <: JsonSerializable {
+    var width: Int64 = 0
+    var height: Int64 = 0
+    var title: String = ""
+    var ids: Array<Int64> = Array<Int64>()
+
+    public func toJson(w: JsonWriter): Unit {
+        w.startObject()
+        w.writeName("Width").writeValue(width)
+        w.writeName("Height").writeValue(height)
+        w.writeName("Title").writeValue(title)
+        w.writeName("Ids").writeValue<Array<Int64>>(ids)
+        w.endObject()
+    }
+}
+
+main() {
+    let image = Image()
+    image.width = 800
+    image.height = 600
+    image.title = "View from 15th Floor"
+    image.ids = [116, 943, 234, 38793]
+
+    let stream = ByteBuffer()
+    let writer = JsonWriter(stream)
+    writer.writeValue(image)
+    writer.flush()
+    println(String.fromUtf8(readToEnd(stream)))
+    // 输出: {"Width":800,"Height":600,"Title":"View from 15th Floor","Ids":[116,943,234,38793]}
+}
+```
+
+**反序列化（JSON 流 → 对象）**：
+
+```cangjie
+import stdx.encoding.json.stream.*
+import std.io.*
+import std.collection.*
+
+class Config <: JsonDeserializable<Config> {
+    var key1: Option<String> = None
+    var key2: Bool = false
+    var key3: Float64 = 0.0
+    var key4: String = ""
+    var key5: Array<Int64> = Array<Int64>()
+    var key6: HashMap<String, String> = HashMap<String, String>()
+
+    public static func fromJson(r: JsonReader): Config {
+        var res = Config()
+        while (let Some(v) <- r.peek()) {
+            match (v) {
+                case BeginObject =>
+                    r.startObject()
+                    while (r.peek() != EndObject) {
+                        let n = r.readName()
+                        match (n) {
+                            case "key1" => res.key1 = r.readValue<Option<String>>()
+                            case "key2" => res.key2 = r.readValue<Bool>()
+                            case "key3" => res.key3 = r.readValue<Float64>()
+                            case "key4" => res.key4 = r.readValue<String>()
+                            case "key5" => res.key5 = r.readValue<Array<Int64>>()
+                            case "key6" => res.key6 = r.readValue<HashMap<String, String>>()
+                            case _ => ()
+                        }
+                    }
+                    r.endObject()
+                    break
+                case _ => throw Exception()
+            }
+        }
+        return res
+    }
+}
+
+main() {
+    let jsonStr = ##"{"key1": null, "key2": true, "key3": 123.456, "key4": "string", "key5": [123, 456], "key6": {"key7": " ", "key8": "\\a"}}"##
+    var bas = ByteBuffer()
+    unsafe { bas.write(jsonStr.rawData()) }
+    var reader = JsonReader(bas)
+    var obj = Config.fromJson(reader)
+    println("key1: ${obj.key1}")
+    println("key2: ${obj.key2}")
+    println("key3: ${obj.key3}")
+    println("key4: ${obj.key4}")
+}
+```
+
+### 4.6 日志记录
+
+```cangjie
+import stdx.log.*
+import stdx.logger.*
+import std.env.*
+
+// 库开发者：使用抽象日志接口
+public class PGConnection {
+    let objId: Int64 = 1
+    let logger = getGlobalLogger(("name", "PGConnection"))
+
+    public func close(): Unit {
+        logger.trace("driver conn closed", ("id", objId))
+    }
+}
+
+main(): Unit {
+    // 应用开发者：选择具体日志实现
+    let logger = SimpleLogger(getStdOut())
+    logger.level = LogLevel.TRACE
+    setGlobalLogger(logger)
+
+    // 使用日志
+    logger.info("Application started", ("version", "1.0.0"))
+    logger.debug("Processing request", ("path", "/api"))
+    logger.error("Something went wrong", ("code", 500))
+
+    // 库代码也能正常输出日志
+    var conn = PGConnection()
+    conn.close()
+}
+```
+
+**JsonLogger 示例**：
+
+```cangjie
+import std.io.{OutputStream, BufferedOutputStream}
+import std.env.*
+import stdx.log.*
+import stdx.logger.*
+
+main() {
+    let bo = BufferedOutputStream<OutputStream>(getStdOut())
+    let logger = JsonLogger(bo)
+    logger.level = LogLevel.TRACE
+    setGlobalLogger(logger)
+
+    let appLogger = getGlobalLogger([("name", "main")])
+    appLogger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("env", "production"))
+    appLogger.debug("Debug info", ("module", "auth"))
+    // 输出 JSON 格式日志
+}
+```
+
+### 4.7 消息摘要（哈希）
+
+```cangjie
+import stdx.crypto.digest.*
+import stdx.encoding.hex.*
+
+main() {
+    var str: String = "helloworld"
+
+    // MD5 摘要
+    var md5Instance = MD5()
+    md5Instance.write(str.toArray())
+    var md5Result = toHexString(md5Instance.finish())
+    println("MD5: ${md5Result}")
+
+    // SHA256 摘要
+    var sha256Instance = SHA256()
+    sha256Instance.write(str.toArray())
+    var sha256Result = toHexString(sha256Instance.finish())
+    println("SHA256: ${sha256Result}")
+
+    // HMAC-SHA512
+    var key: Array<UInt8> = "cangjie".toArray()
+    var data: Array<UInt8> = "123456789".toArray()
+    var hmac = HMAC(key, HashType.SHA512)
+    hmac.write(data)
+    var hmacResult = toHexString(hmac.finish())
+    println("HMAC-SHA512: ${hmacResult}")
+}
+```
+
+### 4.8 Gzip 文件压缩与解压缩
+
+```cangjie
+import stdx.compress.zlib.*
+import std.fs.*
+
+main() {
+    // 创建测试数据
+    var arr: Array<Byte> = Array<Byte>(1024 * 1024, {i => UInt8(i % 256)})
+    File.writeTo("./test.txt", arr)
+
+    // 压缩
+    compressFile("./test.txt", "./test.gz")
+    println("Compression done.")
+
+    // 解压
+    decompressFile("./test.gz", "./test_restored.txt")
+    println("Decompression done.")
+
+    // 验证
+    if (File.readFrom("./test.txt") == File.readFrom("./test_restored.txt")) {
+        println("Verification: success")
+    } else {
+        println("Verification: failed")
+    }
+
+    // 清理
+    remove("./test.txt")
+    remove("./test.gz")
+    remove("./test_restored.txt")
+}
+
+func compressFile(srcPath: String, destPath: String): Unit {
+    var srcFile = File(srcPath, Read)
+    var destFile = File(destPath, Write)
+    var compressOut = CompressOutputStream(destFile, wrap: GzipFormat, bufLen: 10000)
+    var buf = Array<UInt8>(1024, repeat: 0)
+    while (true) {
+        var n = srcFile.read(buf)
+        if (n > 0) {
+            compressOut.write(buf.slice(0, n).toArray())
+        } else {
+            break
+        }
+    }
+    compressOut.flush()
+    compressOut.close()
+    srcFile.close()
+    destFile.close()
+}
+
+func decompressFile(srcPath: String, destPath: String): Unit {
+    var srcFile = File(srcPath, Read)
+    var destFile = File(destPath, Write)
+    var decompressIn = DecompressInputStream(srcFile, wrap: GzipFormat, bufLen: 10000)
+    var buf = Array<UInt8>(1024, repeat: 0)
+    while (true) {
+        var n = decompressIn.read(buf)
+        if (n <= 0) { break }
+        destFile.write(buf.slice(0, n).toArray())
+    }
+    decompressIn.close()
+    srcFile.close()
+    destFile.close()
+}
+```
+
+### 4.9 Base64 与 Hex 编解码
+
+```cangjie
+import stdx.encoding.base64.*
+import stdx.encoding.hex.*
+
+main() {
+    let data = "Hello, 仓颉!".toArray()
+
+    // Base64 编解码
+    let b64Encoded = toBase64String(data)
+    println("Base64: ${b64Encoded}")
+    let b64Decoded = fromBase64String(b64Encoded)
+    println("Decoded: ${String.fromUtf8(b64Decoded)}")
+
+    // Hex 编解码
+    let hexEncoded = toHexString(data)
+    println("Hex: ${hexEncoded}")
+    let hexDecoded = fromHexString(hexEncoded)
+    println("Decoded: ${String.fromUtf8(hexDecoded)}")
+}
+```
+
+### 4.10 URL 解析
+
+```cangjie
+import stdx.encoding.url.*
+
+main() {
+    // 解析 URL
+    let url = URL.parse("https://example.com:8080/api/v1?key=value&name=test#section")
+    println("scheme: ${url.scheme}")
+    println("host: ${url.host}")
+    println("port: ${url.port}")
+    println("path: ${url.path}")
+    println("query: ${url.query}")
+    println("fragment: ${url.fragment}")
+
+    // 表单参数处理
+    let form = Form()
+    form.add("name", "张三")
+    form.add("age", "30")
+    println("form: ${form.toString()}")
+}
+```
