@@ -453,6 +453,7 @@ main() {
         X509Certificate.decodeFromPem(pem),
         PrivateKey.decodeFromPem(key)
     )
+    // 使用 ["h2"] 启用 HTTP/2，使用 ["http/1.1"] 仅启用 HTTPS (HTTP/1.1)
     tlsConfig.supportedAlpnProtocols = ["http/1.1"]
 
     let server = ServerBuilder()
