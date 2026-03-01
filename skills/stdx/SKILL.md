@@ -1,67 +1,252 @@
 ---
 name: cangjie-stdx
-description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 的下载配置、HTTP 服务/客户端、JSON 编解码、Base64/Hex 编码、URL 处理、TLS 安全通信、加密解密、数字证书、日志、序列化、压缩、面向切面编程、模糊测试等能力时，应使用此 Skill。"
+description: "仓颉扩展标准库（stdx）使用指南。当需要了解 stdx 各包的功能、项目配置与构建运行（含不同平台和静/动态依赖）、以及各模块的使用示例时，应使用此 Skill。"
 ---
 
-# 仓颉扩展标准库（stdx）使用指南 Skill
+# 仓颉扩展标准库（stdx）使用指南
+
+---
 
 ## 1. stdx 概述
 
 ### 1.1 简介
 
-stdx 是仓颉编程语言的**扩展标准库**（非核心标准库），提供标准库之外的更多实用能力，涵盖：
-
-| 模块 | 包名 | 功能 |
-|------|------|------|
-| **HTTP** | `stdx.net.http` | HTTP/1.1、HTTP/2 客户端与服务端、WebSocket |
-| **TLS** | `stdx.net.tls` | TLS 1.2/1.3 安全传输 |
-| **JSON** | `stdx.encoding.json` | JSON 解析、构建与转换 |
-| **JSON Stream** | `stdx.encoding.json.stream` | JSON 流式序列化与反序列化 |
-| **Base64** | `stdx.encoding.base64` | Base64 编码与解码 |
-| **Hex** | `stdx.encoding.hex` | 十六进制编码与解码 |
-| **URL** | `stdx.encoding.url` | URL 解析与编解码 |
-| **加密** | `stdx.crypto.crypto` | 安全随机数、SM4 对称加密 |
-| **摘要** | `stdx.crypto.digest` | MD5/SHA/SM3/HMAC 哈希 |
-| **非对称密钥** | `stdx.crypto.keys` | RSA/SM2/ECDSA 非对称加密与签名 |
-| **证书** | `stdx.crypto.x509` | X509 数字证书解析与验证 |
-| **日志 API** | `stdx.log` | 抽象日志接口 |
-| **日志实现** | `stdx.logger` | SimpleLogger/TextLogger/JsonLogger |
-| **序列化** | `stdx.serialization` | 序列化/反序列化框架 |
-| **压缩** | `stdx.compress.zlib` | zlib/gzip 压缩与解压缩 |
-| **AOP** | `stdx.aspectCJ` | 面向切面编程注解 |
-| **模糊测试** | `stdx.fuzz` | 覆盖率引导的模糊测试 |
-| **测试数据** | `stdx.unittest.data` | 参数化测试数据加载 |
+stdx 是仓颉编程语言的**扩展标准库**（非核心标准库，但由官方提供的附加功能集），是仓颉语言生态的重要组成部分，为仓颉补充了更多实用能力，涵盖面向切面编程、压缩和解压缩、安全加密、消息摘要、非对称加解密和签名、数字证书、编解码（Base64/Hex/JSON/URL）、网络通信（HTTP/TLS）、日志、序列化、模糊测试、参数化测试数据加载等多个领域。
 
 ### 1.2 与标准库的区别
 
-- **标准库（std）**：随 SDK 一起发布，开箱即用
-- **扩展标准库（stdx）**：需要**单独下载**并配置，不随 SDK 自带
+- **标准库（std）**：随 SDK 一起发布，开箱即用。
+- **扩展标准库（stdx）**：需要**单独下载**并配置，不随 SDK 自带。
+
+### 1.3 版本与平台支持
+
+- 支持 Ubuntu/macOS（x86_64, aarch64），Windows 部分功能受限。
+- 需要 Cangjie SDK 1.0.0 及以上版本。
+- crypto 和 net 模块依赖 **OpenSSL 3**。
+- stdx 后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性。
 
 ---
 
-## 2. 下载与配置
+## 2. stdx 包功能详解
 
-### 2.1 下载 stdx
+stdx 包含以下 18 个包，覆盖网络通信、编解码、安全加密、日志、测试等多个领域：
 
-**发行版下载页面**：https://gitcode.com/Cangjie/cangjie_stdx/releases
+| 包名 | 功能 |
+|------|------|
+| `stdx.net.http` | HTTP 客户端与服务端 |
+| `stdx.net.tls` | TLS 安全传输 |
+| `stdx.encoding.json` | JSON 解析与构建 |
+| `stdx.encoding.json.stream` | JSON 流式序列化 |
+| `stdx.encoding.base64` | Base64 编解码 |
+| `stdx.encoding.hex` | 十六进制编解码 |
+| `stdx.encoding.url` | URL 解析与编解码 |
+| `stdx.crypto.crypto` | 对称加密与安全随机数 |
+| `stdx.crypto.digest` | 消息摘要算法 |
+| `stdx.crypto.keys` | 非对称加密与签名 |
+| `stdx.crypto.x509` | 数字证书处理 |
+| `stdx.log` | 抽象日志接口 |
+| `stdx.logger` | 日志实现 |
+| `stdx.serialization.serialization` | 序列化框架 |
+| `stdx.compress.zlib` | 压缩与解压缩 |
+| `stdx.aspectCJ` | 面向切面编程 |
+| `stdx.fuzz.fuzz` | 模糊测试 |
+| `stdx.unittest.data` | 参数化测试数据 |
 
-根据操作系统和架构选择对应的发行版（如 `linux_x86_64_cjnative`、`windows_x86_64_cjnative` 等），下载并解压。
+### 2.1 stdx.net.http — HTTP 客户端与服务端
 
-解压后目录结构示例：
+提供 HTTP/1.1、HTTP/2 协议的 Server 端和 Client 端完整实现，同时支持 WebSocket 协议。主要能力包括：
+
+- **服务端**：通过 `ServerBuilder` 构建 HTTP 服务器，支持路由注册、请求处理器（`HttpRequestHandler`）、请求分发（`HttpRequestDistributor`）、文件上传下载（`FileHandler`）、分块传输编码、HTTPS（集成 TLS）等。
+- **客户端**：通过 `ClientBuilder` 构建 HTTP 客户端，支持 GET/POST/PUT/DELETE 等方法、自动重定向、Cookie 管理（`CookieJar`）、HTTP 代理、连接超时配置等。
+- **WebSocket**：支持客户端和服务端的 WebSocket 升级，提供文本帧、二进制帧、Ping/Pong 控制帧的收发能力。
+- **HTTP/2 特性**：支持 Server Push（`HttpResponsePusher`）和多路复用。
+
+### 2.2 stdx.net.tls — TLS 安全传输
+
+提供 TLS 1.2 和 TLS 1.3 安全加密的网络通信能力，包括：
+
+- 创建 TLS 服务器和客户端（`TlsSocket`），基于协议进行 TLS 握手。
+- 收发加密数据，支持双向认证。
+- 支持 TLS 会话恢复（`TlsSessionContext`），减少重复握手开销。
+- 灵活的证书验证模式（`CertificateVerifyMode`）和签名算法配置。
+- 客户端和服务端 TLS 配置通过 `TlsClientConfig` 和 `TlsServerConfig` 结构体指定。
+- 通常通过 HTTP 模块的 `tlsConfig()` 方法集成使用，实现 HTTPS。
+
+### 2.3 stdx.encoding.json — JSON 解析与构建
+
+用于 JSON 数据的处理，实现 String、JsonValue、DataModel 之间的相互转换。主要能力包括：
+
+- **解析**：通过 `JsonValue.fromStr(str)` 将 JSON 字符串解析为 `JsonValue` 对象树。
+- **构建**：使用 `JsonObject`、`JsonArray`、`JsonString`、`JsonInt`、`JsonFloat`、`JsonBool`、`JsonNull` 等类型构建 JSON 结构。
+- **类型判断**：通过 `.kind()` 方法获取 `JsonKind` 枚举，结合 `match` 表达式处理不同 JSON 类型。
+- **与序列化框架集成**：通过 `ToJson` 接口实现 JsonValue 与 `DataModel`（序列化中间层）之间的互转，支持 `DataModel.fromJson(jv)` 和 `dm.toJson()`。
+- **格式化输出**：`toString()` 输出紧凑格式，`toJsonString()` 输出格式化的 JSON 字符串。
+
+### 2.4 stdx.encoding.json.stream — JSON 流式序列化
+
+提供仓颉对象和 JSON 数据流之间的互相转换能力，适合大数据量场景和自定义类型的 JSON 序列化：
+
+- **JsonWriter**：将仓颉对象序列化为 JSON 数据流，支持链式调用 `.startObject()` `.writeName()` `.writeValue()` `.endObject()` 等方法。支持的值类型包括基本类型、Array、ArrayList、HashMap、Option、BigInt、Decimal 等。
+- **JsonReader**：从 JSON 数据流反序列化为仓颉对象，通过 `.startObject()` `.readName()` `.readValue<T>()` `.peek()` `.skip()` 等方法逐步读取。
+- **自定义类型**：实现 `JsonSerializable` 接口（`toJson` 方法）和 `JsonDeserializable<T>` 接口（`fromJson` 静态方法），即可支持自定义类型与 JSON 的互转。
+- **格式控制**：通过 `WriteConfig` 控制输出格式（紧凑或美化）。
+
+### 2.5 stdx.encoding.base64 — Base64 编解码
+
+提供 Base64 编码与解码功能，将二进制数据转换为由 64 个可打印字符（A-Z、a-z、0-9、+、/）组成的文本格式，适用于在文本协议中安全传输二进制数据。
+
+- `toBase64String(data: Array<Byte>): String` — 将字节数组编码为 Base64 字符串。
+- `fromBase64String(str: String): Array<Byte>` — 将 Base64 字符串解码为字节数组。
+
+### 2.6 stdx.encoding.hex — 十六进制编解码
+
+提供十六进制（Hex）编码与解码功能，使用 16 个字符（0-9、A-F，大小写不敏感）表示二进制数据。
+
+- `toHexString(data: Array<Byte>): String` — 将字节数组编码为十六进制字符串。
+- `fromHexString(str: String): Array<Byte>` — 将十六进制字符串解码为字节数组。
+
+### 2.7 stdx.encoding.url — URL 解析与编解码
+
+提供 URL 相关的能力，包括解析 URL 的各个组件（scheme、host、port、path、query、fragment）、对 URL 进行编解码、合并 URL 或路径等。
+
+- **URL 类**：通过 `URL.parse(rawUrl)` 解析 URL 字符串，或通过构造函数 `URL(scheme!, hostName!, path!)` 构建 URL 对象。
+- **Form 类**：用于处理 URL 查询参数（key-value 形式），支持 `.add(key, value)` 和 `.get(key)` 操作。
+- **UserInfo 类**：表示 URL 中的用户信息（用户名和密码）。
+- 对包含非 ASCII 字符的 URL 进行百分号编码。
+
+### 2.8 stdx.crypto.crypto — 对称加密与安全随机数
+
+提供安全加密能力，包括：
+
+- **SecureRandom**：密码学安全的随机数生成器，可生成安全随机字节序列。构造函数 `SecureRandom(priv!: Bool = false)` 中 `priv` 参数指定是否使用私有随机源。
+- **SM4**：中国国密标准 SM4 对称加密/解密算法，支持 ECB、CBC、CTR、GCM 等操作模式（`OperationMode`），以及 PKCS7Padding、NoPadding 等填充模式（`PaddingMode`）。
+
+### 2.9 stdx.crypto.digest — 消息摘要算法
+
+提供常用的消息摘要（哈希）算法，支持对任意数据计算固定长度的摘要值：
+
+- **MD5**：128 位摘要（注意：已不推荐用于安全场景）。
+- **SHA 系列**：SHA1（160 位）、SHA224、SHA256（256 位）、SHA384、SHA512（512 位）。
+- **SM3**：中国国密标准哈希算法，256 位摘要。
+- **HMAC**：基于哈希的消息认证码，通过 `HMAC(key, algorithm)` 构建，支持所有上述哈希算法。
+- 所有算法通用方法：`write(Array<Byte>)` 输入数据、`finish(): Array<Byte>` 获取摘要、`reset()` 重置状态。
+
+### 2.10 stdx.crypto.keys — 非对称加密与签名
+
+提供非对称加密和数字签名算法：
+
+- **RSA**：`RSAPrivateKey(bits)` / `RSAPublicKey(pri)` — 支持公钥加密/私钥解密、私钥签名/公钥验签，支持 OAEP 和 PSS 填充模式。
+- **SM2**：`SM2PrivateKey()` / `SM2PublicKey(pri)` — 中国国密非对称加密算法。
+- **ECDSA**：`ECDSAPrivateKey(curve)` / `ECDSAPublicKey(pri)` — 椭圆曲线数字签名，支持 P224、P256、P384、P521 等曲线。
+- 所有密钥类型支持 PEM 格式的编解码。
+
+### 2.11 stdx.crypto.x509 — 数字证书处理
+
+提供 X509 数字证书的完整处理能力：
+
+- **证书解析**：从 PEM 或 DER 格式解析证书（`X509Certificate.decodeFromPem()` / `.decodeFromDer()`）。
+- **证书验证**：验证证书签名和有效期，支持证书链验证。
+- **证书创建**：创建自签名证书、构建证书链。
+- **证书签名请求（CSR）**：通过 `X509CertificateRequest` 创建和解析 CSR。
+- **证书信息**：访问证书的主体（`X509Name`）、颁发者、序列号、有效期、密钥用途（`KeyUsage`/`ExtKeyUsage`）等。
+
+### 2.12 stdx.log — 抽象日志接口
+
+提供一个**抽象**的日志 API，不绑定具体的日志实现，让库开发者可以在不依赖特定日志框架的情况下输出日志：
+
+- **Logger**（抽象类）：提供 `.trace()` `.debug()` `.info()` `.warn()` `.error()` `.fatal()` 等日志方法，每个方法接受消息字符串和可选的键值属性 `Attr`（类型为 `(String, LogValue)` 元组）。
+- **日志级别**：`LogLevel.TRACE` < `DEBUG` < `INFO` < `WARN` < `ERROR` < `FATAL` < `OFF`。
+- **全局 Logger**：通过 `setGlobalLogger(logger)` 设置，通过 `getGlobalLogger(attrs)` 获取（可附加属性）。
+- **惰性求值**：支持 `logger.trace({=> "expensive: ${compute()}"})` 形式，仅在日志级别启用时才计算消息内容。
+- **NoopLogger**：空实现，所有方法不执行任何操作。
+
+### 2.13 stdx.logger — 日志实现
+
+提供三种内置的 Logger 实现，均接受 `OutputStream` 参数用于指定输出目标：
+
+- **SimpleLogger**：传统文本格式 — `2025-04-15T10:30:00Z INFO msg key=value`
+- **TextLogger**：键值对文本格式 — `time=... level=INFO msg="..." key=value`
+- **JsonLogger**：JSON 格式 — `{"time":"...","level":"INFO","msg":"...","key":"value"}`
+
+### 2.14 stdx.serialization.serialization — 序列化框架
+
+提供通用的序列化与反序列化能力，通过中间层 `DataModel` 实现仓颉对象与各种数据格式的互转：
+
+- **Serializable\<T\> 接口**：自定义类型实现 `serialize(): DataModel` 和 `static deserialize(DataModel): T` 方法即可支持序列化。
+- **DataModel 类型体系**：`DataModelBool`、`DataModelInt`、`DataModelFloat`、`DataModelString`、`DataModelNull`（基本类型）、`DataModelSeq`（序列/数组）、`DataModelStruct`（结构体/对象）。
+- **Field**：`DataModelStruct` 的字段单元，通过 `field<T>(name, data)` 辅助函数创建。
+- 与 JSON 包联动：`DataModel.fromJson(jsonValue)` 和 `dataModel.toJson()` 实现与 JSON 的互转。
+
+### 2.15 stdx.compress.zlib — 压缩与解压缩
+
+提供基于 deflate 算法的数据压缩与解压缩功能，支持 deflate-raw 和 gzip 两种格式，采用流式 API：
+
+- **CompressInputStream / CompressOutputStream**：压缩流，将数据压缩后写入或读出。
+- **DecompressInputStream / DecompressOutputStream**：解压流，将压缩数据解压后写入或读出。
+- **压缩级别**（`CompressLevel`）：`DefaultCompression`（默认平衡）等。
+- **数据格式**（`WrapType`）：`DeflateFormat`（deflate-raw 格式）、`GzipFormat`（gzip 格式）。
+
+### 2.16 stdx.aspectCJ — 面向切面编程（AOP）
+
+提供仓颉中面向切面编程（Aspect Oriented Programming）相关的注解能力，通过编译器插件在编译期将切面逻辑织入目标函数：
+
+- **@InsertAtEntry**：在目标函数入口插入指定函数调用。
+- **@InsertAtExit**：在目标函数出口插入指定函数调用。
+- **@ReplaceFuncBody**：将目标函数体替换为指定函数调用。
+
+需要编译器插件 `libcollect-aspects.so`（收集阶段）和 `libwave-aspects.so`（织入阶段）配合使用。有泛型、可见性、参数类型匹配等约束条件。
+
+### 2.17 stdx.fuzz.fuzz — 模糊测试
+
+提供基于覆盖率反馈的模糊测试（Fuzzing）引擎，用于自动化发现 API 中的潜在缺陷：
+
+- **Fuzzer**：模糊测试引擎，由 `FuzzerBuilder` 构建。
+- **FuzzDataProvider**：将变异的字节流转换为标准仓颉类型（Int64、String、Bool、Array\<Byte\> 等），方便编写测试代码。
+- **DebugDataProvider**：带调试信息的数据提供者。
+- 仅支持 Linux 和 macOS，依赖 LLVM 的 `libclang_rt.fuzzer_no_main.a`。
+
+### 2.18 stdx.unittest.data — 参数化测试数据加载
+
+为参数化单元测试提供外部数据源加载能力，支持从文件加载测试数据并自动反序列化为仓颉对象：
+
+- `json<T>(filePath)` — 从 JSON 文件加载测试数据。
+- `csv<T>(filePath, ...)` — 从 CSV 文件加载测试数据（支持自定义分隔符、引号、注释字符等）。
+- `tsv<T>(filePath, ...)` — 从 TSV 文件加载测试数据。
+- 类型 T 需实现 `Serializable` 接口。
+
+---
+
+## 3. 项目配置、构建与运行
+
+### 3.1 下载 stdx
+
+**发行版下载页面**：<https://gitcode.com/Cangjie/cangjie_stdx/releases>
+
+根据操作系统和架构选择对应的发行版：
+
+| 平台 | 发行版名称示例 |
+|------|----------------|
+| Linux x86_64 | `linux_x86_64_cjnative` |
+| Linux aarch64 | `linux_aarch64_cjnative` |
+| macOS x86_64 | `macos_x86_64_cjnative` |
+| macOS aarch64 | `macos_aarch64_cjnative` |
+| Windows x86_64 | `windows_x86_64_cjnative` |
+
+下载并解压后，目录结构如下：
 
 ```text
 stdx/
-├── dynamic/       # 动态库
+├── dynamic/       # 动态库（含动态链接文件、cjo、bc 文件）
 │   └── stdx/
-└── static/        # 静态库
+└── static/        # 静态库（含静态链接文件、cjo、bc 文件）
     └── stdx/
 ```
 
-### 2.2 配置 cjpm.toml
+动态库和静态库**二选一**使用。
 
-在仓颉项目的 `cjpm.toml` 文件中添加 `bin-dependencies` 配置：
+### 3.2 获取系统架构信息
 
-**步骤 1**：获取系统架构信息
+在配置前，先确认编译器目标架构：
 
 ```shell
 cjc -v
@@ -70,7 +255,15 @@ cjc -v
 # Target: x86_64-unknown-linux-gnu
 ```
 
-**步骤 2**：在 `cjpm.toml` 中添加配置
+其中 `Target` 后的字符串（如 `x86_64-unknown-linux-gnu`）即为后续配置所需的架构标识。
+
+### 3.3 使用 cjpm 构建（推荐）
+
+#### 3.3.1 动态库配置
+
+在项目 `cjpm.toml` 中添加 `bin-dependencies` 配置，`path-option` 指向 `dynamic/stdx` 目录：
+
+**Linux x86_64**：
 
 ```toml
 [package]
@@ -81,67 +274,229 @@ cjc -v
 
 [dependencies]
 
-# Linux x86_64 示例
 [target.x86_64-unknown-linux-gnu]
   [target.x86_64-unknown-linux-gnu.bin-dependencies]
-    path-option = ["/path/to/stdx/dynamic/stdx"]  # 替换为实际 stdx 路径
-
-# Windows x86_64 示例
-# [target.x86_64-w64-mingw32]
-#   [target.x86_64-w64-mingw32.bin-dependencies]
-#     path-option = ["D:\\path\\to\\stdx\\dynamic\\stdx"]
-
-# macOS aarch64 示例
-# [target.aarch64-apple-darwin]
-#   [target.aarch64-apple-darwin.bin-dependencies]
-#     path-option = ["/path/to/stdx/dynamic/stdx"]
+    path-option = ["/path/to/stdx/dynamic/stdx"]
 ```
 
-> **说明**：
-> - 动态库和静态库二选一，通过 `path-option` 指向对应目录
-> - 使用 crypto 和 net 包的**静态库**时，Linux 需额外添加 `compile-option = "-ldl"`，Windows 需额外添加 `compile-option = "-lcrypt32"`
-> - crypto 和 net 模块依赖 OpenSSL 3
+**macOS aarch64**：
 
-### 2.3 导入使用
+```toml
+[target.aarch64-apple-darwin]
+  [target.aarch64-apple-darwin.bin-dependencies]
+    path-option = ["/path/to/stdx/dynamic/stdx"]
+```
 
-```cangjie
-import stdx.net.http.*           // HTTP 包
-import stdx.encoding.json.*     // JSON 包
-import stdx.encoding.base64.*   // Base64 包
-import stdx.log.*               // 日志 API 包
-import stdx.crypto.digest.*     // 摘要算法包
-// 等等...
+**Windows x86_64**：
+
+```toml
+[target.x86_64-w64-mingw32]
+  [target.x86_64-w64-mingw32.bin-dependencies]
+    path-option = ["D:\\path\\to\\stdx\\dynamic\\stdx"]
+```
+
+构建与运行：
+
+```shell
+cjpm build
+cjpm run
+```
+
+> **说明**：使用 `cjpm run` 运行时，工具会自动配置动态库依赖路径，无需额外设置环境变量，可直接运行。
+
+如果需要**独立部署运行**编译产物（即不通过 `cjpm run`，而是直接执行编译出的可执行文件），则需要手动设置动态库搜索路径：
+
+| 操作系统 | 环境变量 | 示例 |
+|----------|----------|------|
+| Linux | `LD_LIBRARY_PATH` | `export LD_LIBRARY_PATH=/path/to/stdx/dynamic/stdx:$LD_LIBRARY_PATH` |
+| macOS | `DYLD_LIBRARY_PATH` | `export DYLD_LIBRARY_PATH=/path/to/stdx/dynamic/stdx:$DYLD_LIBRARY_PATH` |
+| Windows | `PATH` | 将 stdx 动态库目录添加到 `PATH` 中 |
+
+#### 3.3.2 静态库配置
+
+将 `path-option` 指向 `static/stdx` 目录。使用 crypto 和 net 包的静态库时，由于依赖系统符号，需要额外添加 `compile-option`：
+
+**Linux x86_64（静态库 + crypto/net）**：
+
+```toml
+[package]
+  name = "myproject"
+  version = "1.0.0"
+  output-type = "executable"
+  compile-option = "-ldl"
+
+[dependencies]
+
+[target.x86_64-unknown-linux-gnu]
+  [target.x86_64-unknown-linux-gnu.bin-dependencies]
+    path-option = ["/path/to/stdx/static/stdx"]
+```
+
+**Windows x86_64（静态库 + crypto/net）**：
+
+```toml
+[package]
+  name = "myproject"
+  version = "1.0.0"
+  output-type = "executable"
+  compile-option = "-lcrypt32"
+
+[target.x86_64-w64-mingw32]
+  [target.x86_64-w64-mingw32.bin-dependencies]
+    path-option = ["D:\\path\\to\\stdx\\static\\stdx"]
+```
+
+**macOS aarch64（静态库）**：macOS 下使用静态库无需额外 `compile-option`。
+
+```toml
+[package]
+  name = "myproject"
+  version = "1.0.0"
+  output-type = "executable"
+
+[target.aarch64-apple-darwin]
+  [target.aarch64-apple-darwin.bin-dependencies]
+    path-option = ["/path/to/stdx/static/stdx"]
+```
+
+静态库编译的产物无需设置动态库搜索路径，可直接运行：
+
+```shell
+cjpm build
+cjpm run
+```
+
+#### 3.3.3 静态库与动态库选择指南
+
+| 维度 | 动态库 | 静态库 |
+|------|--------|--------|
+| 产物体积 | 小（运行时加载 .so/.dll/.dylib） | 大（链接进可执行文件） |
+| 部署便利性 | 需随产物分发动态库或配置搜索路径 | 单文件部署，无外部依赖 |
+| 额外配置 | 运行前设置 `LD_LIBRARY_PATH` 等 | Linux 需 `-ldl`，Windows 需 `-lcrypt32`（仅 crypto/net） |
+
+### 3.4 使用 cjc 直接编译
+
+如果不使用 cjpm，可通过 `cjc` 命令直接编译，需手动指定库路径和链接选项。
+
+**设置 stdx 路径**：
+
+```shell
+# Linux / macOS
+export CANGJIE_STDX_PATH=/path/to/stdx/dynamic/stdx
+
+# Windows (PowerShell)
+$env:CANGJIE_STDX_PATH = "D:\path\to\stdx\dynamic\stdx"
+```
+
+**Linux / macOS 编译命令**：
+
+```shell
+cjc main.cj -L $CANGJIE_STDX_PATH \
+  -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log \
+  -lstdx.encoding.url -lstdx.encoding.json -lstdx.encoding.json.stream \
+  -lstdx.encoding.base64 -lstdx.encoding.hex \
+  -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.crypto.crypto -lstdx.crypto.digest \
+  -lstdx.serialization.serialization -lstdx.compress.zlib -lstdx.compress \
+  -lstdx.aspectCJ \
+  -ldl \
+  --import-path $CANGJIE_STDX_PATH \
+  -o main.out
+```
+
+**Windows 编译命令**（将 `-ldl` 替换为 `-lcrypt32`）：
+
+```shell
+cjc main.cj -L %CANGJIE_STDX_PATH% ^
+  -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log ^
+  -lstdx.encoding.url -lstdx.encoding.json -lstdx.encoding.json.stream ^
+  -lstdx.encoding.base64 -lstdx.encoding.hex ^
+  -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.crypto.crypto -lstdx.crypto.digest ^
+  -lstdx.serialization.serialization -lstdx.compress.zlib -lstdx.compress ^
+  -lstdx.aspectCJ ^
+  -lcrypt32 ^
+  --import-path %CANGJIE_STDX_PATH% ^
+  -o main.exe
+```
+
+> **说明**：按需链接使用的包即可，无需全部链接。链接顺序需遵循依赖关系（被依赖的包放在后面）。使用静态库时将路径指向 `static/stdx`。
+
+**运行前设置动态库搜索路径**（使用动态库时）：
+
+```shell
+# Linux
+export LD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$LD_LIBRARY_PATH
+./main.out
+
+# macOS
+export DYLD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$DYLD_LIBRARY_PATH
+./main.out
+
+# Windows — 将 stdx 路径添加到 PATH
+```
+
+### 3.5 OpenSSL 依赖
+
+crypto 和 net 模块依赖 **OpenSSL 3** 库，需确保系统已安装：
+
+| 操作系统 | 安装方式 |
+|----------|----------|
+| Ubuntu/Debian | `sudo apt install libssl-dev` |
+| macOS | `brew install openssl@3` |
+| Windows | 下载 OpenSSL 3 安装包并配置 PATH |
+
+### 3.6 从源码构建 stdx
+
+```shell
+git clone https://gitcode.com/Cangjie/cangjie_stdx.git
+cd cangjie_stdx
+source <cangjie sdk 路径>/envsetup.sh    # 配置 Cangjie SDK 环境，如 source /opt/cangjie/envsetup.sh
+python3 build.py clean
+python3 build.py build -t release --target-lib=<openssl lib 路径>  # 如 --target-lib=/usr/lib/x86_64-linux-gnu
+python3 build.py install     # 产物输出到 target 目录
 ```
 
 ---
 
-## 3. HTTP 服务与客户端（stdx.net.http）— 详细介绍
+## 4. 完整示例
 
-**导入**：`import stdx.net.http.*`
+### 4.1 HTTP 服务端 + 客户端
 
-支持 HTTP/1.1、HTTP/2 协议和 WebSocket。
+**cjpm.toml 配置**（Linux x86_64 动态库）：
 
-### 3.1 创建 HTTP 服务端
+```toml
+[package]
+  name = "http_demo"
+  version = "1.0.0"
+  output-type = "executable"
+
+[dependencies]
+
+[target.x86_64-unknown-linux-gnu]
+  [target.x86_64-unknown-linux-gnu.bin-dependencies]
+    path-option = ["/path/to/stdx/dynamic/stdx"]
+```
+
+**HTTP 服务端**（创建一个简单的 HTTP 服务器并注册多个路由）：
 
 ```cangjie
-import stdx.net.http.*
+import stdx.net.http.{ServerBuilder, HttpRequestHandler, FuncHandler}
 
 main() {
-    // 1. 构建 Server
+    // 1. 构建 Server 实例
     let server = ServerBuilder()
                     .addr("127.0.0.1")
                     .port(8080)
                     .build()
 
-    // 2. 注册路由处理器
-    server.distributor.register("/hello", {httpContext =>
+    // 2. 注册多个路由处理器
+    server.distributor.register("/index", {httpContext =>
         httpContext.responseBuilder.body("Hello 仓颉!")
     })
-
-    server.distributor.register("/json", {httpContext =>
-        httpContext.responseBuilder
-            .header("Content-Type", "application/json")
-            .body("{\"msg\": \"ok\"}")
+    server.distributor.register("/id", {httpContext =>
+        httpContext.responseBuilder.body("id page")
+    })
+    server.distributor.register("/help", {httpContext =>
+        httpContext.responseBuilder.body("help page")
     })
 
     // 3. 启动服务
@@ -149,676 +504,473 @@ main() {
 }
 ```
 
-#### ServerBuilder 常用配置
-
-```cangjie
-let server = ServerBuilder()
-    .addr("0.0.0.0")                    // 监听地址
-    .port(8080)                          // 监听端口
-    .readTimeout(Duration.second * 30)   // 读超时
-    .writeTimeout(Duration.second * 30)  // 写超时
-    .maxRequestBodySize(10 * 1024 * 1024) // 最大请求体 10MB
-    .build()
-```
-
-#### 关闭服务
-
-```cangjie
-server.close()              // 立即关闭
-server.closeGracefully()    // 优雅关闭（等待进行中的请求完成）
-```
-
-### 3.2 创建 HTTP 客户端
+**HTTP 客户端**（发送 GET 请求并读取响应）：
 
 ```cangjie
 import stdx.net.http.*
+import std.io.*
 
 main() {
-    // 1. 构建 Client
+    // 1. 构建 Client 实例
     let client = ClientBuilder().build()
 
     // 2. 发送 GET 请求
-    let response = client.get("http://127.0.0.1:8080/hello")
-    println(response.status)  // 200
+    let rsp = client.get("http://127.0.0.1:8080/index")
 
     // 3. 读取响应体
-    let body = StringReader(response.body).readToEnd()
-    println(body)  // "Hello 仓颉!"
+    let buf = Array<UInt8>(1024, repeat: 0)
+    let len = rsp.body.read(buf)
+    println(String.fromUtf8(buf[..len]))
 
-    // 4. 发送 POST 请求
-    let postResp = client.post("http://127.0.0.1:8080/api",
-                               "{\"name\": \"test\"}")
-
-    // 5. 自定义请求
-    let req = HttpRequestBuilder()
-        .url("http://127.0.0.1:8080/api")
-        .method("PUT")
-        .header("Content-Type", "application/json")
-        .body("{\"key\": \"value\"}")
-        .build()
-    let resp = client.send(req)
-
+    // 4. 关闭客户端
     client.close()
 }
 ```
 
-#### ClientBuilder 常用配置
-
-```cangjie
-let client = ClientBuilder()
-    .readTimeout(Duration.second * 10)   // 读超时
-    .writeTimeout(Duration.second * 10)  // 写超时
-    .autoRedirect(true)                  // 自动跟随重定向
-    .cookieJar(CookieJar())             // Cookie 管理
-    .httpProxy("http://proxy:3128")      // HTTP 代理
-    .build()
-```
-
-### 3.3 WebSocket
+### 4.2 HTTP 服务端设置 Cookie
 
 ```cangjie
 import stdx.net.http.*
+import std.net.*
+import std.sync.*
 
-// 客户端 WebSocket 连接
-let client = ClientBuilder().build()
-let (ws, headers) = WebSocket.upgradeFromClient(
-    client,
-    URL.parse("ws://127.0.0.1:8080/ws"),
-    HTTP1_1,
-    ArrayList<String>(),
-    HttpHeaders()
-)
+main(): Unit {
+    let serverOn = SyncCounter(1)
+    spawn {
+        serverSetCookie(serverOn)
+    }
+    serverOn.waitUntilZero()
+    clientPacketCapture()
+}
 
-// 发送文本帧
-ws.write(TextWebFrame, "Hello WebSocket".toArray())
+func serverSetCookie(serverOn: SyncCounter): Unit {
+    let server = ServerBuilder()
+                    .addr("127.0.0.1")
+                    .port(8080)
+                    .build()
+    server.afterBind({=> serverOn.dec()})
+    server.distributor.register("/index", {httpContext =>
+        let cookie = Cookie("name", "value")
+        httpContext.responseBuilder
+            .header("Set-Cookie", cookie.toSetCookieString())
+            .body("Hello 仓颉!")
+    })
+    server.serve()
+}
 
-// 读取帧
-let frame = ws.read()
-println(String.fromUtf8(frame.payload))
-
-// 关闭连接
-ws.writeCloseFrame(status: 1000)
-```
-
-### 3.4 HTTPS（TLS 配置）
-
-```cangjie
-import stdx.net.http.*
-import stdx.net.tls.*
-
-// 服务端 HTTPS
-let server = ServerBuilder()
-    .addr("0.0.0.0")
-    .port(443)
-    .tlsConfig(TlsServerConfig(
-        certFilePath: "/path/to/cert.pem",
-        keyFilePath: "/path/to/key.pem"
-    ))
-    .build()
-
-// 客户端 HTTPS
-let client = ClientBuilder()
-    .tlsConfig(TlsClientConfig(
-        caCertFilePath: "/path/to/ca.pem"
-    ))
-    .build()
-```
-
----
-
-## 4. JSON 编解码（stdx.encoding.json / json.stream）— 详细介绍
-
-### 4.1 JSON 解析与构建（stdx.encoding.json）
-
-**导入**：`import stdx.encoding.json.*`
-
-#### 解析 JSON 字符串
-
-```cangjie
-import stdx.encoding.json.*
-
-// 从字符串解析
-let jsonStr = """{"name": "Alice", "age": 30, "scores": [90, 85]}"""
-let jsonVal = JsonValue.fromStr(jsonStr)
-
-// 访问字段
-let obj = jsonVal.asObject()
-let name = obj["name"].asString().getValue()     // "Alice"
-let age = obj["age"].asInt().getValue()           // 30
-let scores = obj["scores"].asArray()
-let first = scores[0].asInt().getValue()          // 90
-```
-
-#### 构建 JSON
-
-```cangjie
-import stdx.encoding.json.*
-
-let obj = JsonObject()
-obj.put("name", JsonString("Bob"))
-obj.put("age", JsonInt(25))
-obj.put("active", JsonBool(true))
-
-let arr = JsonArray()
-arr.add(JsonInt(1))
-arr.add(JsonInt(2))
-obj.put("tags", arr)
-
-// 序列化为字符串
-let jsonStr = obj.toJsonString()
-// {"name": "Bob", "age": 25, "active": true, "tags": [1, 2]}
-```
-
-#### JsonValue 类型体系
-
-| 类型 | 对应 JSON | 获取值方法 |
-|------|-----------|------------|
-| `JsonObject` | `{...}` | `get(key)`, `operator[]` |
-| `JsonArray` | `[...]` | `get(index)`, `operator[]` |
-| `JsonString` | `"..."` | `getValue(): String` |
-| `JsonInt` | 整数 | `getValue(): Int64` |
-| `JsonFloat` | 浮点数 | `getValue(): Float64` |
-| `JsonBool` | `true/false` | `getValue(): Bool` |
-| `JsonNull` | `null` | — |
-
-#### 类型判断
-
-```cangjie
-let val = JsonValue.fromStr(jsonStr)
-match (val.kind()) {
-    case JsObject => let obj = val.asObject()
-    case JsArray => let arr = val.asArray()
-    case JsString => let s = val.asString().getValue()
-    case JsInt => let i = val.asInt().getValue()
-    case JsFloat => let f = val.asFloat().getValue()
-    case JsBool => let b = val.asBool().getValue()
-    case JsNull => // null
+func clientPacketCapture(): Unit {
+    let client = TcpSocket("127.0.0.1", 8080)
+    client.connect()
+    let request = "GET /index HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n".toArray()
+    client.write(request)
+    let buf = Array<UInt8>(500, repeat: 0)
+    var len = client.read(buf)
+    println(String.fromUtf8(buf[..len]))
 }
 ```
 
-### 4.2 JSON 流式序列化（stdx.encoding.json.stream）
+### 4.3 JSON 解析与构建
 
-**导入**：`import stdx.encoding.json.stream.*`
+```cangjie
+import stdx.encoding.json.*
+import std.collection.*
 
-适合将自定义类型与 JSON 进行互转。
+main() {
+    // === 从字符串解析 JSON ===
+    var str = ##"[true,"kjjjke\"eed",{"sdfd":"ggggg","eeeee":[341,false,{"nnnn":55.87}]},3422,22.341,false,[22,22.22,true,"ddd"],43]"##
+    var jv: JsonValue = JsonValue.fromStr(str)
 
-#### 序列化（对象 → JSON 流）
+    // 紧凑格式输出
+    println(jv.toString())
+    // 格式化输出
+    println(jv.toJsonString())
+
+    // === 构建 JSON ===
+    var obj = JsonObject()
+    obj.put("name", JsonString("Alice"))
+    obj.put("age", JsonInt(30))
+    obj.put("active", JsonBool(true))
+
+    var arr = JsonArray()
+    arr.add(JsonInt(1))
+    arr.add(JsonInt(2))
+    arr.add(JsonString("hello"))
+    obj.put("tags", arr)
+
+    println(obj.toJsonString())
+}
+```
+
+### 4.4 JSON 与自定义类型互转（通过 DataModel 序列化）
+
+```cangjie
+import stdx.serialization.serialization.*
+import stdx.encoding.json.*
+
+class Location <: Serializable<Location> {
+    var country: String = ""
+    var province: String = ""
+
+    public func serialize(): DataModel {
+        return DataModelStruct()
+            .add(field<String>("country", country))
+            .add(field<String>("province", province))
+    }
+
+    public static func deserialize(dm: DataModel): Location {
+        var dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        var result = Location()
+        result.country = String.deserialize(dms.get("country"))
+        result.province = String.deserialize(dms.get("province"))
+        return result
+    }
+}
+
+class Person <: Serializable<Person> {
+    var name: String = ""
+    var age: Int64 = 0
+    var loc: Option<Location> = Option<Location>.None
+
+    public func serialize(): DataModel {
+        return DataModelStruct()
+            .add(field<String>("name", name))
+            .add(field<Int64>("age", age))
+            .add(field<Option<Location>>("loc", loc))
+    }
+
+    public static func deserialize(dm: DataModel): Person {
+        var dms = match (dm) {
+            case data: DataModelStruct => data
+            case _ => throw Exception("this data is not DataModelStruct")
+        }
+        var result = Person()
+        result.name = String.deserialize(dms.get("name"))
+        result.age = Int64.deserialize(dms.get("age"))
+        result.loc = Option<Location>.deserialize(dms.get("loc"))
+        return result
+    }
+}
+
+main() {
+    // JSON 字符串 → Person 对象
+    var js = ##"{
+    "name": "A",
+    "age": 30,
+    "loc": {
+        "country": "China",
+        "province": "Beijing"
+    }
+}"##
+
+    var jv = JsonValue.fromStr(js)
+    var dm = DataModel.fromJson(jv)
+    var person = Person.deserialize(dm)
+    println("name == ${person.name}")
+    println("age == ${person.age}")
+    println("country == ${person.loc.getOrThrow().country}")
+    println("province == ${person.loc.getOrThrow().province}")
+    println("====================")
+
+    // Person 对象 → JSON 字符串
+    dm = person.serialize()
+    var jo = dm.toJson().asObject()
+    println(jo.toJsonString())
+}
+```
+
+### 4.5 JSON 流式序列化与反序列化
+
+**序列化（对象 → JSON 流）**：
+
+```cangjie
+import stdx.encoding.json.stream.*
+import std.io.{ByteBuffer, readToEnd}
+
+class Image <: JsonSerializable {
+    var width: Int64 = 0
+    var height: Int64 = 0
+    var title: String = ""
+    var ids: Array<Int64> = Array<Int64>()
+
+    public func toJson(w: JsonWriter): Unit {
+        w.startObject()
+        w.writeName("Width").writeValue(width)
+        w.writeName("Height").writeValue(height)
+        w.writeName("Title").writeValue(title)
+        w.writeName("Ids").writeValue<Array<Int64>>(ids)
+        w.endObject()
+    }
+}
+
+main() {
+    let image = Image()
+    image.width = 800
+    image.height = 600
+    image.title = "View from 15th Floor"
+    image.ids = [116, 943, 234, 38793]
+
+    let stream = ByteBuffer()
+    let writer = JsonWriter(stream)
+    writer.writeValue(image)
+    writer.flush()
+    println(String.fromUtf8(readToEnd(stream)))
+    // 输出: {"Width":800,"Height":600,"Title":"View from 15th Floor","Ids":[116,943,234,38793]}
+}
+```
+
+**反序列化（JSON 流 → 对象）**：
 
 ```cangjie
 import stdx.encoding.json.stream.*
 import std.io.*
+import std.collection.*
 
-let output = ByteArrayOutputStream()
-let writer = JsonWriter(output)
+class Config <: JsonDeserializable<Config> {
+    var key1: Option<String> = None
+    var key2: Bool = false
+    var key3: Float64 = 0.0
+    var key4: String = ""
+    var key5: Array<Int64> = Array<Int64>()
+    var key6: HashMap<String, String> = HashMap<String, String>()
 
-writer.startObject()
-    .writeName("name").writeValue("Alice")
-    .writeName("age").writeValue(30)
-    .writeName("scores")
-    .startArray()
-        .writeValue(90).writeValue(85)
-    .endArray()
-.endObject()
-writer.flush()
-
-let jsonStr = String.fromUtf8(output.toByteArray())
-// {"name":"Alice","age":30,"scores":[90,85]}
-```
-
-#### 反序列化（JSON 流 → 对象）
-
-```cangjie
-import stdx.encoding.json.stream.*
-import std.io.*
-
-let input = ByteArrayInputStream(jsonStr.toArray())
-let reader = JsonReader(input)
-
-reader.startObject()
-while (reader.peek() != None) {
-    let key = reader.readName()
-    match (key) {
-        case "name" => let name: String = reader.readValue<String>()
-        case "age" => let age: Int64 = reader.readValue<Int64>()
-        case _ => reader.skip()
-    }
-}
-reader.endObject()
-```
-
-#### 自定义类型序列化
-
-```cangjie
-import stdx.encoding.json.stream.*
-
-class Person <: JsonSerializable & JsonDeserializable<Person> {
-    var name: String
-    var age: Int64
-
-    public func toJson(writer: JsonWriter): Unit {
-        writer.startObject()
-            .writeName("name").writeValue(name)
-            .writeName("age").writeValue(age)
-        .endObject()
-    }
-
-    public static func fromJson(reader: JsonReader): Person {
-        let p = Person()
-        reader.startObject()
-        while (reader.peek() != None) {
-            match (reader.readName()) {
-                case "name" => p.name = reader.readValue<String>()
-                case "age" => p.age = reader.readValue<Int64>()
-                case _ => reader.skip()
+    public static func fromJson(r: JsonReader): Config {
+        var res = Config()
+        while (let Some(v) <- r.peek()) {
+            match (v) {
+                case BeginObject =>
+                    r.startObject()
+                    while (r.peek() != EndObject) {
+                        let n = r.readName()
+                        match (n) {
+                            case "key1" => res.key1 = r.readValue<Option<String>>()
+                            case "key2" => res.key2 = r.readValue<Bool>()
+                            case "key3" => res.key3 = r.readValue<Float64>()
+                            case "key4" => res.key4 = r.readValue<String>()
+                            case "key5" => res.key5 = r.readValue<Array<Int64>>()
+                            case "key6" => res.key6 = r.readValue<HashMap<String, String>>()
+                            case _ => ()
+                        }
+                    }
+                    r.endObject()
+                    break
+                case _ => throw Exception()
             }
         }
-        reader.endObject()
-        return p
+        return res
     }
+}
+
+main() {
+    let jsonStr = ##"{"key1": null, "key2": true, "key3": 123.456, "key4": "string", "key5": [123, 456], "key6": {"key7": " ", "key8": "\\a"}}"##
+    var bas = ByteBuffer()
+    unsafe { bas.write(jsonStr.rawData()) }
+    var reader = JsonReader(bas)
+    var obj = Config.fromJson(reader)
+    println("key1: ${obj.key1}")
+    println("key2: ${obj.key2}")
+    println("key3: ${obj.key3}")
+    println("key4: ${obj.key4}")
 }
 ```
 
----
+### 4.6 日志记录
 
-## 5. 编码工具（stdx.encoding）— 详细介绍
+```cangjie
+import stdx.log.*
+import stdx.logger.*
+import std.env.*
 
-### 5.1 Base64（stdx.encoding.base64）
+// 库开发者：使用抽象日志接口
+public class PGConnection {
+    let objId: Int64 = 1
+    let logger = getGlobalLogger(("name", "PGConnection"))
 
-**导入**：`import stdx.encoding.base64.*`
+    public func close(): Unit {
+        logger.trace("driver conn closed", ("id", objId))
+    }
+}
+
+main(): Unit {
+    // 应用开发者：选择具体日志实现
+    let logger = SimpleLogger(getStdOut())
+    logger.level = LogLevel.TRACE
+    setGlobalLogger(logger)
+
+    // 使用日志
+    logger.info("Application started", ("version", "1.0.0"))
+    logger.debug("Processing request", ("path", "/api"))
+    logger.error("Something went wrong", ("code", 500))
+
+    // 库代码也能正常输出日志
+    var conn = PGConnection()
+    conn.close()
+}
+```
+
+**JsonLogger 示例**：
+
+```cangjie
+import std.io.{OutputStream, BufferedOutputStream}
+import std.env.*
+import stdx.log.*
+import stdx.logger.*
+
+main() {
+    let bo = BufferedOutputStream<OutputStream>(getStdOut())
+    let logger = JsonLogger(bo)
+    logger.level = LogLevel.TRACE
+    setGlobalLogger(logger)
+
+    let appLogger = getGlobalLogger([("name", "main")])
+    appLogger.info("Hello, World!", ("k1", [[1, 4], [2, 5], [3]]), ("env", "production"))
+    appLogger.debug("Debug info", ("module", "auth"))
+    // 输出 JSON 格式日志
+}
+```
+
+### 4.7 消息摘要（哈希）
+
+```cangjie
+import stdx.crypto.digest.*
+import stdx.encoding.hex.*
+
+main() {
+    var str: String = "helloworld"
+
+    // MD5 摘要
+    var md5Instance = MD5()
+    md5Instance.write(str.toArray())
+    var md5Result = toHexString(md5Instance.finish())
+    println("MD5: ${md5Result}")
+
+    // SHA256 摘要
+    var sha256Instance = SHA256()
+    sha256Instance.write(str.toArray())
+    var sha256Result = toHexString(sha256Instance.finish())
+    println("SHA256: ${sha256Result}")
+
+    // HMAC-SHA512
+    var key: Array<UInt8> = "cangjie".toArray()
+    var data: Array<UInt8> = "123456789".toArray()
+    var hmac = HMAC(key, HashType.SHA512)
+    hmac.write(data)
+    var hmacResult = toHexString(hmac.finish())
+    println("HMAC-SHA512: ${hmacResult}")
+}
+```
+
+### 4.8 Gzip 文件压缩与解压缩
+
+```cangjie
+import stdx.compress.zlib.*
+import std.fs.*
+
+main() {
+    // 创建测试数据
+    var arr: Array<Byte> = Array<Byte>(1024 * 1024, {i => UInt8(i % 256)})
+    File.writeTo("./test.txt", arr)
+
+    // 压缩
+    compressFile("./test.txt", "./test.gz")
+    println("Compression done.")
+
+    // 解压
+    decompressFile("./test.gz", "./test_restored.txt")
+    println("Decompression done.")
+
+    // 验证
+    if (File.readFrom("./test.txt") == File.readFrom("./test_restored.txt")) {
+        println("Verification: success")
+    } else {
+        println("Verification: failed")
+    }
+
+    // 清理
+    remove("./test.txt")
+    remove("./test.gz")
+    remove("./test_restored.txt")
+}
+
+func compressFile(srcPath: String, destPath: String): Unit {
+    var srcFile = File(srcPath, Read)
+    var destFile = File(destPath, Write)
+    var compressOut = CompressOutputStream(destFile, wrap: GzipFormat, bufLen: 10000)
+    var buf = Array<UInt8>(1024, repeat: 0)
+    while (true) {
+        var n = srcFile.read(buf)
+        if (n > 0) {
+            compressOut.write(buf.slice(0, n).toArray())
+        } else {
+            break
+        }
+    }
+    compressOut.flush()
+    compressOut.close()
+    srcFile.close()
+    destFile.close()
+}
+
+func decompressFile(srcPath: String, destPath: String): Unit {
+    var srcFile = File(srcPath, Read)
+    var destFile = File(destPath, Write)
+    var decompressIn = DecompressInputStream(srcFile, wrap: GzipFormat, bufLen: 10000)
+    var buf = Array<UInt8>(1024, repeat: 0)
+    while (true) {
+        var n = decompressIn.read(buf)
+        if (n <= 0) { break }
+        destFile.write(buf.slice(0, n).toArray())
+    }
+    decompressIn.close()
+    srcFile.close()
+    destFile.close()
+}
+```
+
+### 4.9 Base64 与 Hex 编解码
 
 ```cangjie
 import stdx.encoding.base64.*
-
-// 编码
-let encoded = toBase64String([77, 97, 110])  // "TWFu"
-
-// 解码
-let decoded = fromBase64String("TWFu")        // [77, 97, 110]
-
-// 常用场景：二进制数据转文本传输
-let data = "Hello".toArray()
-let b64 = toBase64String(data)
-let original = fromBase64String(b64)
-```
-
-### 5.2 Hex（stdx.encoding.hex）
-
-**导入**：`import stdx.encoding.hex.*`
-
-```cangjie
 import stdx.encoding.hex.*
 
-// 编码
-let hexStr = toHexString([65, 66, 94, 97])  // "41425e61"
+main() {
+    let data = "Hello, 仓颉!".toArray()
 
-// 解码
-let bytes = fromHexString("41425e61")        // [65, 66, 94, 97]
+    // Base64 编解码
+    let b64Encoded = toBase64String(data)
+    println("Base64: ${b64Encoded}")
+    let b64Decoded = fromBase64String(b64Encoded)
+    println("Decoded: ${String.fromUtf8(b64Decoded)}")
+
+    // Hex 编解码
+    let hexEncoded = toHexString(data)
+    println("Hex: ${hexEncoded}")
+    let hexDecoded = fromHexString(hexEncoded)
+    println("Decoded: ${String.fromUtf8(hexDecoded)}")
+}
 ```
 
-### 5.3 URL（stdx.encoding.url）
-
-**导入**：`import stdx.encoding.url.*`
+### 4.10 URL 解析
 
 ```cangjie
 import stdx.encoding.url.*
 
-// 解析 URL
-let url = URL.parse("https://example.com:8080/api/v1?key=value#section")
-println(url.scheme)    // "https"
-println(url.host)      // "example.com"
-println(url.port)      // 8080
-println(url.path)      // "/api/v1"
-println(url.query)     // "key=value"
-println(url.fragment)  // "section"
-
-// URL 表单参数处理
-let form = Form()
-form.add("name", "张三")
-form.add("age", "30")
-let encoded = form.toString()  // URL 编码后的参数字符串
-```
-
----
-
-## 6. 加密与安全（stdx.crypto）— 简略介绍
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/crypto/` 目录下的原始文档。
-
-### 6.1 消息摘要（stdx.crypto.digest）
-
-**导入**：`import stdx.crypto.digest.*`
-
-支持算法：MD5、SHA1、SHA224、SHA256、SHA384、SHA512、SM3、HMAC
-
-```cangjie
-import stdx.crypto.digest.*
-
-// SHA256 摘要
-let sha = SHA256()
-sha.update("Hello".toArray())
-let hash = sha.finish()  // 返回摘要字节数组
-
-// HMAC
-let hmac = HMAC(SHA256(), key)
-hmac.update("message".toArray())
-let mac = hmac.finish()
-```
-
-### 6.2 对称加密（stdx.crypto.crypto）
-
-**导入**：`import stdx.crypto.crypto.*`
-
-- **SM4** 对称加密（中国国密标准）
-- **SecureRandom** 安全随机数生成
-- 支持 ECB、CBC、CTR 等操作模式
-
-### 6.3 非对称加密与签名（stdx.crypto.keys）
-
-**导入**：`import stdx.crypto.keys.*`
-
-- **RSA**：公钥加密/私钥解密、私钥签名/公钥验签，支持 OAEP 和 PSS 填充
-- **SM2**：中国国密非对称加密算法
-- **ECDSA**：椭圆曲线数字签名，支持多种曲线（P256、P384、P521 等）
-
-### 6.4 数字证书（stdx.crypto.x509）
-
-**导入**：`import stdx.crypto.x509.*`
-
-- X509 证书解析（PEM/DER 格式）
-- 证书验证与证书链构建
-- 证书签名请求（CSR）创建
-- 自签名证书生成
-
----
-
-## 7. TLS 安全通信（stdx.net.tls）— 简略介绍
-
-**导入**：`import stdx.net.tls.*`
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/net/tls/` 目录下的原始文档。
-
-- 支持 TLS 1.2 和 TLS 1.3
-- `TlsSocket` — 加密套接字通信
-- `TlsClientConfig` / `TlsServerConfig` — 客户端/服务端 TLS 配置
-- 支持会话恢复（Session Resumption）
-- 支持多种证书验证模式和签名算法
-- 通常通过 HTTP 模块的 `tlsConfig()` 集成使用（见第 3 节 HTTPS 配置）
-
----
-
-## 8. 日志（stdx.log + stdx.logger）— 详细介绍
-
-### 8.1 日志 API（stdx.log）
-
-**导入**：`import stdx.log.*`
-
-提供抽象日志接口，不依赖具体实现。
-
-```cangjie
-import stdx.log.*
-
-// 获取全局 Logger
-let logger = getGlobalLogger()
-
-// 设置全局 Logger
-setGlobalLogger(myLogger)
-
-// 日志级别：TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
-```
-
-### 8.2 日志实现（stdx.logger）
-
-**导入**：`import stdx.logger.*`
-
-提供三种内置 Logger：
-
-```cangjie
-import stdx.log.*
-import stdx.logger.*
-
-// 1. SimpleLogger — 简单文本格式
-let logger = SimpleLogger("MyApp")
-setGlobalLogger(logger)
-logger.info("Server started", ("port", 8080))
-// 输出：2025-04-15T10:30:00Z INFO Server started port=8080
-
-// 2. TextLogger — 键值对文本格式
-let textLogger = TextLogger("MyApp")
-textLogger.info("Request received", ("method", "GET"), ("path", "/api"))
-// 输出：time=2025-04-15T10:30:00Z level=INFO msg="Request received" method=GET path=/api
-
-// 3. JsonLogger — JSON 格式
-let jsonLogger = JsonLogger("MyApp")
-jsonLogger.info("Event", ("user", "alice"))
-// 输出：{"time":"...","level":"INFO","msg":"Event","user":"alice"}
-```
-
-#### 日志方法
-
-```cangjie
-logger.trace("详细跟踪信息")
-logger.debug("调试信息")
-logger.info("一般信息", ("key", "value"))
-logger.warn("警告信息")
-logger.error("错误信息", ("error", errMsg))
-logger.fatal("致命错误")
-
-// 惰性求值（仅在日志级别启用时计算）
-logger.trace({=> "expensive computation: ${compute()}"})
-```
-
----
-
-## 9. 序列化（stdx.serialization）— 简略介绍
-
-**导入**：`import stdx.serialization.*`
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/serialization/` 目录下的原始文档。
-
-提供通用序列化框架，通过中间层 `DataModel` 实现对象与各种格式的互转。
-
-### 核心概念
-
-- **`Serializable<T>` 接口** — 自定义类型实现此接口支持序列化
-  - `serialize(): DataModel` — 对象 → DataModel
-  - `deserialize(DataModel): T` — DataModel → 对象（静态方法）
-- **DataModel 类型体系**：`DataModelBool`、`DataModelInt`、`DataModelFloat`、`DataModelString`、`DataModelNull`、`DataModelSeq`（序列）、`DataModelStruct`（结构体）
-
-```cangjie
-import stdx.serialization.*
-
-class Person <: Serializable<Person> {
-    var name: String
-    var age: Int64
-
-    public func serialize(): DataModel {
-        DataModelStruct()
-            .add(field("name", DataModelString(name)))
-            .add(field("age", DataModelInt(age)))
-    }
-
-    public static func deserialize(dm: DataModel): Person {
-        // 从 DataModel 还原对象
-        ...
-    }
-}
-```
-
----
-
-## 10. 压缩（stdx.compress.zlib）— 简略介绍
-
-**导入**：`import stdx.compress.zlib.*`
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/compress/zlib/` 目录下的原始文档。
-
-支持 deflate-raw 和 gzip 格式。
-
-### 核心类
-
-| 类 | 说明 |
-|------|------|
-| `CompressInputStream` | 压缩输入流 |
-| `CompressOutputStream` | 压缩输出流 |
-| `DecompressInputStream` | 解压输入流 |
-| `DecompressOutputStream` | 解压输出流 |
-
-### 压缩级别
-
-- `CompressLevel.Fast` — 速度优先
-- `CompressLevel.Default` — 默认平衡
-- `CompressLevel.High` — 压缩率优先
-
-### 数据格式
-
-- `WrapType.DeflateFormat` — deflate-raw 格式
-- `WrapType.GzipFormat` — gzip 格式
-
-```cangjie
-import stdx.compress.zlib.*
-
-// 压缩
-let compressed = CompressInputStream(inputStream, wrap: GzipFormat)
-
-// 解压
-let decompressed = DecompressInputStream(compressedStream, wrap: GzipFormat)
-```
-
----
-
-## 11. 面向切面编程（stdx.aspectCJ）— 简略介绍
-
-**导入**：`import stdx.aspectCJ.*`
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/aspectCJ/` 目录下的原始文档。
-
-通过编译器插件实现 AOP 能力。
-
-### 核心注解
-
-| 注解 | 说明 |
-|------|------|
-| `@InsertAtEntry` | 在方法入口插入函数调用 |
-| `@InsertAtExit` | 在方法出口插入函数调用 |
-| `@ReplaceFuncBody` | 替换方法体为指定函数 |
-
-### 使用要求
-
-需要编译器插件支持：
-- `libcollect-aspects.so`（收集阶段插件）
-- `libwave-aspects.so`（织入阶段插件）
-
----
-
-## 12. 模糊测试（stdx.fuzz）— 简略介绍
-
-**导入**：`import stdx.fuzz.*`
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/fuzz/` 目录下的原始文档。
-
-提供覆盖率引导的模糊测试引擎。
-
-### 核心类
-
-| 类 | 说明 |
-|------|------|
-| `Fuzzer` | 模糊测试引擎 |
-| `FuzzerBuilder` | 构建器模式配置 Fuzzer |
-| `FuzzDataProvider` | 将变异字节转换为标准类型 |
-| `DebugDataProvider` | 带调试信息的数据提供者 |
-
-### 平台要求
-
-仅支持 Linux 和 macOS，依赖 LLVM 的 `libclang_rt.fuzzer_no_main.a`。
-
----
-
-## 13. 测试数据加载（stdx.unittest.data）— 简略介绍
-
-**导入**：`import stdx.unittest.data.*`
-
-> 详细 API 请参阅 `libs/standard-extension/libs_stdx/unittest/data/` 目录下的原始文档。
-
-为参数化测试提供外部数据加载能力。
-
-### 支持格式
-
-| 函数 | 说明 |
-|------|------|
-| `json<T>()` | 从 JSON 文件加载测试数据 |
-| `csv<T>()` | 从 CSV 文件加载测试数据 |
-| `tsv<T>()` | 从 TSV 文件加载测试数据 |
-
----
-
-## 14. 快速上手示例
-
-### 14.1 HTTP 服务 + JSON 响应
-
-```cangjie
-import stdx.net.http.*
-import stdx.encoding.json.*
-
 main() {
-    let server = ServerBuilder()
-        .addr("127.0.0.1")
-        .port(8080)
-        .build()
+    // 解析 URL
+    let url = URL.parse("https://example.com:8080/api/v1?key=value&name=test#section")
+    println("scheme: ${url.scheme}")
+    println("host: ${url.host}")
+    println("port: ${url.port}")
+    println("path: ${url.path}")
+    println("query: ${url.query}")
+    println("fragment: ${url.fragment}")
 
-    server.distributor.register("/api/user", {ctx =>
-        let obj = JsonObject()
-        obj.put("name", JsonString("Alice"))
-        obj.put("age", JsonInt(30))
-        ctx.responseBuilder
-            .header("Content-Type", "application/json")
-            .body(obj.toJsonString())
-    })
-
-    server.serve()
+    // 表单参数处理
+    let form = Form()
+    form.add("name", "张三")
+    form.add("age", "30")
+    println("form: ${form.toString()}")
 }
 ```
-
-### 14.2 HTTP 客户端请求 + JSON 解析
-
-```cangjie
-import stdx.net.http.*
-import stdx.encoding.json.*
-import std.io.*
-
-main() {
-    let client = ClientBuilder().build()
-    let resp = client.get("http://127.0.0.1:8080/api/user")
-    let body = StringReader(resp.body).readToEnd()
-    let json = JsonValue.fromStr(body)
-    let name = json.asObject()["name"].asString().getValue()
-    println("Name: ${name}")
-    client.close()
-}
-```
-
-### 14.3 日志记录
-
-```cangjie
-import stdx.log.*
-import stdx.logger.*
-
-main() {
-    let logger = SimpleLogger("MyApp")
-    setGlobalLogger(logger)
-    logger.info("Application started", ("version", "1.0.0"))
-    logger.debug("Processing request", ("path", "/api"))
-    logger.error("Something went wrong", ("code", 500))
-}
-```
-
----
-
-## 15. 注意事项
-
-| 要点 | 说明 |
-|------|------|
-| **版本兼容性** | stdx 后续版本可能存在不兼容变更，不承诺跨版本 API/ABI 兼容性 |
-| **OpenSSL 依赖** | crypto 和 net 模块依赖 OpenSSL 3 库 |
-| **平台支持** | 支持 Ubuntu/macOS（x86_64, aarch64），Windows 部分功能受限 |
-| **静态库额外配置** | 使用静态库时，Linux 需 `-ldl`，Windows 需 `-lcrypt32` |
-| **源码构建** | 如需从源码构建：`git clone https://gitcode.com/Cangjie/cangjie_stdx.git`，然后使用 `python3 build.py` 构建 |
