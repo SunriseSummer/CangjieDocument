@@ -1,6 +1,6 @@
 ---
 name: cangjie-pattern-match
-description: "仓颉语言模式匹配。当需要了解 match 表达式（有/无匹配值）、模式类型（常量/通配符/绑定/元组/类型/枚举）、模式嵌套、模式守卫(where)、穷举性、模式可反驳性、if-let 条件匹配、while-let 循环匹配、模式在变量定义和 for-in 中的使用等特性时，应使用此 Skill。关于枚举类型定义，请参阅 cangjie-enum Skill。关于 Option 类型及其解构方式，请参阅 cangjie-option Skill。"
+description: "仓颉语言模式匹配。当需要了解 match 表达式、模式类型（常量/通配符/绑定/元组/类型/枚举）、模式嵌套、模式守卫(where)、穷举性、模式可反驳性、if-let 条件匹配、while-let 循环匹配、模式在变量定义和 for-in 中的使用等特性时，应使用此 Skill"
 ---
 
 # 仓颉语言模式匹配 Skill
@@ -19,24 +19,24 @@ match (expr) {
 
 **规则：**
 - `=>` 后是 **exprs**（1~N 个表达式/定义），多个时各占一行，**不用 `{}` 包裹**
-- 分支的**值与类型 = 最后一个表达式的值与类型**
+- 每个 case 分支的值与类型由 exprs 最后一个表达式决定，运行时匹配并执行的那个 case 分支值就是 match 表达式的值
 - 变量/函数作用域从定义处到下一个 `case` 前结束
 - 可用 `|` 连接多个同类模式
 - 按**从上到下**顺序匹配，首个匹配执行后退出（**无穿透**）
-- 须**穷举**所有可能值，否则编译错误；常用 `_` 兜底
+- 须**穷举**所有可能值，否则编译错误，常用 `_` 兜底
 - 非穷举枚举（`...` 构造器）须用 `_` 或绑定模式覆盖（详见 `cangjie-enum` Skill）
 
 ```cangjie
 main() {
-    let opt: ?Int64 = 42
+    let opt: ?Int64 = 42 // Option<Int64>，枚举类型
     let result = match (opt) {
-        case Some(x) =>
+        case Some(x) => // 枚举模式
             let doubled = x * 2
             println("doubled = ${doubled}")
-            doubled   // 最后表达式决定分支值
+            doubled   // 所执行分支最后一个表达式的值，就是 match 表达式的值
         case None => 0
     }
-    println("result = ${result}")  // result = 84
+    println(result)  // 84
 }
 ```
 
@@ -105,9 +105,11 @@ main() {
 - 整数、浮点、字符、布尔、字符串字面量（无插值）和 `Unit` 字面量
 - 须与匹配目标**同类型**，值相等时匹配
 - 多个常量可用 `|` 组合
-- `Rune` 值可用 `Rune` 或单字符字符串字面量匹配；`Byte` 值可用 ASCII 字符串字面量匹配
+- `Rune` 值可用 `Rune` 字面量或单字符字符串字面量匹配
+- `Byte` 值可用 ASCII 字符串字面量匹配
 
 ```cangjie
+let score = 80
 let level = match (score) {
     case 0 | 10 | 20 | 30 | 40 | 50 => "D"
     case 60 => "C"
@@ -115,6 +117,7 @@ let level = match (score) {
     case 90 | 100 => "A"
     case _ => "invalid"
 }
+println(level) // B
 ```
 
 ### 2.2 通配符模式（`_`）
@@ -204,14 +207,16 @@ match ((SetTimeUnit(Year(2024)), true)) {
 
 ---
 
-## 4. 模式的其他用途
+## 4. 其他模式匹配语法/场景
 
-### 4.1 变量定义与 for-in（仅不可反驳模式）
+### 4.1 变量定义与 for-in
 
 ```cangjie
-let (x, y) = (100, 200)                          // 元组解构
-for ((i, j) in [(1,2),(3,4)]) { println(i + j) } // for-in 元组解构
+let (x, y) = (100, 200) // 元组解构
+for ((i, j) in [(1, 2), (3, 4)]) { println(i + j) } // for-in 元组解构
 ```
+
+**适用于不可反驳模式**
 
 ### 4.2 if-let 条件匹配
 
