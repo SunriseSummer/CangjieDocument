@@ -1,6 +1,6 @@
 ---
 name: cangjie-enum
-description: "仓颉语言枚举类型。当需要了解仓颉语言的enum定义规则、构造器（有参/无参/同名/非穷举）、枚举的使用与名称冲突、枚举成员函数和属性、递归枚举、枚举与Equatable接口等特性时，应使用此 Skill。关于 Option 类型(?T)及其解构方式，请参阅 cangjie-option Skill。关于模式匹配和match表达式，请参阅 cangjie-pattern-match Skill。"
+description: "仓颉语言枚举类型。当需要了解仓颉语言的enum定义规则、构造器（有参/无参/同名/非穷举）、枚举的使用与名称冲突、枚举成员函数和属性、递归枚举、枚举实现Equatable接口等特性时，应使用此 Skill"
 ---
 
 # 仓颉语言枚举类型 Skill
@@ -85,7 +85,7 @@ main() {
 ```
 
 ### 2.2 名称冲突
-- 若构造器名与作用域中的变量、函数或类名冲突，**须**用枚举类型名限定
+- 若构造器名与作用域中的变量、函数或类名冲突，须用枚举类型名限定
 ```cangjie
 let Red = 1                           // 变量名与构造器同名
 
@@ -102,10 +102,10 @@ let r2 = RGBColor.Red                 // 正确：通过类型名访问构造器
 ## 3. 枚举与 Equatable
 
 - **枚举默认不实现 `Equatable` 接口**，不能直接使用 `==` 比较枚举值
-- 若需要 `==` 比较，须使用 `@Derive[Equatable]` 宏自动派生（需导入 `import std.deriving.*`）
-- 不使用 `@Derive` 时，应通过 `match` 模式匹配来判断枚举值（详见 `cangjie-pattern-match` Skill）
+- 若需要 `==` 比较，须使用 `@Derive[Equatable]` 宏自动派生（`std.deriving.*`）
+- 不使用 `@Derive` 时，可通过 `match` 表达式匹配枚举模式进行处理（详见 `cangjie-pattern-match` Skill）
 
-> **跨 Skill 引用**：关于 `@Derive` 宏的详细用法（支持的接口、适用类型、辅助宏等），请参阅 `cangjie-std-libs` Skill 第 17 节"自动派生（std.deriving）"。
+> 关于 `@Derive` 宏的详细用法，可参阅 `cangjie-std-libs` Skill
 
 ### 完整示例：枚举与 Equatable
 
@@ -120,19 +120,10 @@ enum Color {
 main() {
     let c = Color.Red
 
-    // 使用 @Derive 后可以直接用 == 比较
+    // 使用 @Derive 实现 Equatable 接口后可直接用 == 比较
     if (c == Color.Red) {
         println("It's red!")
     }
-
-    // 不使用 @Derive 时，须通过 match 判断
-    // （详见 cangjie-pattern-match Skill）
-    let name = match (c) {
-        case Red => "Red"
-        case Green => "Green"
-        case Blue => "Blue"
-    }
-    println(name)
 }
 ```
 
@@ -144,22 +135,13 @@ enum Status {
     | Active | Inactive
 }
 // if (Status.Active == Status.Inactive) { }  // 编译错误
-
-// ✅ 正确：添加 @Derive[Equatable]
-import std.deriving.*
-
-@Derive[Equatable]
-enum Status2 {
-    | Active | Inactive
-}
-// if (Status2.Active == Status2.Inactive) { }  // 正确
 ```
 
 ---
 
 ## 4. Option 类型
 
-> **详见 `cangjie-option` Skill**：`Option<T>` 的定义、`?T` 简写、自动包装、`??`、`?.`、`getOrThrow()`、`if-let`、`while-let` 等完整用法已独立为专门的 Skill。
+> Option<T> 是仓颉预置的一个枚举类型，可表示或有或无的值，引用有效值前必须匹配判断，用于应对空值安全问题，**详见 `cangjie-option` Skill**
 
 ---
 
@@ -185,14 +167,18 @@ main() {
     // 创建枚举值
     let expr = Add(Num(1), Neg(Num(2)))
 
-    // 使用 match 递归求值（详见 cangjie-pattern-match Skill）
+    // 可结合 match 递归求值，详见 cangjie-pattern-match Skill
     // eval(expr) => 1 + (-2) = -1
 
-    // Option 类型使用
-    let opt: ?Int64 = 42           // 自动包装为 Some(42)
-    let val = opt ?? 0             // 解包：42
-    let none: ?Int64 = None        // 无值
-    let fallback = none ?? -1      // 解包：-1
-    println("val = ${val}, fallback = ${fallback}")
+    // 实现 ToString 接口的枚举类型可打印
+    let color = Red
+    println(color)
+    // 如果未使用 @Derive[ToString]，则需要用模式匹配
+    let name = match (color) {
+        case Red => "Red"
+        case Green => "Green"
+        case Blue => "Blue"
+    }
+    println(name)
 }
 ```
