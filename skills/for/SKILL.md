@@ -179,9 +179,7 @@ class CountdownIterator <: Iterator<Int64> {
     var current: Int64
     init(start: Int64) { current = start }
 
-    public func iterator(): Iterator<Int64> { this }
-
-    public mut func next(): Option<Int64> {
+    public func next(): Option<Int64> {
         if (current > 0) {
             let v = current
             current--
