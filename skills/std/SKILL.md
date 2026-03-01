@@ -5,6 +5,8 @@ description: "仓颉标准库速查指南。当需要了解仓颉标准库有哪
 
 # 仓颉标准库速查指南 Skill
 
+> **说明**：本 Skill 仅用于**速查**目的，以表格形式列出各包的核心接口、类型和函数原型，方便快速定位 API。表格并未覆盖每个包的全部接口和方法，如需完整的 API 细节或发现当前文档有遗漏，请查阅 `libs/standard/std/<包名>/` 目录下的标准库原始文档。
+
 ## 1. 概述
 
 - 标准库（std）随 SDK 一起发布，开箱即用
@@ -154,21 +156,21 @@ import std.collection.{ArrayList, HashMap} // 导入多个类型
 
 | 类型 | 构造函数 | 说明 |
 |------|----------|------|
-| `ArrayList<T>` | `ArrayList<T>()`, `ArrayList<T>(Int64)`, `ArrayList<T>(Array<T>)` | 动态数组 |
-| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)` | 哈希映射（K 须 Hashable + Equatable） |
-| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)` | 哈希集合（T 须 Hashable + Equatable） |
-| `TreeMap<K, V>` | `TreeMap<K, V>()` | 红黑树有序映射（K 须 Comparable） |
-| `LinkedList<T>` | `LinkedList<T>()` | 双向链表 |
-| `ArrayDeque<T>` | `ArrayDeque<T>()` | 双端队列 |
-| `ArrayQueue<T>` | `ArrayQueue<T>(Int64)` | 环形队列 |
-| `ArrayStack<T>` | `ArrayStack<T>()` | 栈 |
+| `ArrayList<T>` | `ArrayList<T>()`, `ArrayList<T>(Int64)`, `ArrayList<T>(Collection<T>)`, `ArrayList<T>(Int64, (Int64) -> T)` | 动态数组 |
+| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)`, `HashMap<K, V>(Array<(K, V)>)`, `HashMap<K, V>(Int64, (Int64) -> (K, V))` | 哈希映射（K 须 Hashable + Equatable） |
+| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)`, `HashSet<T>(Collection<T>)`, `HashSet<T>(Int64, (Int64) -> T)` | 哈希集合（T 须 Hashable + Equatable） |
+| `TreeMap<K, V>` | `TreeMap<K, V>()`, `TreeMap<K, V>(Array<(K, V)>)`, `TreeMap<K, V>(Int64, (Int64) -> (K, V))` | 红黑树有序映射（K 须 Comparable） |
+| `LinkedList<T>` | `LinkedList<T>()`, `LinkedList<T>(Collection<T>)`, `LinkedList<T>(Int64, (Int64) -> T)` | 双向链表 |
+| `ArrayDeque<T>` | `ArrayDeque<T>()`, `ArrayDeque<T>(Int64)` | 双端队列 |
+| `ArrayQueue<T>` | `ArrayQueue<T>()`, `ArrayQueue<T>(Int64)` | 环形队列 |
+| `ArrayStack<T>` | `ArrayStack<T>()`, `ArrayStack<T>(Int64)` | 栈 |
 
 ### 4.2 集合接口
 
 | 接口 | 关键方法 |
 |------|----------|
 | `Collection<T>` | `size`, `isEmpty()` |
-| `List<T>` | `get(Int64)`, `set(Int64, T)`, `add(T)`, `remove(at: Int64)` |
+| `List<T>` | `get(Int64)`, `set(Int64, T)`, `add(T)`, `remove(at!: Int64)` |
 | `Map<K, V>` | `get(K)`, `add(K, V)`, `contains(K)`, `remove(K)` |
 | `Set<T>` | `add(T)`, `contains(T)`, `remove(T)` |
 | `Deque<T>` | `pushFirst(T)`, `pushLast(T)`, `popFirst()`, `popLast()` |
@@ -176,22 +178,24 @@ import std.collection.{ArrayList, HashMap} // 导入多个类型
 
 ### 4.3 函数式迭代操作（应用于 Iterator\<T>）
 
-| 函数 | 说明 |
-|------|------|
-| `filter { predicate }` | 过滤元素 |
-| `map { transform }` | 转换元素 |
-| `flatMap { transform }` | 转换并展平 |
-| `fold(init) { acc, v => ... }` | 累积计算（带初始值） |
-| `reduce { acc, v => ... }` | 累积计算（无初始值） |
-| `forEach { action }` | 遍历执行 |
-| `count { predicate }` | 计数 |
-| `any { predicate }` / `all` / `none` | 谓词检查 |
-| `first` / `last` | 首/尾元素 |
-| `take(n)` / `skip(n)` | 取前 n 个 / 跳过前 n 个 |
-| `enumerate` | 带索引遍历 |
-| `zip(other)` | 配对两个迭代器 |
-| `concat(other)` | 连接两个迭代器 |
-| `collectArrayList` / `collectHashMap` / `collectHashSet` | 收集为集合 |
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `filter` | `filter(predicate: (T) -> Bool): Iterator<T>` | 过滤元素 |
+| `map` | `map<R>(transform: (T) -> R): Iterator<R>` | 转换元素 |
+| `flatMap` | `flatMap<R>(transform: (T) -> Iterator<R>): Iterator<R>` | 转换并展平 |
+| `fold` | `fold<R>(initial: R, operation: (R, T) -> R): R` | 累积计算（带初始值） |
+| `reduce` | `reduce(operation: (T, T) -> T): Option<T>` | 累积计算（无初始值） |
+| `forEach` | `forEach(action: (T) -> Unit): Unit` | 遍历执行 |
+| `count` | `count(): Int64` | 计数 |
+| `any` / `all` / `none` | `any(predicate: (T) -> Bool): Bool` | 谓词检查 |
+| `first` / `last` | `first(): Option<T>` | 首/尾元素 |
+| `take` / `skip` | `take(count: Int64): Iterator<T>` | 取前 n 个 / 跳过前 n 个 |
+| `enumerate` | `enumerate(): Iterator<(Int64, T)>` | 带索引遍历 |
+| `zip` | `zip<R>(Iterator<R>): Iterator<(T, R)>` | 配对两个迭代器 |
+| `concat` | `concat(Iterator<T>): Iterator<T>` | 连接两个迭代器 |
+| `collectArrayList` | `collectArrayList<T>(Iterable<T>): ArrayList<T>` | 收集为 ArrayList |
+| `collectHashMap` | `collectHashMap<K, V>(Iterable<(K, V)>): HashMap<K, V>` | 收集为 HashMap |
+| `collectHashSet` | `collectHashSet<T>(Iterable<T>): HashSet<T>` | 收集为 HashSet |
 
 ---
 
@@ -239,20 +243,32 @@ import std.collection.{ArrayList, HashMap} // 导入多个类型
 
 **导入**：`import std.fs.*`
 
-| 类型 / 函数 | 签名 | 说明 |
-|-------------|------|------|
-| `File` 构造 | `File(String, OpenMode)`, `File.create(String)` | 打开/创建文件 |
-| `File.readFrom` | `File.readFrom(String): Array<Byte>` | 快捷读文件 |
-| `File.writeTo` | `File.writeTo(String, Array<Byte>): Unit` | 快捷写文件 |
-| `Directory.create` | `Directory.create(String, recursive!: Bool)` | 创建目录 |
-| `Directory.list` | `Directory.list(String): Array<FileInfo>` | 列出目录内容 |
-| `Directory.delete` | `Directory.delete(String)` | 删除目录 |
+### 7.1 全局函数
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `exists` | `exists(String): Bool` | 检查路径是否存在 |
-| `copy` | `copy(String, String): Unit` | 复制文件 |
-| `rename` | `rename(String, String): Unit` | 重命名/移动 |
-| `remove` | `remove(String): Unit` | 删除文件 |
+| `copy` | `copy(String, to!: String): Unit` | 复制文件 |
+| `rename` | `rename(String, to!: String): Unit` | 重命名/移动 |
+| `remove` | `remove(String, recursive!: Bool): Unit` | 删除文件或目录 |
+
+### 7.2 File
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| 构造 | `File(String, OpenMode)`, `File.create(String)` | 打开/创建文件 |
+| `readFrom` | `File.readFrom(String): Array<Byte>` | 快捷读文件 |
+| `writeTo` | `File.writeTo(String, Array<Byte>): Unit` | 快捷写文件 |
 
 **打开模式**：`OpenMode.Read` | `OpenMode.Write` | `OpenMode.Append` | `OpenMode.ReadWrite`
+
+### 7.3 Directory
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `create` | `Directory.create(String, recursive!: Bool)` | 创建目录 |
+| `list` | `Directory.list(String): Array<FileInfo>` | 列出目录内容 |
+| `delete` | `Directory.delete(String)` | 删除空目录 |
 
 ---
 
@@ -282,8 +298,8 @@ import std.collection.{ArrayList, HashMap} // 导入多个类型
 | 类型 | 构造函数 | 关键方法 |
 |------|----------|----------|
 | `TcpSocket` | `TcpSocket(String, UInt16)` | `connect()`, `read(Array<Byte>): Int64`, `write(Array<Byte>)`, `close()` |
-| `TcpServerSocket` | `TcpServerSocket(bindAt: UInt16)` | `bind()`, `accept(): TcpSocket`, `close()` |
-| `UdpSocket` | `UdpSocket(bindAt: UInt16)` | `sendTo(Array<Byte>, SocketAddress)`, `receiveFrom(Array<Byte>)`, `close()` |
+| `TcpServerSocket` | `TcpServerSocket(bindAt!: UInt16)` | `bind()`, `accept(): TcpSocket`, `close()` |
+| `UdpSocket` | `UdpSocket(bindAt!: UInt16)` | `sendTo(Array<Byte>, SocketAddress)`, `receiveFrom(Array<Byte>)`, `close()` |
 | `UnixSocket` | `UnixSocket(String)` | Unix Domain Socket 通信 |
 
 ---
