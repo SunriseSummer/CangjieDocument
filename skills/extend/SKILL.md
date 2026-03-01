@@ -55,7 +55,7 @@ extend Boo {
         get() { 123 }
     }
 
-    public operator func -() { // 添加运算符重载
+    public operator func -(): Int64 { // 添加运算符重载
         -x
     }
 }
@@ -102,7 +102,7 @@ interface Eq<T> {
 
 // 仅当 T1、T2 支持判等时，Pair 才有 equals 方法
 extend<T1, T2> Pair<T1, T2> where T1 <: Eq<T1>, T2 <: Eq<T2> {
-    public func equals(other: Pair<T1, T2>) {
+    public func equals(other: Pair<T1, T2>): Bool {
         first.equals(other.first) && second.equals(other.second)
     }
 }
@@ -186,7 +186,7 @@ main() {
 ```cangjie
 // 当 T1、T2 可判等时，让 Pair 实现 Eq 接口
 extend<T1, T2> Pair<T1, T2> <: Eq<Pair<T1, T2>> where T1 <: Eq<T1>, T2 <: Eq<T2> {
-    public func equals(other: Pair<T1, T2>) {
+    public func equals(other: Pair<T1, T2>): Bool {
         first.equals(other.first) && second.equals(other.second)
     }
 }

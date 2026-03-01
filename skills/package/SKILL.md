@@ -170,7 +170,7 @@ public let x = 0
 ```cangjie
 // package a.b
 internal package a.b
-public func f() { 0 }
+public func f(): Int64 { 0 }
 ```
 ```cangjie
 // 外部包可直接通过 package a 访问 f
@@ -215,6 +215,6 @@ public func f4() { 4 }    // 全局可见
 ```cangjie
 // ❌ 错误：public 声明不能使用 internal 类型作为参数/返回值
 class C {}  // 默认 internal
-public func f1(a: C) { 0 }  // Error
+public func f1(a: C): Int64 { 0 }  // Error
 public let v1: C = C()      // Error
 ```

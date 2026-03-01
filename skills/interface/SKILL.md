@@ -178,12 +178,12 @@ main() {
 - `override`（实例函数）/ `redef`（静态函数）修饰符可选
 ```cangjie
 interface I1 {
-    func f(a: Int64) { a }          // 有默认实现
-    func f1(a: Int64): Unit         // 无默认实现
+    func f(a: Int64): Int64 { a }          // 有默认实现
+    func f1(a: Int64): Unit                // 无默认实现
 }
 
 interface I2 <: I1 {
-    func f(a: Int64) { a + 1 }      // 须提供新的默认实现
+    func f(a: Int64): Int64 { a + 1 }      // 须提供新的默认实现
     func f1(a: Int64): Unit {}      // 可以仅声明，也可提供默认实现
 }
 ```
@@ -197,13 +197,13 @@ interface I2 <: I1 {
 - 实现类型可继承默认实现，也可提供自己的实现
 ```cangjie
 interface SayHi {
-    func say() { "hi" }
+    func say(): String { "hi" }
 }
 
 class A <: SayHi {}  // 继承默认实现
 
 class B <: SayHi {
-    public func say() { "hi, B" }  // 覆盖默认实现
+    public func say(): String { "hi, B" }  // 覆盖默认实现
 }
 ```
 
@@ -253,15 +253,15 @@ main() {
 - 若多个继承接口提供同一成员的冲突默认实现，实现者**须**提供自己的实现
 ```cangjie
 interface SayHi {
-    func say() { "hi" }
+    func say(): String { "hi" }
 }
 interface SayHello {
-    func say() { "hello" }
+    func say(): String { "hello" }
 }
 
 // 两个接口都有 say 的默认实现，产生冲突
 class Foo <: SayHi & SayHello {
-    public func say() { "Foo" }  // 须自行实现，否则编译错误
+    public func say(): String { "Foo" }  // 须自行实现，否则编译错误
 }
 ```
 
