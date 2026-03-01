@@ -1,6 +1,6 @@
 ---
 name: cangjie-option
-description: "仓颉语言 Option 类型。当需要了解 Option<T> 的定义、?T 简写、自动包装、None<T> 语法、模式匹配解构、coalescing 操作符(??)、问号操作符(?.)、getOrThrow()、if-let 条件解构、while-let 循环解构等特性时，应使用此 Skill。关于枚举定义和模式匹配的完整规则，请参阅 cangjie-enum 和 cangjie-pattern-match Skill。"
+description: "仓颉语言 Option 类型。当需要了解 Option<T> 的定义、?T 简写、自动包装、None<T> 语法、模式匹配解构、coalescing 操作符(??)、问号操作符(?.)、getOrThrow()、if-let 条件解构、while-let 循环解构等特性时，应使用此 Skill"
 ---
 
 # 仓颉语言 Option 类型 Skill
@@ -142,18 +142,18 @@ main() {
 
 ## 6. if-let 条件解构
 
-在 `if` 条件中使用 `let` 模式匹配语法糖，成功匹配时进入 `if` 分支，绑定的变量**仅在** `if` 分支内可用（`else` 分支不可用）。
+在 `if` 条件中使用 `let` 模式匹配语法糖，成功匹配时进入 `if` 分支，绑定的变量**仅在** `if` 分支内可用。
 
 ### 6.1 基本用法
 
 ```cangjie
 main() {
     let opt: ?Int64 = 42
-
+    // print 42
     if (let Some(v) <- opt) {
-        println("值为 ${v}")       // 输出: 值为 42
+        println(v)
     } else {
-        println("无值")
+        println("invalid")
     }
 }
 ```
@@ -173,21 +173,21 @@ main() {
 
     // let 模式 + 布尔条件
     if (let Some(f) <- d && f > 0) {
-        println("d 有值且大于 0: ${f}")   // 输出: d 有值且大于 0: 1
+        println(f)   // 输出: 1
     }
 }
 ```
 
 ### 6.3 或条件（`||`）
 
-用 `||` 连接时，模式中**不能有变量绑定**（只能使用通配符 `_`）：
+用 `||` 连接时，模式中**不能有变量绑定**，只能使用通配符 `_`
 ```cangjie
 main() {
     let a: ?Int64 = Some(3)
     let d: ?Int64 = None
 
     if (let Some(_) <- a || let Some(_) <- d) {
-        println("至少一个有值")   // 输出: 至少一个有值
+        println("至少一个有值")
     }
 }
 ```
@@ -202,15 +202,13 @@ main() {
 main() {
     let list = [1, 2, 3]
     var it = list.iterator()
-
     while (let Some(i) <- it.next()) {
-        println(i)
+        println(i) // 逐行输出 1 2 3
     }
-    // 输出: 1 2 3（各占一行）
 }
 ```
 
-等价的 `match` 写法：
+等价的 `match` 写法，也即是 while-let 语法糖解糖后的形态：
 ```cangjie
 let list = [1, 2, 3]
 var it = list.iterator()
