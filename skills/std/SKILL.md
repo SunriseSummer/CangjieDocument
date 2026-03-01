@@ -5,18 +5,17 @@ description: "仓颉标准库速查指南。当需要了解仓颉标准库有哪
 
 # 仓颉标准库速查指南 Skill
 
-> **说明**：本 Skill 仅用于**速查**目的，以表格形式列出各包的核心接口、类型和函数原型，方便快速定位 API。表格并未覆盖每个包的全部接口和方法，如需完整的 API 细节或发现当前文档有遗漏，请查阅 `libs/standard/std/<包名>/` 目录下的标准库原始文档。
+> **说明**：本 Skill 仅用于**速查**目的，以表格形式列出各包的核心接口，方便快速定位 API。表格并未覆盖每个包的全部接口和细节信息，如果存在信息不足或接口遗漏，可以引用拆解标准库能力的特定 Skill，如果暂无相关细分 Skill，则请查阅标准库原始文档。
 
 ## 1. 概述
 
 - 标准库（std）随 SDK 一起发布，开箱即用
 - 核心包 `std.core` **自动导入**，无需显式 `import`
 - 其他包使用 `import std.xxx.*` 导入
-- 详细 API 文档：`libs/standard/std/<包名>/` 目录
 
 ```cangjie
 import std.collection.*                    // 导入整个包
-import std.collection.{ArrayList, HashMap} // 导入多个类型
+import std.collection.{ArrayList, HashMap} // 按需导入 API
 ```
 
 ---
