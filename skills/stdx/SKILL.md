@@ -374,67 +374,7 @@ cjpm run
 | 部署便利性 | 需随产物分发动态库或配置搜索路径 | 单文件部署，无外部依赖 |
 | 额外配置 | 运行前设置 `LD_LIBRARY_PATH` 等 | Linux 需 `-ldl`，Windows 需 `-lcrypt32`（仅 crypto/net） |
 
-### 3.4 使用 cjc 直接编译
-
-如果不使用 cjpm，可通过 `cjc` 命令直接编译，需手动指定库路径和链接选项。
-
-**设置 stdx 路径**：
-
-```shell
-# Linux / macOS
-export CANGJIE_STDX_PATH=/path/to/stdx/dynamic/stdx
-
-# Windows (PowerShell)
-$env:CANGJIE_STDX_PATH = "D:\path\to\stdx\dynamic\stdx"
-```
-
-**Linux / macOS 编译命令**：
-
-```shell
-cjc main.cj -L $CANGJIE_STDX_PATH \
-  -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log \
-  -lstdx.encoding.url -lstdx.encoding.json -lstdx.encoding.json.stream \
-  -lstdx.encoding.base64 -lstdx.encoding.hex \
-  -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.crypto.crypto -lstdx.crypto.digest \
-  -lstdx.serialization.serialization -lstdx.compress.zlib -lstdx.compress \
-  -lstdx.aspectCJ \
-  -ldl \
-  --import-path $CANGJIE_STDX_PATH \
-  -o main.out
-```
-
-**Windows 编译命令**（将 `-ldl` 替换为 `-lcrypt32`）：
-
-```shell
-cjc main.cj -L %CANGJIE_STDX_PATH% ^
-  -lstdx.net.http -lstdx.net.tls -lstdx.logger -lstdx.log ^
-  -lstdx.encoding.url -lstdx.encoding.json -lstdx.encoding.json.stream ^
-  -lstdx.encoding.base64 -lstdx.encoding.hex ^
-  -lstdx.crypto.keys -lstdx.crypto.x509 -lstdx.crypto.crypto -lstdx.crypto.digest ^
-  -lstdx.serialization.serialization -lstdx.compress.zlib -lstdx.compress ^
-  -lstdx.aspectCJ ^
-  -lcrypt32 ^
-  --import-path %CANGJIE_STDX_PATH% ^
-  -o main.exe
-```
-
-> **说明**：按需链接使用的包即可，无需全部链接。链接顺序需遵循依赖关系（被依赖的包放在后面）。使用静态库时将路径指向 `static/stdx`。
-
-**运行前设置动态库搜索路径**（使用动态库时）：
-
-```shell
-# Linux
-export LD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$LD_LIBRARY_PATH
-./main.out
-
-# macOS
-export DYLD_LIBRARY_PATH=$CANGJIE_STDX_PATH:$DYLD_LIBRARY_PATH
-./main.out
-
-# Windows — 将 stdx 路径添加到 PATH
-```
-
-### 3.5 OpenSSL 依赖
+### 3.4 OpenSSL 依赖
 
 crypto 和 net 模块依赖 **OpenSSL 3** 库，需确保系统已安装：
 
@@ -443,17 +383,6 @@ crypto 和 net 模块依赖 **OpenSSL 3** 库，需确保系统已安装：
 | Ubuntu/Debian | `sudo apt install libssl-dev` |
 | macOS | `brew install openssl@3` |
 | Windows | 下载 OpenSSL 3 安装包并配置 PATH |
-
-### 3.6 从源码构建 stdx
-
-```shell
-git clone https://gitcode.com/Cangjie/cangjie_stdx.git
-cd cangjie_stdx
-source <cangjie sdk 路径>/envsetup.sh    # 配置 Cangjie SDK 环境，如 source /opt/cangjie/envsetup.sh
-python3 build.py clean
-python3 build.py build -t release --target-lib=<openssl lib 路径>  # 如 --target-lib=/usr/lib/x86_64-linux-gnu
-python3 build.py install     # 产物输出到 target 目录
-```
 
 ---
 
@@ -527,49 +456,7 @@ main() {
 }
 ```
 
-### 4.2 HTTP 服务端设置 Cookie
-
-```cangjie
-import stdx.net.http.*
-import std.net.*
-import std.sync.*
-
-main(): Unit {
-    let serverOn = SyncCounter(1)
-    spawn {
-        serverSetCookie(serverOn)
-    }
-    serverOn.waitUntilZero()
-    clientPacketCapture()
-}
-
-func serverSetCookie(serverOn: SyncCounter): Unit {
-    let server = ServerBuilder()
-                    .addr("127.0.0.1")
-                    .port(8080)
-                    .build()
-    server.afterBind({=> serverOn.dec()})
-    server.distributor.register("/index", {httpContext =>
-        let cookie = Cookie("name", "value")
-        httpContext.responseBuilder
-            .header("Set-Cookie", cookie.toSetCookieString())
-            .body("Hello 仓颉!")
-    })
-    server.serve()
-}
-
-func clientPacketCapture(): Unit {
-    let client = TcpSocket("127.0.0.1", 8080)
-    client.connect()
-    let request = "GET /index HTTP/1.1\r\nHost: 127.0.0.1:8080\r\n\r\n".toArray()
-    client.write(request)
-    let buf = Array<UInt8>(500, repeat: 0)
-    var len = client.read(buf)
-    println(String.fromUtf8(buf[..len]))
-}
-```
-
-### 4.3 JSON 解析与构建
+### 4.2 JSON 解析与构建
 
 ```cangjie
 import stdx.encoding.json.*
@@ -601,7 +488,7 @@ main() {
 }
 ```
 
-### 4.4 JSON 与自定义类型互转（通过 DataModel 序列化）
+### 4.3 JSON 与自定义类型互转（通过 DataModel 序列化）
 
 ```cangjie
 import stdx.serialization.serialization.*
@@ -681,102 +568,7 @@ main() {
 }
 ```
 
-### 4.5 JSON 流式序列化与反序列化
-
-**序列化（对象 → JSON 流）**：
-
-```cangjie
-import stdx.encoding.json.stream.*
-import std.io.{ByteBuffer, readToEnd}
-
-class Image <: JsonSerializable {
-    var width: Int64 = 0
-    var height: Int64 = 0
-    var title: String = ""
-    var ids: Array<Int64> = Array<Int64>()
-
-    public func toJson(w: JsonWriter): Unit {
-        w.startObject()
-        w.writeName("Width").writeValue(width)
-        w.writeName("Height").writeValue(height)
-        w.writeName("Title").writeValue(title)
-        w.writeName("Ids").writeValue<Array<Int64>>(ids)
-        w.endObject()
-    }
-}
-
-main() {
-    let image = Image()
-    image.width = 800
-    image.height = 600
-    image.title = "View from 15th Floor"
-    image.ids = [116, 943, 234, 38793]
-
-    let stream = ByteBuffer()
-    let writer = JsonWriter(stream)
-    writer.writeValue(image)
-    writer.flush()
-    println(String.fromUtf8(readToEnd(stream)))
-    // 输出: {"Width":800,"Height":600,"Title":"View from 15th Floor","Ids":[116,943,234,38793]}
-}
-```
-
-**反序列化（JSON 流 → 对象）**：
-
-```cangjie
-import stdx.encoding.json.stream.*
-import std.io.*
-import std.collection.*
-
-class Config <: JsonDeserializable<Config> {
-    var key1: Option<String> = None
-    var key2: Bool = false
-    var key3: Float64 = 0.0
-    var key4: String = ""
-    var key5: Array<Int64> = Array<Int64>()
-    var key6: HashMap<String, String> = HashMap<String, String>()
-
-    public static func fromJson(r: JsonReader): Config {
-        var res = Config()
-        while (let Some(v) <- r.peek()) {
-            match (v) {
-                case BeginObject =>
-                    r.startObject()
-                    while (r.peek() != EndObject) {
-                        let n = r.readName()
-                        match (n) {
-                            case "key1" => res.key1 = r.readValue<Option<String>>()
-                            case "key2" => res.key2 = r.readValue<Bool>()
-                            case "key3" => res.key3 = r.readValue<Float64>()
-                            case "key4" => res.key4 = r.readValue<String>()
-                            case "key5" => res.key5 = r.readValue<Array<Int64>>()
-                            case "key6" => res.key6 = r.readValue<HashMap<String, String>>()
-                            case _ => ()
-                        }
-                    }
-                    r.endObject()
-                    break
-                case _ => throw Exception()
-            }
-        }
-        return res
-    }
-}
-
-main() {
-    let jsonStr = ##"{"key1": null, "key2": true, "key3": 123.456, "key4": "string", "key5": [123, 456], "key6": {"key7": " ", "key8": "\\a"}}"##
-    var bas = ByteBuffer()
-    unsafe { bas.write(jsonStr.rawData()) }
-    var reader = JsonReader(bas)
-    var obj = Config.fromJson(reader)
-    println("key1: ${obj.key1}")
-    println("key2: ${obj.key2}")
-    println("key3: ${obj.key3}")
-    println("key4: ${obj.key4}")
-}
-```
-
-### 4.6 日志记录
+### 4.4 日志记录
 
 ```cangjie
 import stdx.log.*
@@ -831,7 +623,7 @@ main() {
 }
 ```
 
-### 4.7 消息摘要（哈希）
+### 4.5 消息摘要（哈希）
 
 ```cangjie
 import stdx.crypto.digest.*
@@ -862,7 +654,7 @@ main() {
 }
 ```
 
-### 4.8 Gzip 文件压缩与解压缩
+### 4.6 Gzip 文件压缩与解压缩
 
 ```cangjie
 import stdx.compress.zlib.*
@@ -929,7 +721,7 @@ func decompressFile(srcPath: String, destPath: String): Unit {
 }
 ```
 
-### 4.9 Base64 与 Hex 编解码
+### 4.7 Base64 与 Hex 编解码
 
 ```cangjie
 import stdx.encoding.base64.*
@@ -952,7 +744,7 @@ main() {
 }
 ```
 
-### 4.10 URL 解析
+### 4.8 URL 解析
 
 ```cangjie
 import stdx.encoding.url.*
