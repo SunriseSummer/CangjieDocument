@@ -270,9 +270,9 @@ crypto 和 net 模块依赖 **OpenSSL 3** 库，需确保系统已安装：
 ```shell
 git clone https://gitcode.com/Cangjie/cangjie_stdx.git
 cd cangjie_stdx
-source <cangjie sdk 路径>    # 配置 Cangjie SDK
+source <cangjie sdk 路径>/envsetup.sh    # 配置 Cangjie SDK 环境，如 source /opt/cangjie/envsetup.sh
 python3 build.py clean
-python3 build.py build -t release --target-lib=<openssl lib 路径>
+python3 build.py build -t release --target-lib=<openssl lib 路径>  # 如 --target-lib=/usr/lib/x86_64-linux-gnu
 python3 build.py install     # 产物输出到 target 目录
 ```
 
