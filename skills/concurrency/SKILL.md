@@ -118,6 +118,29 @@ public interface Condition {
 #### 创建
 - 通过 `Mutex` 的 `mtx.condition()` 创建
 - 一个 Mutex 可创建**多个** `Condition` 实例
+- **重要**：`mtx.condition()` **必须在 mutex 被锁定的状态下调用**，如果在未锁定状态下调用，会抛出 `IllegalSynchronizationStateException`
+
+#### 正确创建 Condition 的方式
+
+```cangjie
+import std.sync.*
+
+// ✅ 正确：在 synchronized 块中创建 Condition
+let mtx = Mutex()
+var cond: Condition = synchronized(mtx) {
+    mtx.condition()
+}
+
+// ✅ 正确：手动加锁后创建
+let mtx2 = Mutex()
+mtx2.lock()
+let cond2 = mtx2.condition()
+mtx2.unlock()
+
+// ❌ 错误：未锁定状态下调用 condition()
+// let mtx3 = Mutex()
+// let cond3 = mtx3.condition()  // 抛出 IllegalSynchronizationStateException
+```
 
 #### `wait()` 行为（4 步）
 1. 将当前线程加入锁的等待队列
@@ -126,10 +149,47 @@ public interface Condition {
 4. 唤醒时以相同重入状态重新获取锁
 
 #### 规则
+- **`mtx.condition()` 须在锁定状态下调用**，否则抛出 `IllegalSynchronizationStateException`
 - 调用 `wait()`、`notify()`、`notifyAll()` 前**须持有绑定的锁**
 - Condition 须与**创建它的锁**一起使用
 - **虚假唤醒**是允许的 — 始终在循环中包装 `wait()`
 - `wait(timeout)` 超时精度不保证（依赖 OS）
+
+#### 完整的生产者-消费者示例
+
+```cangjie
+import std.sync.*
+
+var ready = false
+let mtx = Mutex()
+// 在 synchronized 块中创建 Condition
+let cond = synchronized(mtx) { mtx.condition() }
+
+main() {
+    // 消费者线程
+    let consumer = spawn { =>
+        synchronized(mtx) {
+            while (!ready) {
+                cond.wait()       // 等待通知，须在循环中以防虚假唤醒
+            }
+            println("Consumer: data is ready!")
+        }
+    }
+
+    // 生产者线程
+    let producer = spawn { =>
+        sleep(Duration.second)    // 模拟准备数据
+        synchronized(mtx) {
+            ready = true
+            cond.notifyAll()      // 唤醒所有等待线程
+        }
+        println("Producer: notified!")
+    }
+
+    consumer.get()
+    producer.get()
+}
+```
 
 ### 4.4 `synchronized` 关键字
 

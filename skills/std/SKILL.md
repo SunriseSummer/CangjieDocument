@@ -1,66 +1,63 @@
 ---
 name: cangjie-std-libs
-description: "仓颉标准库使用指南。当需要了解仓颉标准库的包结构、常用包的核心 API（集合、I/O、文件系统、网络、并发同步、时间日期、数学运算、正则表达式、进程管理、随机数、排序、格式化、环境变量等），以及最佳实践时，应使用此 Skill。需要详细 API 信息时请参阅 libs/standard/std 目录下的原始文档。"
+description: "仓颉标准库速查指南。当需要了解仓颉标准库有哪些包、各包提供的核心类型与函数时，应使用此 Skill。此 Skill 以表格形式列出每个包的接口、类、结构体和函数等，方便快速定位 API。需要详细文档时请参阅 libs/standard/std 目录下的原始文档；部分常用包已拆分为独立 Skill（如 collections、concurrency、string 等），可直接查阅对应 Skill 获取用法示例。"
 ---
 
-# 仓颉标准库使用指南 Skill
+# 仓颉标准库速查指南 Skill
 
-## 1. 标准库概述
+> **说明**：本 Skill 仅用于**速查**目的，以表格形式列出各包的核心接口、类型和函数原型，方便快速定位 API。表格并未覆盖每个包的全部接口和方法，如需完整的 API 细节或发现当前文档有遗漏，请查阅 `libs/standard/std/<包名>/` 目录下的标准库原始文档。
 
-### 1.1 基本信息
+## 1. 概述
+
 - 标准库（std）随 SDK 一起发布，开箱即用
-- 由若干**包（package）**组成，每个包可单独编译
-- 核心包 `std.core` 自动导入，无需显式 `import`
-- 其他包需使用 `import std.xxx.*` 导入
+- 核心包 `std.core` **自动导入**，无需显式 `import`
+- 其他包使用 `import std.xxx.*` 导入
+- 详细 API 文档：`libs/standard/std/<包名>/` 目录
 
-### 1.2 导入语法
 ```cangjie
 import std.collection.*                    // 导入整个包
-import std.collection.ArrayList            // 导入单个类型
 import std.collection.{ArrayList, HashMap} // 导入多个类型
 ```
 
 ---
 
-## 2. 标准库所有包功能清单
-
-> 需要了解某个包的详细 API 时，请查阅 `libs/standard/std/<包名>/` 目录下的原始文档。
+## 2. 标准库包功能总表
 
 | 包名 | 功能简介 |
 |------|----------|
-| **core** | 核心包（自动导入）。提供基本类型（Int/Float/Bool/String/Array/Range/Option 等）、print/println/readln、Iterable/Iterator/Comparable/Hashable/ToString 等核心接口、Duration、Thread/Future/spawn、异常基类等 |
-| **collection** | 常用集合数据结构：ArrayList、HashMap、HashSet、TreeMap、LinkedList、ArrayDeque、ArrayQueue、ArrayStack，以及 List/Map/Set/Queue/Stack 接口和丰富的函数式迭代操作（map/filter/reduce/fold 等） |
+| **core** | 核心包（自动导入）。基本类型（Int/Float/Bool/String/Array/Range/Option 等）、print/println/readln、核心接口（Iterable/Comparable/Hashable/ToString 等）、Duration、Thread/Future/spawn、异常基类等 |
+| **collection** | 集合数据结构：ArrayList、HashMap、HashSet、TreeMap、LinkedList、ArrayDeque、ArrayQueue、ArrayStack，以及 List/Map/Set 等接口和函数式迭代操作 |
 | **collection.concurrent** | 并发安全集合：ConcurrentHashMap、ConcurrentLinkedQueue、ArrayBlockingQueue、LinkedBlockingQueue |
-| **io** | I/O 流抽象：InputStream/OutputStream 接口、BufferedInputStream/BufferedOutputStream 缓冲流、StringReader/StringWriter 字符串流、ByteBuffer、ChainedInputStream、MultiOutputStream |
-| **fs** | 文件系统操作：File（读写/创建/追加）、Directory（目录操作）、Path（路径处理）、FileInfo（元数据）、exists/copy/rename/remove 等工具函数 |
-| **env** | 进程环境：getStdIn/getStdOut/getStdErr 标准流、环境变量读写、工作目录、进程 ID、exit 退出 |
-| **net** | 网络通信：TcpSocket/TcpServerSocket（TCP）、UdpSocket（UDP）、UnixSocket（Unix Domain）、IP 地址处理 |
-| **sync** | 并发同步：Atomic 原子操作（整数/布尔/引用）、Mutex 互斥锁、Monitor 监视器、Timer 定时器、SyncCounter 同步计数器 |
-| **time** | 时间日期：DateTime（日期时间）、Duration（时间间隔）、MonoTime（单调时间）、TimeZone（时区）、格式化与解析 |
-| **math** | 数学运算：三角函数、绝对值、平方根、幂、对数、取整、GCD/LCM、位操作等 |
-| **math.numeric** | 扩展数值类型：BigInt（任意精度整数）、Decimal（任意精度十进制数） |
-| **random** | 伪随机数生成：Random 类 |
-| **regex** | 正则表达式：Regex 类，支持查找/分割/替换/验证 |
-| **sort** | 排序函数：对 Array/ArrayList/List 进行稳定/不稳定排序 |
-| **convert** | 类型转换与格式化：字符串解析为数值（Parsable 接口）、格式化输出（Formattable 接口） |
-| **console** | ⚠️ **已弃用**，请使用 std.env 代替 |
-| **process** | 进程管理：创建子进程（execute/launch）、获取标准流、进程等待与信息查询 |
-| **reflect** | 反射：TypeInfo 获取类型信息、动态访问成员变量/属性/函数 |
-| **ast** | 语法树：仓颉源码解析器和 AST 节点，主要用于宏编程 |
-| **argopt** | 命令行参数解析：parseArguments 函数，支持短选项/长选项/组合选项 |
-| **binary** | 二进制端序转换：BigEndianOrder/LittleEndianOrder 接口 |
-| **crypto.digest** | 摘要算法：MD5、SHA1/224/256/384/512、HMAC、SM3 |
+| **io** | I/O 流抽象：InputStream/OutputStream 接口、缓冲流、StringReader/StringWriter、ByteBuffer 等 |
+| **fs** | 文件系统：File 读写、Directory 操作、Path 处理、exists/copy/rename/remove 等 |
+| **env** | 进程环境：标准流、环境变量读写、工作目录、进程 ID、exit 等 |
+| **net** | 网络通信：TcpSocket/TcpServerSocket、UdpSocket、UnixSocket、IP 地址处理 |
+| **sync** | 并发同步：Atomic 原子操作、Mutex 互斥锁、Monitor、Timer、SyncCounter |
+| **time** | 时间日期：DateTime、Duration、MonoTime、TimeZone、格式化与解析 |
+| **math** | 数学运算：三角函数、abs/sqrt/pow/log/ceil/floor、GCD/LCM 等 |
+| **math.numeric** | 扩展数值：BigInt（任意精度整数）、Decimal（任意精度十进制数） |
+| **random** | 伪随机数：Random 类 |
+| **regex** | 正则表达式：Regex 类，查找/分割/替换/验证 |
+| **sort** | 排序：对 Array/ArrayList 进行稳定/不稳定排序 |
+| **convert** | 类型转换与格式化：Parsable（字符串→数值）、Formattable（格式化输出） |
+| **process** | 进程管理：execute/launch 创建子进程、等待与信息查询 |
+| **reflect** | 反射：TypeInfo 获取类型信息、动态访问成员 |
+| **ast** | 语法树：源码解析器和 AST 节点，用于宏编程 |
+| **argopt** | 命令行参数解析：parseArguments 函数，短/长/组合选项 |
+| **binary** | 二进制端序转换：BigEndianOrder/LittleEndianOrder |
+| **crypto.digest** | 摘要算法：MD5、SHA 系列、HMAC、SM3 |
 | **crypto.cipher** | 对称加解密通用接口 |
-| **database.sql** | 数据库接口：连接、查询、事务控制 |
-| **deriving** | 自动派生宏：@Derive 自动生成 ToString/Hashable/Equatable/Comparable 实现 |
+| **database.sql** | 数据库接口：连接、查询、事务 |
+| **deriving** | 自动派生宏：@Derive 生成 ToString/Hashable/Equatable/Comparable |
 | **unicode** | Unicode 字符处理 |
-| **overflow** | 整数溢出处理：四种策略（Option 返回/饱和/抛异常/截断） |
-| **ref** | 弱引用：WeakRef 类，用于缓存和对象池 |
-| **objectpool** | 对象池：ObjectPool 缓存与复用对象 |
+| **overflow** | 整数溢出处理（Option/饱和/异常/截断） |
+| **ref** | 弱引用：WeakRef 类 |
+| **objectpool** | 对象池：ObjectPool 缓存与复用 |
 | **posix** | POSIX 系统调用封装 |
 | **runtime** | 运行时环境控制与监视 |
+| **console** | ⚠️ 已弃用，请用 std.env |
 | **unittest** | 单元测试框架（详见 unittest Skill） |
-| **unittest.mock** | Mock 测试框架（详见 unittest Skill） |
+| **unittest.mock** | Mock 测试框架 |
 | **unittest.testmacro** | 单元测试宏 |
 | **unittest.mock.mockmacro** | Mock 框架宏 |
 | **unittest.common** | 单元测试通用类型 |
@@ -69,648 +66,493 @@ import std.collection.{ArrayList, HashMap} // 导入多个类型
 
 ---
 
-## 3. 核心包（std.core）— 自动导入
+## 3. core — 核心包（自动导入）
 
-### 3.1 常用全局函数
-```cangjie
-print("hello")              // 输出（不换行）
-println("hello")            // 输出（换行）
-eprint("error")             // 输出到 stderr
-eprintln("error")           // 输出到 stderr（换行）
-let line = readln()         // 读取一行标准输入，返回 ?String
-let m = min(a, b)           // 返回较小值
-let n = max(a, b)           // 返回较大值
-sleep(Duration.second * 2)  // 当前线程休眠
-```
+### 3.1 核心接口
 
-### 3.2 核心类型别名
-```cangjie
-// Byte = UInt8，Int = Int64，UInt = UInt64
-let b: Byte = 0xFF
-let i: Int = 42
-```
+| 接口 | 关键方法 | 说明 |
+|------|----------|------|
+| `Any` | — | 所有类型的父接口 |
+| `ToString` | `toString(): String` | 字符串表示 |
+| `Hashable` | `hashCode(): Int64` | 哈希值 |
+| `Equatable<T>` | `==(T): Bool`, `!=(T): Bool` | 相等比较 |
+| `Comparable<T>` | `<(T): Bool`, `>(T): Bool`, `<=(T): Bool`, `>=(T): Bool` | 大小比较 |
+| `Less<T>` / `Greater<T>` | `<(T): Bool` / `>(T): Bool` | 单向比较 |
+| `Iterable<E>` | `iterator(): Iterator<E>` | 支持 for-in 迭代 |
+| `Collection<T>` | `size: Int64`, `isEmpty(): Bool` | 集合基础 |
+| `Resource` | `isClosed(): Bool`, `close(): Unit` | try-with-resources |
+| `Countable<T>` | `next(Int64): T`, `position(): Int64` | 可计数类型（用于 Range） |
+| `CType` | — | 可与 C 交互的类型标记 |
 
-### 3.3 核心接口
-| 接口 | 用途 |
-|------|------|
-| `ToString` | 提供 `toString()` 方法 |
-| `Hashable` | 提供 `hashCode()` 方法 |
-| `Equatable<T>` | 提供 `==`/`!=` 比较 |
-| `Comparable<T>` | 提供 `<`/`>`/`<=`/`>=` 比较 |
-| `Iterable<E>` | 提供 `iterator()` 方法，支持 for-in |
-| `Collection<T>` | 集合基础接口 |
-| `Resource` | 提供 `isClosed()`/`close()` 方法，用于 try-with-resources |
-| `Any` | 所有类型的父接口 |
+### 3.2 核心类型
 
-### 3.4 异常类层次
-```
-Error（系统错误，不应手动抛出）
-  ├── OutOfMemoryError
-  └── StackOverflowError
+| 类型 | 分类 | 说明 |
+|------|------|------|
+| `Int8`/`Int16`/`Int32`/`Int64` | 整数 | 有符号整数（`Int` = `Int64`） |
+| `UInt8`/`UInt16`/`UInt32`/`UInt64` | 整数 | 无符号整数（`Byte` = `UInt8`，`UInt` = `UInt64`） |
+| `Float16`/`Float32`/`Float64` | 浮点 | 浮点数 |
+| `Bool` | 布尔 | `true` / `false` |
+| `Rune` | 字符 | Unicode 字符 |
+| `String` | 字符串 | UTF-8 字符串 |
+| `Array<T>` | 数组 | 固定大小数组 |
+| `Range<T>` | 范围 | 数值/字符范围 |
+| `Option<T>` | 枚举 | `Some(T)` / `None`，可写作 `?T` |
+| `Result<T, E>` | 枚举 | `Ok(T)` / `Err(E)` |
+| `Ordering` | 枚举 | `LT` / `EQ` / `GT` |
+| `Duration` | 结构体 | 时间间隔 |
+| `StringBuilder` | 类 | 高效字符串拼接 |
+| `Box<T>` | 类 | 值类型装箱 |
+| `Future<T>` | 类 | 线程句柄 |
+| `Thread` | 类 | 线程信息 |
 
-Exception（可捕获处理）
-  ├── ArithmeticException
-  ├── IllegalArgumentException
-  ├── IllegalStateException
-  ├── IndexOutOfBoundsException
-  ├── NegativeArraySizeException
-  ├── NoneValueException
-  ├── NullPointerException
-  ├── OverflowException
-  ├── ConcurrentModificationException
-  ├── UnsupportedException
-  └── TimeoutException
-```
+### 3.3 常用全局函数
 
-### 3.5 Duration（时间间隔）
-```cangjie
-let d = Duration.second * 5         // 5 秒
-let d2 = 100 * Duration.millisecond // 100 毫秒
-// 常用单位：Duration.nanosecond, Duration.microsecond, Duration.millisecond, Duration.second, Duration.minute, Duration.hour
-```
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `print` | `print(Any): Unit` | 输出（不换行） |
+| `println` | `println(Any): Unit` | 输出（换行） |
+| `eprint` | `eprint(Any): Unit` | 输出到 stderr |
+| `eprintln` | `eprintln(Any): Unit` | 输出到 stderr（换行） |
+| `readln` | `readln(): ?String` | 读取一行标准输入 |
+| `min` | `min<T>(T, T): T` | 返回较小值 |
+| `max` | `max<T>(T, T): T` | 返回较大值 |
+| `sleep` | `sleep(Duration): Unit` | 当前线程休眠 |
+| `spawn` | `spawn { => ... }` | 创建新线程，返回 `Future<T>` |
+| `synchronized` | `synchronized(lock) { ... }` | 自动加锁/解锁的临界区 |
+
+### 3.4 异常层次
+
+| 基类 | 子类 | 说明 |
+|------|------|------|
+| `Error` | `OutOfMemoryError`, `StackOverflowError` | 系统错误，不应捕获 |
+| `Exception` | `ArithmeticException`, `IllegalArgumentException`, `IllegalStateException`, `IndexOutOfBoundsException`, `NegativeArraySizeException`, `NoneValueException`, `NullPointerException`, `OverflowException`, `ConcurrentModificationException`, `UnsupportedException`, `TimeoutException` | 可捕获处理 |
+
+### 3.5 Duration 常用单位
+
+| 单位 | 构造示例 |
+|------|----------|
+| `Duration.nanosecond` | `500 * Duration.nanosecond` |
+| `Duration.microsecond` | `100 * Duration.microsecond` |
+| `Duration.millisecond` | `200 * Duration.millisecond` |
+| `Duration.second` | `Duration.second * 5` |
+| `Duration.minute` | `Duration.minute * 10` |
+| `Duration.hour` | `Duration.hour * 2` |
 
 ### 3.6 StringBuilder
-```cangjie
-let sb = StringBuilder()
-sb.append("Hello")
-sb.append(", ")
-sb.append("World!")
-let s = sb.toString()  // "Hello, World!"
-```
-- `append()` 支持的参数类型：`String`、`Rune`、`Bool`、`Int8`/`Int16`/`Int32`/`Int64`、`UInt8`/`UInt16`/`UInt32`/`UInt64`、`Float16`/`Float32`/`Float64`、`Array<Rune>`、`StringBuilder`、`CString`， 以及任何实现 `ToString` 接口的泛型类型
-- **注意**：所有 `append()` 方法返回 `Unit`
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `init` | `StringBuilder()` | 构造空 Builder |
+| `append` | `append(String): Unit` | 追加字符串（也支持 Rune/Bool/整数/浮点/Array\<Rune>/CString/ToString） |
+| `toString` | `toString(): String` | 转为 String |
 
 ---
 
-## 4. 集合（std.collection）
+## 4. collection — 集合
 
 **导入**：`import std.collection.*`
 
-### 4.1 ArrayList — 动态数组
-```cangjie
-let list = ArrayList<Int64>()
-list.add(1)
-list.add(2)
-list.add(3)
-list[0] = 10                       // 下标修改
-let val = list[1]                   // 下标访问
-list.add(0, at: 0)                  // 在索引 0 处插入
-list.remove(at: 2)                  // 按索引删除
-println(list.size)                  // 元素个数
-for (item in list) { println(item) }
-```
+### 4.1 集合类型
 
-### 4.2 HashMap — 哈希映射
-```cangjie
-let map = HashMap<String, Int64>()
-map.add("a", 1)                     // 添加/更新，返回 Option<V>（旧值或 None）
-map["b"] = 2                        // 下标添加/更新
-let v = map["a"]                    // 下标访问（键不存在抛 NoneValueException）
-let safe = map.get("a")             // 安全访问，返回 ?V（键不存在返回 None）
-if (map.contains("a")) {            // 另一种安全方式：先检查再取值
-    let v2 = map["a"]
-}
-let has = map.contains("a")         // 检查键是否存在
-map.remove("b")                     // 按键删除
-for ((k, v) in map) { println("${k}: ${v}") }
-```
-- `K` 须实现 `Hashable` 和 `Equatable<K>`
+| 类型 | 构造函数 | 说明 |
+|------|----------|------|
+| `ArrayList<T>` | `ArrayList<T>()`, `ArrayList<T>(Int64)`, `ArrayList<T>(Collection<T>)`, `ArrayList<T>(Int64, (Int64) -> T)` | 动态数组 |
+| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)`, `HashMap<K, V>(Array<(K, V)>)`, `HashMap<K, V>(Int64, (Int64) -> (K, V))` | 哈希映射（K 须 Hashable + Equatable） |
+| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)`, `HashSet<T>(Collection<T>)`, `HashSet<T>(Int64, (Int64) -> T)` | 哈希集合（T 须 Hashable + Equatable） |
+| `TreeMap<K, V>` | `TreeMap<K, V>()`, `TreeMap<K, V>(Array<(K, V)>)`, `TreeMap<K, V>(Int64, (Int64) -> (K, V))` | 红黑树有序映射（K 须 Comparable） |
+| `LinkedList<T>` | `LinkedList<T>()`, `LinkedList<T>(Collection<T>)`, `LinkedList<T>(Int64, (Int64) -> T)` | 双向链表 |
+| `ArrayDeque<T>` | `ArrayDeque<T>()`, `ArrayDeque<T>(Int64)` | 双端队列 |
+| `ArrayQueue<T>` | `ArrayQueue<T>()`, `ArrayQueue<T>(Int64)` | 环形队列 |
+| `ArrayStack<T>` | `ArrayStack<T>()`, `ArrayStack<T>(Int64)` | 栈 |
 
-### 4.3 HashSet — 哈希集合（无序、去重）
-```cangjie
-let set = HashSet<Int64>()
-set.add(1)
-set.add(2)
-set.add(1)                          // 已存在，无效果
-let has = set.contains(1)           // 检查元素
-set.remove(2)                       // 按值删除
-for (item in set) { println(item) } // 遍历顺序不保证
-```
-- `T` 须实现 `Hashable` 和 `Equatable<T>`
+### 4.2 集合接口
 
-### 4.4 其他集合类型
-| 类型 | 说明 |
-|------|------|
-| `TreeMap<K, V>` | 基于红黑树的有序映射（`K` 须实现 `Comparable<K>`） |
-| `LinkedList<T>` | 双向链表，高效的头尾增删 |
-| `ArrayDeque<T>` | 双端队列 |
-| `ArrayQueue<T>` | 环形队列（尾部插入、头部删除） |
-| `ArrayStack<T>` | 栈（后进先出） |
+| 接口 | 关键方法 |
+|------|----------|
+| `Collection<T>` | `size`, `isEmpty()` |
+| `List<T>` | `get(Int64)`, `set(Int64, T)`, `add(T)`, `remove(at!: Int64)` |
+| `Map<K, V>` | `get(K)`, `add(K, V)`, `contains(K)`, `remove(K)` |
+| `Set<T>` | `add(T)`, `contains(T)`, `remove(T)` |
+| `Deque<T>` | `pushFirst(T)`, `pushLast(T)`, `popFirst()`, `popLast()` |
+| `ReadOnlyMap<K, V>` | `get(K)`, `contains(K)`, `size` |
 
-### 4.5 函数式迭代操作
-```cangjie
-import std.collection.*
+### 4.3 函数式迭代操作（应用于 Iterator\<T>）
 
-let list = ArrayList<Int64>([1, 2, 3, 4, 5])
-// 通过迭代器使用函数式操作
-let result = list
-    |> filter { v => v % 2 == 1 }
-    |> map { v => v.toString() }
-    |> collectArrayList
-```
-
-常用迭代函数（应用于 `Iterator<T>`）：
-| 函数 | 说明 |
-|------|------|
-| `filter` | 过滤元素 |
-| `map` | 转换元素 |
-| `flatMap` | 转换并展平 |
-| `fold` | 累积计算（带初始值） |
-| `reduce` | 累积计算（无初始值） |
-| `forEach` | 遍历执行 |
-| `count` | 计数 |
-| `any` / `all` / `none` | 谓词检查 |
-| `first` / `last` | 获取首/尾元素 |
-| `take` / `skip` | 取前 n 个 / 跳过前 n 个 |
-| `enumerate` | 带索引遍历 |
-| `zip` | 配对两个迭代器 |
-| `concat` | 连接两个迭代器 |
-| `collectArrayList` / `collectHashMap` / `collectHashSet` | 收集为集合 |
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `filter` | `filter(predicate: (T) -> Bool): Iterator<T>` | 过滤元素 |
+| `map` | `map<R>(transform: (T) -> R): Iterator<R>` | 转换元素 |
+| `flatMap` | `flatMap<R>(transform: (T) -> Iterator<R>): Iterator<R>` | 转换并展平 |
+| `fold` | `fold<R>(initial: R, operation: (R, T) -> R): R` | 累积计算（带初始值） |
+| `reduce` | `reduce(operation: (T, T) -> T): Option<T>` | 累积计算（无初始值） |
+| `forEach` | `forEach(action: (T) -> Unit): Unit` | 遍历执行 |
+| `count` | `count(): Int64` | 计数 |
+| `any` / `all` / `none` | `any(predicate: (T) -> Bool): Bool` | 谓词检查 |
+| `first` / `last` | `first(): Option<T>` | 首/尾元素 |
+| `take` / `skip` | `take(count: Int64): Iterator<T>` | 取前 n 个 / 跳过前 n 个 |
+| `enumerate` | `enumerate(): Iterator<(Int64, T)>` | 带索引遍历 |
+| `zip` | `zip<R>(Iterator<R>): Iterator<(T, R)>` | 配对两个迭代器 |
+| `concat` | `concat(Iterator<T>): Iterator<T>` | 连接两个迭代器 |
+| `collectArrayList` | `collectArrayList<T>(Iterable<T>): ArrayList<T>` | 收集为 ArrayList |
+| `collectHashMap` | `collectHashMap<K, V>(Iterable<(K, V)>): HashMap<K, V>` | 收集为 HashMap |
+| `collectHashSet` | `collectHashSet<T>(Iterable<T>): HashSet<T>` | 收集为 HashSet |
 
 ---
 
-## 5. I/O 流（std.io）
+## 5. collection.concurrent — 并发安全集合
+
+**导入**：`import std.collection.concurrent.*`
+
+| 类型 | 构造函数 | 关键方法 |
+|------|----------|----------|
+| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` | `put(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
+| `ConcurrentLinkedQueue<T>` | `ConcurrentLinkedQueue<T>()` | `enqueue(T)`, `dequeue(): ?T`, `peek(): ?T` |
+| `ArrayBlockingQueue<T>` | `ArrayBlockingQueue<T>(Int64)` | `enqueue(T)`, `dequeue(): T`（阻塞） |
+| `LinkedBlockingQueue<T>` | `LinkedBlockingQueue<T>()` | `enqueue(T)`, `dequeue(): T`（阻塞） |
+
+---
+
+## 6. io — I/O 流
 
 **导入**：`import std.io.*`
 
-### 5.1 核心接口
-```cangjie
-// 输入流
-interface InputStream {
-    func read(buffer: Array<Byte>): Int64  // 返回实际读取的字节数
-}
-// 输出流
-interface OutputStream {
-    func write(buffer: Array<Byte>): Unit
-    func flush(): Unit
-}
-```
+### 6.1 接口
 
-### 5.2 缓冲流
-```cangjie
-import std.io.*
-import std.fs.*
+| 接口 | 关键方法 | 说明 |
+|------|----------|------|
+| `InputStream` | `read(Array<Byte>): Int64` | 输入流 |
+| `OutputStream` | `write(Array<Byte>): Unit`, `flush(): Unit` | 输出流 |
+| `IOStream` | 继承 InputStream + OutputStream | 双向流 |
+| `Seekable` | `seek(SeekPosition): Int64` | 可定位流 |
 
-// 使用 BufferedOutputStream 写文件
-try (file = File.create("output.txt")) {
-    let bos = BufferedOutputStream(file)
-    let sw = StringWriter(bos)
-    sw.writeln("Hello, World!")
-    sw.flush()  // 必须 flush 确保数据写入
-}
+### 6.2 类
 
-// 使用 BufferedInputStream 读文件
-try (file = File("output.txt", OpenMode.Read)) {
-    let bis = BufferedInputStream(file)
-    let sr = StringReader(bis)
-    let line = sr.readln()  // 读取一行
-}
-```
-
-### 5.3 StringReader / StringWriter
-```cangjie
-// StringWriter：将字符串/数值写入输出流
-let sw = StringWriter(outputStream)
-sw.write("text")
-sw.writeln("line")
-sw.write(42)           // 写入数值的字符串表示
-
-// StringReader：从输入流读取字符串
-let sr = StringReader(inputStream)
-let line = sr.readln()  // 按行读取，返回 ?String
-```
+| 类 | 构造函数 | 说明 |
+|------|----------|------|
+| `BufferedInputStream<T>` | `BufferedInputStream<T>(T)` | 缓冲输入流 |
+| `BufferedOutputStream<T>` | `BufferedOutputStream<T>(T)` | 缓冲输出流 |
+| `StringReader<T>` | `StringReader<T>(T)` | 字符串级别读取：`readln(): ?String`, `readToEnd(): String` |
+| `StringWriter<T>` | `StringWriter<T>(T)` | 字符串级别写入：`write(String)`, `writeln(String)` |
+| `ByteBuffer` | `ByteBuffer(Int64)` | 字节缓冲区 |
+| `ChainedInputStream` | `ChainedInputStream(Array<InputStream>)` | 串联多个输入流 |
+| `MultiOutputStream` | `MultiOutputStream(Array<OutputStream>)` | 同时写入多个输出流 |
 
 ---
 
-## 6. 文件系统（std.fs）
+## 7. fs — 文件系统
 
 **导入**：`import std.fs.*`
 
-### 6.1 文件操作
-```cangjie
-// 检查文件是否存在
-let exist = exists("test.txt")
+### 7.1 全局函数
 
-// 快捷读写（适合小文件）
-File.writeTo("test.txt", "Hello World".toArray())
-let content = File.readFrom("test.txt")
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `exists` | `exists(String): Bool` | 检查路径是否存在 |
+| `copy` | `copy(String, to!: String): Unit` | 复制文件 |
+| `rename` | `rename(String, to!: String): Unit` | 重命名/移动 |
+| `remove` | `remove(String, recursive!: Bool): Unit` | 删除文件或目录 |
 
-// 流式读写（适合大文件）
-try (file = File("data.txt", OpenMode.Read)) {
-    let buf = Array<Byte>(1024, repeat: 0)
-    let n = file.read(buf)  // 读取数据
-}
+### 7.2 File
 
-try (file = File.create("output.txt")) {
-    file.write("Hello".toArray())
-}
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| 构造 | `File(String, OpenMode)`, `File.create(String)` | 打开/创建文件 |
+| `readFrom` | `File.readFrom(String): Array<Byte>` | 快捷读文件 |
+| `writeTo` | `File.writeTo(String, Array<Byte>): Unit` | 快捷写文件 |
 
-// 文件操作工具
-copy("src.txt", "dst.txt")
-rename("old.txt", "new.txt")
-remove("temp.txt")
-```
+**打开模式**：`OpenMode.Read` | `OpenMode.Write` | `OpenMode.Append` | `OpenMode.ReadWrite`
 
-### 6.2 打开模式
-| 模式 | 说明 |
-|------|------|
-| `OpenMode.Read` | 只读（文件须存在） |
-| `OpenMode.Write` | 只写（文件不存在则创建，存在则截断为空） |
-| `OpenMode.Append` | 追加写入（文件不存在则创建） |
-| `OpenMode.ReadWrite` | 读写（文件不存在则创建，不截断） |
+### 7.3 Directory
 
-### 6.3 目录操作
-```cangjie
-Directory.create("new_dir")                  // 创建目录
-Directory.create("a/b/c", recursive: true)   // 递归创建
-let entries = Directory.list(".")            // 列出目录内容
-Directory.delete("empty_dir")               // 删除空目录
-```
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `create` | `Directory.create(String, recursive!: Bool)` | 创建目录 |
+| `list` | `Directory.list(String): Array<FileInfo>` | 列出目录内容 |
+| `delete` | `Directory.delete(String)` | 删除空目录 |
 
 ---
 
-## 7. 环境与标准流（std.env）
+## 8. env — 进程环境
 
 **导入**：`import std.env.*`
 
-```cangjie
-// 标准流（比 print/println 更灵活，支持缓冲）
-let stdin = getStdIn()       // ConsoleReader
-let stdout = getStdOut()     // ConsoleWriter
-let stderr = getStdErr()     // ConsoleWriter
-stdout.write("hello")
-stdout.flush()               // 显式刷新缓冲区
-
-// 环境变量
-let home = getVariable("HOME")   // 返回 ?String
-setVariable("MY_VAR", "value")
-
-// 目录信息
-let cwd = getWorkingDirectory()
-let home = getHomeDirectory()
-let tmp = getTempDirectory()
-
-// 进程控制
-let pid = getProcessId()
-exit(0)                           // 退出进程
-```
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `getStdIn` | `getStdIn(): ConsoleReader` | 标准输入 |
+| `getStdOut` | `getStdOut(): ConsoleWriter` | 标准输出 |
+| `getStdErr` | `getStdErr(): ConsoleWriter` | 标准错误 |
+| `getVariable` | `getVariable(String): ?String` | 读取环境变量 |
+| `setVariable` | `setVariable(String, String): Unit` | 设置环境变量 |
+| `getWorkingDirectory` | `getWorkingDirectory(): String` | 当前工作目录 |
+| `getHomeDirectory` | `getHomeDirectory(): String` | 用户主目录 |
+| `getTempDirectory` | `getTempDirectory(): String` | 临时目录 |
+| `getProcessId` | `getProcessId(): Int64` | 进程 ID |
+| `exit` | `exit(Int64): Unit` | 退出进程 |
 
 ---
 
-## 8. 并发同步（std.sync）
-
-**导入**：`import std.sync.*`
-
-### 8.1 原子操作
-```cangjie
-let counter = AtomicInt64(0)
-counter.store(10)
-let val = counter.load()              // 10
-counter.fetchAdd(5)                   // 返回旧值 10，新值为 15
-let ok = counter.compareAndSwap(15, 20) // CAS 操作
-```
-
-### 8.2 互斥锁与 synchronized
-```cangjie
-let mtx = Mutex()
-
-// 方式一：手动加锁/解锁
-mtx.lock()
-// ... 临界区 ...
-mtx.unlock()
-
-// 方式二：synchronized 自动加锁/解锁（推荐）
-let result = synchronized(mtx) {
-    // 临界区，退出时自动解锁（包括异常退出）
-    computeResult()
-}
-```
-
-### 8.3 条件变量
-```cangjie
-let mtx = Mutex()
-let cond = mtx.condition()
-
-// 等待线程
-synchronized(mtx) {
-    while (!ready) {
-        cond.wait()          // 等待通知
-    }
-}
-
-// 通知线程
-synchronized(mtx) {
-    ready = true
-    cond.notifyAll()         // 唤醒所有等待线程
-}
-```
-
-### 8.4 并发安全集合
-```cangjie
-import std.collection.concurrent.*
-
-let cmap = ConcurrentHashMap<String, Int64>()
-cmap.put("key", 42)
-let v = cmap.get("key")     // 返回 ?Int64
-```
-
----
-
-## 9. 时间日期（std.time）
-
-**导入**：`import std.time.*`
-
-```cangjie
-// 获取当前时间
-let now = DateTime.now()
-println(now.toString())
-
-// 构造时间
-let dt = DateTime.of(year: 2024, month: 6, dayOfMonth: 15, hour: 10, minute: 30)
-
-// 格式化
-let formatted = now.toString("yyyy-MM-dd HH:mm:ss")
-
-// 时间计算
-let later = now + Duration.hour * 2
-let diff = later - now           // Duration
-
-// 单调时间（用于计时，不受系统时间调整影响）
-let start = MonoTime.now()
-// ... 执行操作 ...
-let elapsed = MonoTime.now() - start  // Duration
-```
-
----
-
-## 10. 数学运算（std.math）
-
-**导入**：`import std.math.*`
-
-```cangjie
-let a = abs(-5)              // 5
-let s = sqrt(16.0)           // 4.0
-let p = pow(2.0, 10.0)       // 1024.0
-let l = log(100.0)           // 自然对数
-let c = ceil(3.2)            // 4.0
-let f = floor(3.8)           // 3.0
-let g = gcd(12, 18)          // 6
-let l = lcm(4, 6)            // 12
-let clamped = clamp(15, 0, 10) // 10（限制在范围内）
-// 三角函数：sin, cos, tan, asin, acos, atan
-```
-
-### 扩展数值类型（std.math.numeric）
-```cangjie
-import std.math.numeric.*
-
-let big = BigInt("123456789012345678901234567890")
-let sum = big + BigInt("1")
-
-let d = Decimal("3.14159265358979323846")
-let product = d * Decimal("2")
-```
-
----
-
-## 11. 正则表达式（std.regex）
-
-**导入**：`import std.regex.*`
-
-```cangjie
-let re = Regex(#"(\d{4})-(\d{2})-(\d{2})"#)
-
-// 查找匹配
-let m = re.find("Date: 2024-06-15")
-if (let Some(mat) <- m) {
-    println(mat.matchStr())        // "2024-06-15"
-    println(mat.group(1))          // "2024"
-}
-
-// 查找所有匹配
-let allMatches = re.findAll("2024-01-01 and 2024-06-15")
-
-// 替换
-let result = re.replace("2024-06-15", "****-**-**")
-
-// 分割
-let parts = Regex(#"\s+"#).split("hello   world   foo")
-
-// 验证
-let isValid = re.fullMatch("2024-06-15")  // 完整匹配检查
-```
-
----
-
-## 12. 随机数（std.random）
-
-**导入**：`import std.random.*`
-
-```cangjie
-let rng = Random()
-let rng2 = Random(42)          // 指定种子，可复现
-
-let i = rng.nextInt64()        // 随机 Int64
-let u = rng.nextUInt64()       // 随机 UInt64
-let f = rng.nextFloat64()      // [0.0, 1.0) 之间的随机浮点数
-let b = rng.nextBool()         // 随机布尔值
-```
-
----
-
-## 13. 排序（std.sort）
-
-**导入**：`import std.sort.*`
-
-```cangjie
-// Array 排序（元素须实现 Comparable）
-var arr = [3, 1, 4, 1, 5, 9, 2, 6]
-sort(arr)                           // 原地升序排序
-
-// 自定义比较器排序
-sort(arr) { a, b => b - a }        // 降序排序
-
-// ArrayList 排序
-let list = ArrayList<Int64>([3, 1, 2])
-sort(list)
-```
-
----
-
-## 14. 进程管理（std.process）
-
-**导入**：`import std.process.*`
-
-```cangjie
-// 执行命令并等待完成
-let status = execute("ls", ["-la"])
-
-// 执行命令并捕获输出
-let (status, stdout, stderr) = executeWithOutput("echo", ["hello"])
-
-// 异步启动子进程
-let proc = launch("long_running_command", [])
-// ... 做其他工作 ...
-let exitCode = proc.wait()
-```
-
----
-
-## 15. 类型转换与格式化（std.convert）
-
-**导入**：`import std.convert.*`
-
-### 15.1 字符串解析为数值（Parsable 接口）
-```cangjie
-import std.convert.*
-
-// parse：解析失败抛 IllegalArgumentException
-let n = Int64.parse("42")           // 42
-let f = Float64.parse("3.14")      // 3.14
-let b = Bool.parse("true")         // true
-
-// tryParse：解析失败返回 None
-let opt = Float64.tryParse("abc")  // None
-let val = Int64.tryParse("42")     // Some(42)
-```
-- `parse(value: String): T` — 解析失败抛出 `IllegalArgumentException`
-- `tryParse(value: String): Option<T>` — 解析失败返回 `None`
-- 支持的类型：`Bool`、`Int8`/`Int16`/`Int32`/`Int64`、`UInt8`/`UInt16`/`UInt32`/`UInt64`、`Float16`/`Float32`/`Float64`、`Rune`
-
-### 15.2 格式化输出（Formattable 接口）
-```cangjie
-import std.convert.*  // format 方法需要导入此包
-
-let hex = UInt32(255).format("x")     // "ff"（十六进制）
-let padded = 42.format(">10")         // "        42"（右对齐，宽度 10）
-```
-- **`format()` 方法由 `Formattable` 接口提供，需要 `import std.convert.*`**
-- 支持的类型：所有整数类型、所有浮点类型、`Rune`
-- 也可使用字符串插值格式化：
-  ```cangjie
-  let hex = "${255:x}"                // "ff"
-  let padded = "${42:>10}"            // "        42"
-  ```
-
----
-
-## 16. 网络通信（std.net）
+## 9. net — 网络通信
 
 **导入**：`import std.net.*`
 
-### TCP 服务端
-```cangjie
-let server = TcpServerSocket(bindAt: 8080)
-server.bind()
-let client = server.accept()        // 阻塞等待连接
-let buf = Array<Byte>(1024, repeat: 0)
-let n = client.read(buf)
-client.write("Hello".toArray())
-client.close()
-server.close()
-```
-
-### TCP 客户端
-```cangjie
-let socket = TcpSocket("127.0.0.1", 8080)
-socket.connect()
-socket.write("Hello".toArray())
-let buf = Array<Byte>(1024, repeat: 0)
-let n = socket.read(buf)
-socket.close()
-```
+| 类型 | 构造函数 | 关键方法 |
+|------|----------|----------|
+| `TcpSocket` | `TcpSocket(String, UInt16)` | `connect()`, `read(Array<Byte>): Int64`, `write(Array<Byte>)`, `close()` |
+| `TcpServerSocket` | `TcpServerSocket(bindAt!: UInt16)` | `bind()`, `accept(): TcpSocket`, `close()` |
+| `UdpSocket` | `UdpSocket(bindAt!: UInt16)` | `sendTo(Array<Byte>, SocketAddress)`, `receiveFrom(Array<Byte>)`, `close()` |
+| `UnixSocket` | `UnixSocket(String)` | Unix Domain Socket 通信 |
 
 ---
 
-## 17. 自动派生（std.deriving）
+## 10. sync — 并发同步
+
+**导入**：`import std.sync.*`
+
+### 10.1 原子类型
+
+| 类型 | 构造函数 | 关键方法 |
+|------|----------|----------|
+| `AtomicInt8` ~ `AtomicInt64` | `AtomicInt64(Int64)` | `load()`, `store(v)`, `swap(v)`, `compareAndSwap(old, new)`, `fetchAdd(v)`, `fetchSub(v)`, `fetchAnd(v)`, `fetchOr(v)`, `fetchXor(v)` |
+| `AtomicUInt8` ~ `AtomicUInt64` | `AtomicUInt64(UInt64)` | 同上 |
+| `AtomicBool` | `AtomicBool(Bool)` | `load()`, `store(v)`, `swap(v)`, `compareAndSwap(old, new)` |
+| `AtomicReference<T>` | `AtomicReference<T>(T)` | `load()`, `store(v)`, `swap(v)`, `compareAndSwap(old, new)` |
+
+### 10.2 锁与同步
+
+| 类型 | 构造函数 | 关键方法 |
+|------|----------|----------|
+| `Mutex` | `Mutex()` | `lock()`, `unlock()`, `tryLock(): Bool`, `condition(): Condition` |
+| `ReentrantMutex` | `ReentrantMutex()` | 可重入互斥锁，同 Mutex |
+| `Monitor` | `Monitor()` | `enter()`, `leave()`, `wait()`, `notify()`, `notifyAll()` |
+| `SyncCounter` | `SyncCounter(Int64)` | `dec()`, `waitUntilZero()` |
+| `Timer` | `Timer()` | 定时器 |
+
+### 10.3 条件变量
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `wait` | `wait(): Unit` | 阻塞等待通知（须在循环中使用） |
+| `wait` | `wait(timeout!: Duration): Bool` | 带超时等待 |
+| `waitUntil` | `waitUntil(() -> Bool): Unit` | 等待谓词为 true |
+| `notify` | `notify(): Unit` | 唤醒一个等待线程 |
+| `notifyAll` | `notifyAll(): Unit` | 唤醒所有等待线程 |
+
+---
+
+## 11. time — 时间日期
+
+**导入**：`import std.time.*`
+
+| 类型 | 构造函数 / 工厂方法 | 关键方法 |
+|------|----------------------|----------|
+| `DateTime` | `DateTime.now()`, `DateTime.of(year, month, dayOfMonth, ...)` | `toString(String)`, `+/-` Duration 运算, `year`/`month`/`dayOfMonth` 等属性 |
+| `MonoTime` | `MonoTime.now()` | 单调时间，适合计时（`MonoTime.now() - start` 返回 Duration） |
+| `TimeZone` | `TimeZone.local`, `TimeZone.utc`, `TimeZone.of(String)` | 时区 |
+| `DateTimeFormat` | `DateTimeFormat(String)` | 日期时间格式化/解析 |
+
+---
+
+## 12. math — 数学运算
+
+**导入**：`import std.math.*`
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `abs` | `abs<T>(T): T` | 绝对值 |
+| `sqrt` | `sqrt(Float64): Float64` | 平方根 |
+| `pow` | `pow(Float64, Float64): Float64` | 幂 |
+| `log` / `log2` / `log10` | `log(Float64): Float64` | 对数 |
+| `ceil` / `floor` / `round` | `ceil(Float64): Float64` | 取整 |
+| `sin` / `cos` / `tan` | `sin(Float64): Float64` | 三角函数 |
+| `asin` / `acos` / `atan` | `asin(Float64): Float64` | 反三角函数 |
+| `gcd` | `gcd(Int64, Int64): Int64` | 最大公约数 |
+| `lcm` | `lcm(Int64, Int64): Int64` | 最小公倍数 |
+| `clamp` | `clamp(T, T, T): T` | 限制在范围内 |
+
+### math.numeric — 扩展数值
+
+**导入**：`import std.math.numeric.*`
+
+| 类型 | 构造函数 | 说明 |
+|------|----------|------|
+| `BigInt` | `BigInt(String)`, `BigInt(Int64)` | 任意精度整数，支持 `+`/`-`/`*`/`/`/`%` |
+| `Decimal` | `Decimal(String)`, `Decimal(Float64)` | 任意精度十进制数 |
+
+---
+
+## 13. random — 随机数
+
+**导入**：`import std.random.*`
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| 构造 | `Random()`, `Random(Int64)` | 无种子 / 指定种子 |
+| `nextInt64` | `nextInt64(): Int64` | 随机 Int64 |
+| `nextUInt64` | `nextUInt64(): UInt64` | 随机 UInt64 |
+| `nextFloat64` | `nextFloat64(): Float64` | [0.0, 1.0) 随机浮点 |
+| `nextBool` | `nextBool(): Bool` | 随机布尔 |
+
+---
+
+## 14. regex — 正则表达式
+
+**导入**：`import std.regex.*`
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| 构造 | `Regex(String)` | 编译正则表达式 |
+| `find` | `find(String): ?MatchData` | 查找第一个匹配 |
+| `findAll` | `findAll(String): Iterator<MatchData>` | 查找所有匹配 |
+| `fullMatch` | `fullMatch(String): Bool` | 完整匹配检查 |
+| `replace` | `replace(String, String): String` | 替换匹配内容 |
+| `split` | `split(String): Array<String>` | 按匹配分割 |
+
+---
+
+## 15. sort — 排序
+
+**导入**：`import std.sort.*`
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `sort` | `sort<T: Comparable>(Array<T>): Unit` | 原地升序排序 |
+| `sort` | `sort<T>(Array<T>, (T, T) -> Int64): Unit` | 自定义比较器排序 |
+| `sort` | `sort<T: Comparable>(ArrayList<T>): Unit` | ArrayList 排序 |
+
+---
+
+## 16. convert — 类型转换与格式化
+
+**导入**：`import std.convert.*`
+
+| 接口 / 方法 | 签名 | 说明 |
+|-------------|------|------|
+| `Parsable<T>` | `T.parse(String): T` | 字符串→数值（失败抛 IllegalArgumentException） |
+| `Parsable<T>` | `T.tryParse(String): ?T` | 字符串→数值（失败返回 None） |
+| `Formattable` | `format(String): String` | 数值格式化（十六进制 `"x"`、对齐 `">10"` 等） |
+
+支持的类型：`Bool`、`Int8`~`Int64`、`UInt8`~`UInt64`、`Float16`~`Float64`、`Rune`
+
+---
+
+## 17. process — 进程管理
+
+**导入**：`import std.process.*`
+
+| 函数 / 类 | 签名 | 说明 |
+|-----------|------|------|
+| `execute` | `execute(String, Array<String>): Int64` | 执行命令并等待，返回退出码 |
+| `executeWithOutput` | `executeWithOutput(String, Array<String>): (Int64, String, String)` | 执行命令并捕获 stdout/stderr |
+| `launch` | `launch(String, Array<String>): Process` | 异步启动子进程 |
+| `Process.wait` | `wait(): Int64` | 等待子进程结束 |
+
+---
+
+## 18. argopt — 命令行参数解析
+
+**导入**：`import std.argopt.*`
+
+| 类型 / 函数 | 签名 | 说明 |
+|-------------|------|------|
+| `parseArguments` | `parseArguments(Array<String>, Array<ArgumentSpec>): ParsedArguments` | 解析命令行参数 |
+| `ArgumentSpec.Short` | `Short(Rune, ArgumentMode)` | 短选项规范（如 `-v`） |
+| `ArgumentSpec.Long` | `Long(String, ArgumentMode)` | 长选项规范（如 `--verbose`） |
+| `ArgumentSpec.Full` | `Full(String, Rune, ArgumentMode)` | 同时定义长短选项 |
+| `ArgumentMode` | `NoValue` / `RequiredValue` / `OptionalValue` | 选项参数模式 |
+| `ParsedArguments` | `options: ReadOnlyMap<String, String>`, `nonOptions: Array<String>` | 解析结果 |
+
+---
+
+## 19. deriving — 自动派生
 
 **导入**：`import std.deriving.*`
 
-### 17.1 基本用法
-```cangjie
-import std.deriving.*
+| 宏 | 用法 | 说明 |
+|------|------|------|
+| `@Derive` | `@Derive[ToString, Hashable, Equatable]` | 自动生成接口实现，适用于 struct/class/enum |
+| `@DeriveExclude` | 标注成员 | 排除某些成员不参与派生 |
+| `@DeriveInclude` | 标注成员 | 仅包含某些成员参与派生 |
+| `@DeriveOrder` | 标注成员 | 指定成员参与派生的顺序 |
 
-@Derive[ToString, Hashable, Equatable]
-struct Point {
-    let x: Int64
-    let y: Int64
-    public init(x: Int64, y: Int64) {
-        this.x = x
-        this.y = y
-    }
-}
-// 自动生成 toString()、hashCode()、==、!= 实现
-```
-
-### 17.2 支持派生的接口
-| 接口 | 自动生成 |
-|------|----------|
-| `ToString` | `toString()` 方法 |
-| `Hashable` | `hashCode()` 方法 |
-| `Equatable` | `==`、`!=` 运算符 |
-| `Comparable` | `<`、`>`、`<=`、`>=` 比较（自动包含 `Equatable`） |
-
-### 17.3 适用类型
-- `@Derive` 可用于 `struct`、`class` 和 `enum` 类型
-- **枚举类型默认不支持 `==` 比较**，须使用 `@Derive[Equatable]` 派生：
-  ```cangjie
-  import std.deriving.*
-  
-  @Derive[Equatable]
-  enum TokenKind {
-      | Number | Plus | Minus | Eof
-  }
-  // 现在可以使用 == 比较 TokenKind 值
-  ```
-
-### 17.4 辅助宏
-- `@DeriveExclude`：排除某些成员不参与派生
-- `@DeriveInclude`：指定仅包含某些成员参与派生
-- `@DeriveOrder`：指定成员参与派生的顺序
+可派生的接口：`ToString`、`Hashable`、`Equatable`、`Comparable`
 
 ---
 
-## 18. 最佳实践
+## 20. reflect — 反射
 
-### 18.1 资源管理
-- **始终**使用 `try-with-resources` 管理 File 等实现 `Resource` 接口的对象
-```cangjie
-try (file = File("data.txt", OpenMode.Read)) {
-    // 使用 file，退出时自动关闭
-}
-```
+**导入**：`import std.reflect.*`
 
-### 18.2 集合选择
-| 场景 | 推荐类型 |
-|------|----------|
-| 固定大小、频繁随机访问 | `Array<T>` |
-| 动态增删、随机访问 | `ArrayList<T>` |
-| 键值映射、快速查找 | `HashMap<K, V>` |
-| 键值映射、需有序遍历 | `TreeMap<K, V>` |
-| 去重集合 | `HashSet<T>` |
-| 频繁头尾操作 | `LinkedList<T>` 或 `ArrayDeque<T>` |
-| 并发安全映射 | `ConcurrentHashMap<K, V>` |
-| 并发安全队列 | `ConcurrentLinkedQueue<T>` 或阻塞队列 |
+| 类型 | 关键方法 | 说明 |
+|------|----------|------|
+| `TypeInfo` | `name`, `members`, `methods`, `properties` | 获取类型元信息 |
+| `FieldInfo` | `name`, `type`, `get(Any)`, `set(Any, Any)` | 成员变量信息 |
+| `MethodInfo` | `name`, `parameters`, `invoke(Any, ...)` | 方法信息 |
+| `PropertyInfo` | `name`, `type`, `get(Any)`, `set(Any, Any)` | 属性信息 |
 
-### 18.3 并发编程
-- 使用 `synchronized(mtx) { ... }` 代替手动 `lock()/unlock()`，避免忘记解锁
-- 对简单计数器等场景优先使用 `Atomic` 类型而非互斥锁
-- 使用 `Future<T>.get()` 等待线程结果，注意 `get()` 位置影响并行度
-- 并发安全集合（`std.collection.concurrent`）适用于多线程共享数据
+---
 
-### 18.4 错误处理
-- 使用 `Option<T>`（`?T`）表示可能缺失的值，而非返回特殊值或抛异常
-- 使用 `??` 提供默认值：`let name = getName() ?? "unknown"`
-- 使用 `?.` 进行安全链式调用：`user?.address?.city`
-- 仅在真正异常情况下使用 `throw`/`try-catch`
+## 21. 其他包速查
 
-### 18.5 I/O 性能
-- 使用 `BufferedInputStream`/`BufferedOutputStream` 包装原始流以减少系统调用
-- 写入完成后**务必**调用 `flush()` 确保数据写入
-- 使用 `StringReader`/`StringWriter` 进行字符串级别的 I/O
+### binary — 二进制端序
 
-### 18.6 字符串处理
-- 使用字符串插值 `"${expr}"` 代替字符串拼接
-- 大量拼接时使用 `StringBuilder` 提高性能
-- 使用 `std.regex` 进行复杂文本匹配和处理
-- **注意**：`String` 实现了 `Collection<Byte>`，`for (c in s)` 迭代的是 UTF-8 编码字节（`UInt8`），而非字符。使用 `for (c in s.runes())` 迭代 Unicode 字符（`Rune`）
+**导入**：`import std.binary.*`
+
+| 接口 | 说明 |
+|------|------|
+| `BigEndianOrder` | 大端序 |
+| `LittleEndianOrder` | 小端序 |
+
+### crypto.digest — 摘要算法
+
+**导入**：`import std.crypto.digest.*`
+
+| 类型 | 构造函数 | 说明 |
+|------|----------|------|
+| `MD5` | `MD5()` | MD5 摘要 |
+| `SHA1` | `SHA1()` | SHA-1 摘要 |
+| `SHA256` | `SHA256()` | SHA-256 摘要 |
+| `SHA512` | `SHA512()` | SHA-512 摘要 |
+| `SM3` | `SM3()` | 国密 SM3 |
+| `HMAC` | `HMAC(HashAlgorithm, Array<Byte>)` | HMAC 消息认证码 |
+
+通用方法：`update(Array<Byte>)`, `finish(): Array<Byte>`, `reset()`
+
+### overflow — 溢出处理
+
+**导入**：`import std.overflow.*`
+
+| 策略 | 说明 |
+|------|------|
+| Option 返回 | 溢出返回 None |
+| 饱和（saturating） | 溢出取边界值 |
+| 抛异常（throwing） | 溢出抛 OverflowException |
+| 截断（truncating） | 溢出截断 |
+
+### ref — 弱引用
+
+**导入**：`import std.ref.*`
+
+| 类型 | 构造函数 | 关键方法 |
+|------|----------|----------|
+| `WeakRef<T>` | `WeakRef<T>(T)` | `tryGet(): ?T` — 对象未回收时返回 Some |
+
+### objectpool — 对象池
+
+**导入**：`import std.objectpool.*`
+
+| 类型 | 说明 |
+|------|------|
+| `ObjectPool<T>` | 缓存与复用对象，减少分配开销 |
+
+---
+
+## 22. 最佳实践
+
+| 场景 | 建议 |
+|------|------|
+| 资源管理 | 使用 `try (res = ...) { }` 自动关闭 File 等 Resource 对象 |
+| 集合选择 | 随机访问用 ArrayList，键值查找用 HashMap，有序映射用 TreeMap，并发用 ConcurrentHashMap |
+| 并发编程 | 优先 `synchronized(mtx) { }`；简单计数用 Atomic；用 Future.get() 等待结果 |
+| 错误处理 | 用 `?T` 表示可缺失值，`??` 提供默认值，`?.` 安全链式调用 |
+| I/O 性能 | 用 BufferedInputStream/BufferedOutputStream 包装原始流，写完调 flush() |
+| 字符串 | 用 `"${expr}"` 插值；大量拼接用 StringBuilder；`for (c in s.runes())` 迭代字符 |
