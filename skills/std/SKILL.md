@@ -169,7 +169,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 接口 | 关键方法 |
 |------|----------|
 | `Collection<T>` | `size`, `isEmpty()` |
-| `List<T>` | `get(Int64)`, `set(Int64, T)`, `add(T)`, `remove(at!: Int64)` |
+| `List<T>` | `get(Int64)`, `set(Int64, T)`, `add(T)`, `remove(at: Int64)` |
 | `Map<K, V>` | `get(K)`, `add(K, V)`, `contains(K)`, `remove(K)` |
 | `Set<T>` | `add(T)`, `contains(T)`, `remove(T)` |
 | `Deque<T>` | `pushFirst(T)`, `pushLast(T)`, `popFirst()`, `popLast()` |
@@ -247,9 +247,9 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 函数 | 签名 | 说明 |
 |------|------|------|
 | `exists` | `exists(String): Bool` | 检查路径是否存在 |
-| `copy` | `copy(String, to!: String): Unit` | 复制文件 |
-| `rename` | `rename(String, to!: String): Unit` | 重命名/移动 |
-| `remove` | `remove(String, recursive!: Bool): Unit` | 删除文件或目录 |
+| `copy` | `copy(String, to: String): Unit` | 复制文件 |
+| `rename` | `rename(String, to: String): Unit` | 重命名/移动 |
+| `remove` | `remove(String, recursive: Bool): Unit` | 删除文件或目录 |
 
 ### 7.2 File
 
@@ -265,7 +265,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
-| `create` | `Directory.create(String, recursive!: Bool)` | 创建目录 |
+| `create` | `Directory.create(String, recursive: Bool)` | 创建目录 |
 | `list` | `Directory.list(String): Array<FileInfo>` | 列出目录内容 |
 | `delete` | `Directory.delete(String)` | 删除空目录 |
 
@@ -297,8 +297,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 类型 | 构造函数 | 关键方法 |
 |------|----------|----------|
 | `TcpSocket` | `TcpSocket(String, UInt16)` | `connect()`, `read(Array<Byte>): Int64`, `write(Array<Byte>)`, `close()` |
-| `TcpServerSocket` | `TcpServerSocket(bindAt!: UInt16)` | `bind()`, `accept(): TcpSocket`, `close()` |
-| `UdpSocket` | `UdpSocket(bindAt!: UInt16)` | `sendTo(Array<Byte>, SocketAddress)`, `receiveFrom(Array<Byte>)`, `close()` |
+| `TcpServerSocket` | `TcpServerSocket(bindAt: UInt16)` | `bind()`, `accept(): TcpSocket`, `close()` |
+| `UdpSocket` | `UdpSocket(bindAt: UInt16)` | `sendTo(Array<Byte>, SocketAddress)`, `receiveFrom(Array<Byte>)`, `close()` |
 | `UnixSocket` | `UnixSocket(String)` | Unix Domain Socket 通信 |
 
 ---
@@ -331,7 +331,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 方法 | 签名 | 说明 |
 |------|------|------|
 | `wait` | `wait(): Unit` | 阻塞等待通知（须在循环中使用） |
-| `wait` | `wait(timeout!: Duration): Bool` | 带超时等待 |
+| `wait` | `wait(timeout: Duration): Bool` | 带超时等待 |
 | `waitUntil` | `waitUntil(() -> Bool): Unit` | 等待谓词为 true |
 | `notify` | `notify(): Unit` | 唤醒一个等待线程 |
 | `notifyAll` | `notifyAll(): Unit` | 唤醒所有等待线程 |
