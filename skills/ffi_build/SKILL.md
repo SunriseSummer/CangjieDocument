@@ -59,8 +59,8 @@ clang -shared -fstack-protector-all native.c -o native.dll
 # 编译仓颉代码并链接
 cjc -L . -l native main.cj -o main.exe
 
-# 运行（确保 dll 在搜索路径上）
-# 将 dll 所在目录添加到 PATH 环境变量中
+# 运行（动态库须确保在搜索路径上）
+# 将 dll 所在目录添加到 PATH 环境变量，或放在可执行文件所在目录
 ./main.exe
 ```
 
@@ -72,7 +72,9 @@ cjc -L . -l native main.cj -o main.exe
 |------|--------|--------|----------|
 | Linux | `lib<name>.so` | `lib<name>.a` | `-shared -fPIC` |
 | macOS | `lib<name>.dylib` | `lib<name>.a` | `-shared -fPIC` |
-| Windows | `<name>.dll` | `<name>.lib` | `-shared`，函数加 `__declspec(dllexport)` |
+| Windows | `lib<name>.dll` | `lib<name>.lib` | `-shared`，函数加 `__declspec(dllexport)` |
+
+> **注意**：Windows 平台依赖动态库，编译链接时要求库名有`lib`前缀，运行时则要去掉`lib`前缀。
 
 ### 2.5 安全编译建议
 
