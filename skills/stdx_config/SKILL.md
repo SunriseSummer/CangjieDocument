@@ -1,6 +1,6 @@
 ---
 name: cangjie-stdx-config
-description: "仓颉扩展标准库（stdx）项目配置与构建指南。当需要了解 stdx 的下载安装、cjpm.toml 中 bin-dependencies 配置（动态库/静态库）、不同平台（Linux/macOS/Windows）的配置差异、OpenSSL 依赖安装、动态库搜索路径设置等构建相关内容时，应使用此 Skill。"
+description: "依赖仓颉扩展标准库（stdx）的项目配置与构建指南，包括stdx获取和不同平台的配置/构建/运行方式"
 ---
 
 # 仓颉扩展标准库（stdx）项目配置与构建 Skill
