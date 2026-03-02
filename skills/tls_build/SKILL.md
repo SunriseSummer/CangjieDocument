@@ -7,7 +7,7 @@ description: "仓颉 TLS 项目编译构建指南。当项目依赖 stdx.net.tls
 
 ## 1. 概述
 
-使用 `stdx.net.tls`（以及 `stdx.net.http` HTTPS、`stdx.crypto.*`）需要：
+使用 `stdx.net.tls`（以及 `stdx.crypto.*` 和涉及 https 的 `stdx.net.http`）需要：
 
 1. **安装 OpenSSL 3** — 提供 `ssl` 和 `crypto` 动态库
 2. **下载 stdx** — 从 <https://gitcode.com/Cangjie/cangjie_stdx/releases> 下载对应平台的扩展标准库
