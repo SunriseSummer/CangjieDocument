@@ -55,7 +55,7 @@ export LIBRARY_PATH=/path/to/openssl/lib:$LIBRARY_PATH
 brew install openssl@3
 ```
 
-确保系统安装目录下存在 `libssl.dylib`、`libcrypto.dylib` 和 `libcrypto.3.dylib`。
+确保系统安装目录下存在 `libssl.dylib`、`libssl.3.dylib`、`libcrypto.dylib` 和 `libcrypto.3.dylib`。
 
 **方式二：源码编译安装**
 
@@ -68,7 +68,7 @@ export LIBRARY_PATH=/path/to/openssl/lib:$LIBRARY_PATH
 
 ### 2.3 Windows
 
-1. 下载 OpenSSL 3.x.x 源码编译安装 x64 架构软件包，或下载第三方预编译的 OpenSSL 3.x.x 开发包
+1. 从源码编译安装 OpenSSL 3.x.x（x64 架构），或下载第三方预编译的 OpenSSL 3.x.x 开发包
 2. 确保安装目录下包含以下库文件：
    - `libssl.dll.a`（或 `libssl.lib`）、`libssl-3-x64.dll`
    - `libcrypto.dll.a`（或 `libcrypto.lib`）、`libcrypto-3-x64.dll`
