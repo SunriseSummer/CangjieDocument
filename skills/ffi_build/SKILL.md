@@ -1,9 +1,9 @@
 ---
 name: cangjie-ffi-build
-description: "仓颉 FFI (C 互操作) 编译构建指南。当需要了解如何编译 C 代码为库文件、使用 cjc 链接 C 库、在 cjpm.toml 中配置 [ffi.c] 依赖、不同平台（Linux/macOS/Windows）的编译命令和注意事项时，应使用此 Skill。"
+description: "仓颉FFI/C互操作配置构建指导。当需要了解仓颉 C 互操作项目的配置/构建/运行方法（包括动态库、静态库及不同平台），应使用此 Skill"
 ---
 
-# 仓颉 FFI 编译构建 Skill
+# 仓颉C互操作配置构建指导
 
 ## 1. cjc 编译器链接选项
 
