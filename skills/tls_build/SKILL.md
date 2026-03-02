@@ -1,6 +1,6 @@
 ---
 name: cangjie-tls-build
-description: "仓颉 TLS 项目编译构建指南。当项目依赖 stdx.net.tls 包时，需要了解配置构建方法和注意事项，应使用此 Skill"
+description: "仓颉 TLS 项目编译构建指南。当项目依赖 stdx.net.tls 包时，需要了解配置构建方法、注意事项和常见错误，应使用此 Skill"
 ---
 
 # 仓颉 TLS 项目编译构建指南
