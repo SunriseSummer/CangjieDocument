@@ -126,7 +126,7 @@ let v = map["key"]   // 返回 V 类型值
 ### 5.2 安全访问 `get`
 
 ```cangjie
-func get(key: K): ?V
+func get(key: K): Option<V>
 ```
 
 ```cangjie
