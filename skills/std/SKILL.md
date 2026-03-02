@@ -204,7 +204,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 类型 | 构造函数 | 关键方法 |
 |------|----------|----------|
-| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` | `put(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
+| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` | `add(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
 | `ConcurrentLinkedQueue<T>` | `ConcurrentLinkedQueue<T>()` | `enqueue(T)`, `dequeue(): ?T`, `peek(): ?T` |
 | `ArrayBlockingQueue<T>` | `ArrayBlockingQueue<T>(Int64)` | `enqueue(T)`, `dequeue(): T`（阻塞） |
 | `LinkedBlockingQueue<T>` | `LinkedBlockingQueue<T>()` | `enqueue(T)`, `dequeue(): T`（阻塞） |
