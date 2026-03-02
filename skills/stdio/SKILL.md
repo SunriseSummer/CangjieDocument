@@ -29,14 +29,12 @@ main() {
 
 ### 1.2 readln — 读取一行输入
 
-`readln` 通过 `getStdIn()` 获取标准输入流后调用，需要 `import std.env.*`。返回值类型为 `?String`（Option 类型），需要解包后使用。
+`readln` 同样是 `std.core` 包中的内置函数，**无需导入**即可直接使用。它从控制台读取一行文本，直到遇到换行或 EOF 结束，返回类型为 `String`。
 
 ```cangjie
-import std.env.*
-
 main() {
     print("请输入你的名字：")
-    let name = getStdIn().readln() ?? ""
+    let name = readln()
     println("你好，${name}！")
 }
 ```
@@ -50,12 +48,13 @@ main() {
 
 ---
 
-## 2. 标准输出函数
+## 2. 标准输入输出函数
 
 以下函数来自 `std.core` 包，**无需导入**。
 
 | 函数 | 签名 | 说明 |
 |------|------|------|
+| `readln` | `readln(): String` | 从控制台读取一行文本 |
 | `print` | `print(str: String, flush!: Bool = false): Unit` | 输出字符串，不换行 |
 | `println` | `println(str: String): Unit` | 输出字符串并换行 |
 | `eprint` | `eprint(str: String, flush!: Bool = true): Unit` | 输出到标准错误流，不换行 |
@@ -198,11 +197,9 @@ main() {
 ### 6.1 交互式输入输出
 
 ```cangjie
-import std.env.*
-
 main() {
     print("请输入你的年龄：")
-    let input = getStdIn().readln() ?? ""
+    let input = readln()
     let age = Int64.parse(input)
     if (age >= 18) {
         println("你已成年，年龄：${age}")
@@ -232,11 +229,12 @@ main() {
 
 ## 7. 关键规则速查
 
-1. `print`/`println`/`eprint`/`eprintln` 属于 `std.core`，**无需导入**即可使用
-2. `getStdIn()`/`getStdOut()`/`getStdErr()` 来自 `std.env`，需要 `import std.env.*`
-3. `readln()` 返回 `?String`（Option 类型），使用前需解包（`getOrThrow()` 或 `??` 默认值）
-4. `read()` 返回 `?Rune`（Option 类型），同样需要解包
-5. `ConsoleReader` 和 `ConsoleWriter` 均为**并发安全**的
-6. `ConsoleWriter` 使用缓冲，必要时调用 `flush()` 确保数据输出
-7. 旧版 `std.console` 包中的 `Console.stdIn`/`Console.stdOut`/`Console.stdErr` 已废弃，请使用 `std.env` 中的 `getStdIn()`/`getStdOut()`/`getStdErr()` 替代
-8. 更底层的 I/O 流操作详见 `cangjie-iostream` Skill
+1. `readln`/`print`/`println`/`eprint`/`eprintln` 属于 `std.core`，**无需导入**即可使用
+2. 内置 `readln()` 返回 `String`，是最简单的读取一行输入方式
+3. `getStdIn()`/`getStdOut()`/`getStdErr()` 来自 `std.env`，需要 `import std.env.*`
+4. `ConsoleReader.readln()` 返回 `?String`（Option 类型），使用前需解包（`getOrThrow()` 或 `??` 默认值）
+5. `ConsoleReader.read()` 返回 `?Rune`（Option 类型），同样需要解包
+6. `ConsoleReader` 和 `ConsoleWriter` 均为**并发安全**的
+7. `ConsoleWriter` 使用缓冲，必要时调用 `flush()` 确保数据输出
+8. 旧版 `std.console` 包中的 `Console.stdIn`/`Console.stdOut`/`Console.stdErr` 已废弃，请使用 `std.env` 中的 `getStdIn()`/`getStdOut()`/`getStdErr()` 替代
+9. 更底层的 I/O 流操作详见 `cangjie-iostream` Skill
