@@ -1,6 +1,6 @@
 ---
 name: cangjie-function
-description: "仓颉语言函数。当需要了解仓颉语言的函数定义、调用、命名参数、默认值、函数类型、Lambda表达式、闭包、嵌套函数、函数重载、运算符重载、尾随Lambda、管道运算符(|>)、组合运算符(~>)、变长参数、const函数与编译时求值等特性时，应使用此 Skill。"
+description: "仓颉语言函数。当需要了解仓颉语言的函数定义、调用、命名参数、默认值、函数类型、Lambda表达式、闭包、嵌套函数、函数重载、运算符重载、尾随Lambda、管道运算符(|>)、组合运算符(~>)、变长参数等特性时，应使用此 Skill。"
 ---
 
 # 仓颉语言函数 Skill
@@ -257,43 +257,3 @@ public operator func -(): Point { ... }  // 一元运算符
 - 适用于：全局函数、静态/实例成员函数、局部函数、构造函数、Lambda、函数调用运算符重载、索引运算符重载
 - **不适用于**：其他运算符重载、`~>`、`|>`
 - **解析优先级**：非变长匹配优先；仅当无非变长匹配时才尝试变长
-
----
-
-## 10. const 函数与编译时求值
-
-### 10.1 const 表达式
-可在编译时求值的表达式，包括：
-1. 数值类型、`Bool`、`Unit`、`Rune`、`String`（无插值）的字面量
-2. 所有元素为 const 的 `Array` 字面量（作为 `VArray`）和元组字面量
-3. `const` 变量、`const` 函数参数、`const` 函数中的局部变量
-4. `const` 函数调用（所有参数为 const）
-5. `enum` 构造函数调用（所有参数为 const）
-6. 所有操作数为 const 的算术、关系、位运算表达式
-7. `if`、`match`、`try`、`throw`、`return`、`is`、`as` — 所有子表达式须为 const
-8. const 表达式上的成员访问（无属性访问）；元组索引访问
-
-### 10.2 const 函数
-```cangjie
-const func distance(a: Point, b: Point) { ... }
-```
-- 用 `const` 修饰符声明
-- 在 `const` 上下文中 → 编译时求值；在非 `const` 上下文中 → 运行时求值
-- 规则：
-  1. 须声明为 `const`
-  2. 全局/静态 `const` 函数只能访问 `const` 外部变量。实例 `const` 函数还可访问实例成员变量
-  3. 内部所有表达式须为 `const` 表达式
-  4. 局部变量仅允许 `let`/`const`（不允许 `var`）
-  5. 参数/返回类型无特殊限制，但非 const 参数使调用变为非 const 表达式
-
-### 10.3 接口中的 const
-- 接口 `const` 函数 → 实现类型**必须**使用 `const` 函数
-- 接口非 `const` 函数 → 实现类型可使用 `const` 或非 `const`
-
-### 10.4 const init
-```cangjie
-const init(param: Type) { this.field = param }
-```
-- 启用 `struct`/`class` 实例的编译时构造
-- **class 规则**：不允许有 `var` 实例成员变量；须调用父类的 `const init`
-- `const init` 内部：仅允许对实例成员使用 `=` 赋值（不允许 `+=`、`-=` 等）
