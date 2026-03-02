@@ -1,9 +1,9 @@
 ---
 name: cangjie-tls-build
-description: "仓颉 TLS 编译构建指南。当需要了解 TLS 项目的 OpenSSL 3 依赖安装、各平台（Linux/macOS/Windows）编译配置、cjpm.toml 中 bin-dependencies 配置（动态库/静态库）、环境变量设置、常见构建错误排查等信息时，应使用此 Skill。"
+description: "仓颉 TLS 项目编译构建指南。当项目依赖 stdx.net.tls 包时，需要了解配置构建方法和注意事项，应使用此 Skill"
 ---
 
-# 仓颉 TLS 编译构建 Skill
+# 仓颉 TLS 项目编译构建指南
 
 ## 1. 概述
 
