@@ -64,13 +64,12 @@ export DYLD_LIBRARY_PATH=.:$DYLD_LIBRARY_PATH
 
 ```shell
 # 编译 C 代码为动态库（导出函数需加 __declspec(dllexport) 修饰）
-clang -shared -fstack-protector-all native.c -o native.dll
+clang -shared -fstack-protector-all native.c -o libnative.dll
 
 # 编译仓颉代码并链接
 cjc -L . -l native main.cj -o main.exe
 
 # 运行（动态库须确保在搜索路径上）
-# 将 dll 所在目录添加到 PATH 环境变量，或放在可执行文件所在目录
 ./main.exe
 ```
 
