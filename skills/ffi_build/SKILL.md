@@ -192,14 +192,18 @@ cjpm build && cjpm run
 ```shell
 # 1. 编写 C 代码 (native.c)，导出函数加 __declspec(dllexport) 修饰
 # 2. 编译 C 代码为动态库
-clang -shared -fstack-protector-all native.c -o native.dll
+clang -shared -fstack-protector-all native.c -o libnative.dll
 
-# 3. 使用 cjc 直接编译
+# 3.1 使用 cjc 编译
 cjc -L . -l native main.cj -o main.exe
 ./main.exe
 
-# 或使用 cjpm 项目编译
-# 将 native.dll 放到 libs/ 目录下
+# 3.2 基于 cjpm 项目构建
+# 将 libnative.dll 放到 libs/ 目录下（用于编译链接）
+# 基于前面提到的运行问题，libs/ 下还应放一个名为 native.dll 的副本
 # 在 cjpm.toml 中配置 [ffi.c] native = { path = "./libs/" }
-cjpm build && cjpm run
+# 构建，依赖 libnative.dll
+cjpm build
+# 运行，依赖 native.dll
+cjpm run
 ```
