@@ -129,6 +129,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `endsWith` | `endsWith(String): Bool` | 是否以指定后缀结尾 |
 | `indexOf` | `indexOf(String): Option<Int64>` | 查找子串首次出现位置 |
 | `lastIndexOf` | `lastIndexOf(String): Option<Int64>` | 查找子串最后出现位置 |
+| `count` | `count(String): Int64` | 统计子串出现次数 |
 | `split` | `split(String, removeEmpty!: Bool = false): Array<String>` | 按分隔符拆分 |
 | `lazySplit` | `lazySplit(String, removeEmpty!: Bool = false): Iterator<String>` | 惰性拆分 |
 | `replace` | `replace(String, String): String` | 替换子串 |
@@ -142,7 +143,6 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `equalsIgnoreAsciiCase` | `equalsIgnoreAsciiCase(String): Bool` | ASCII 大小写不敏感比较 |
 | `padStart` | `padStart(Int64, padding!: String = " "): String` | 左填充至指定宽度 |
 | `padEnd` | `padEnd(Int64, padding!: String = " "): String` | 右填充至指定宽度 |
-| `count` | `count(String): Int64` | 统计子串出现次数 |
 | `lines` | `lines(): Iterator<String>` | 按行迭代 |
 | `toArray` | `toArray(): Array<Byte>` | 转为字节数组 |
 | `*` | `*(Int64): String` | 重复字符串 n 次 |
