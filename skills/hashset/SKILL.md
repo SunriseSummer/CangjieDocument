@@ -1,13 +1,13 @@
 ---
 name: cangjie-std-hashset
-description: "仓颉标准库 HashSet 类型详细指南。当需要了解 HashSet 的构造、增删、查询、集合运算（交集/并集/差集）、容量管理、遍历、相等比较等操作的完整 API 和用法时，应使用此 Skill。"
+description: "仓颉标准库 HashSet 类型使用指南。当需要了解 HashSet 的构造、增删、查询、集合运算（交集/并集/差集）、容量管理、遍历、相等比较等操作时，应使用此 Skill"
 ---
 
-# 仓颉标准库 HashSet 类型 Skill
+# 仓颉标准库 HashSet
 
 ## 1. 概述
 
-`HashSet<T>` 是 `std.collection` 包中的 **class** 类型，使用前需导入：
+`HashSet<T>` 是 `std.collection` 包中用 **class** 实现的哈希集合，使用前需导入：
 
 ```cangjie
 import std.collection.*
