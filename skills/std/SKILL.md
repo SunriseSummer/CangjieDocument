@@ -89,33 +89,33 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ### 3.2 核心类型
 
-| 类型 | 分类 | 说明 |
-|------|------|------|
-| `Int8`/`Int16`/`Int32`/`Int64` | 整数 | 有符号整数（`Int` = `Int64`） |
-| `UInt8`/`UInt16`/`UInt32`/`UInt64` | 整数 | 无符号整数（`Byte` = `UInt8`，`UInt` = `UInt64`） |
-| `IntNative`/`UIntNative` | 整数 | 平台相关大小的整数 |
-| `Float16`/`Float32`/`Float64` | 浮点 | 浮点数 |
-| `Bool` | 布尔 | `true` / `false` |
-| `Unit` | 单元 | 无返回值类型 |
-| `Rune` | 字符 | Unicode 字符 |
-| `String` | 结构体 | UTF-8 字符串 |
-| `Array<T>` | 结构体 | 固定大小数组 |
-| `Range<T>` | 结构体 | 数值/字符范围 |
-| `Option<T>` | 枚举 | `Some(T)` / `None`，可写作 `?T` |
-| `Ordering` | 枚举 | `LT` / `EQ` / `GT` |
-| `Endian` | 枚举 | `Big` / `Little`，字节序 |
-| `Duration` | 结构体 | 时间间隔 |
-| `DefaultHasher` | 结构体 | 默认哈希计算器 |
-| `StringBuilder` | 类 | 高效字符串拼接 |
-| `Object` | 类 | 所有 class 类型的父类 |
-| `Iterator<T>` | 类 | 迭代器基类 |
-| `Box<T>` | 类 | 值类型装箱 |
-| `Future<T>` | 类 | 线程句柄 |
-| `Thread` | 类 | 线程信息 |
-| `ThreadLocal<T>` | 类 | 线程本地存储 |
-| `StackTraceElement` | 类 | 异常栈帧信息 |
-| `CPointerHandle<T>` | 结构体 | C 指针句柄（用于 FFI） |
-| `CString` | 内建 | C 风格字符串（用于 FFI） |
+| 类型 | 说明 |
+|------|------|
+| `Int8`/`Int16`/`Int32`/`Int64` | 有符号整数（`Int` = `Int64`） |
+| `UInt8`/`UInt16`/`UInt32`/`UInt64` | 无符号整数（`Byte` = `UInt8`，`UInt` = `UInt64`） |
+| `IntNative`/`UIntNative` | 平台相关的整数 |
+| `Float16`/`Float32`/`Float64` | 浮点数 |
+| `Bool` | `true` / `false` |
+| `Unit` | 表示无操作 |
+| `Rune` | Unicode 字符 |
+| `String` | UTF-8 字符串 |
+| `Array<T>` | 固定长度的数组 |
+| `Range<T>` | 区间，数值/字符范围 |
+| `Option<T>` | 可空类型包装，`Some(T)` / `None`，等效写法 `?T` |
+| `Ordering` | 比较大小，`LT` / `EQ` / `GT` |
+| `Endian` | 字节序，`Big` / `Little` |
+| `Duration` | 表示时间间隔 |
+| `DefaultHasher` | 默认哈希计算器 |
+| `StringBuilder` | 高效字符串拼接 |
+| `Object` | 所有 class 类型的父类 |
+| `Iterator<T>` | 迭代器接口 |
+| `Box<T>` | 值类型装箱 |
+| `Future<T>` | spawn 表达式的返回类型，表示一个异步执行任务 |
+| `Thread` | 线程信息 |
+| `ThreadLocal<T>` | 线程本地存储 |
+| `StackTraceElement` | 异常栈帧信息 |
+| `CPointerHandle<T>` | C 指针句柄（用于 FFI） |
+| `CString` | C 风格字符串（用于 FFI） |
 
 ### 3.3 常用全局函数
 
