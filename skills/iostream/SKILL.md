@@ -1,9 +1,9 @@
 ---
 name: cangjie-iostream
-description: "仓颉语言 I/O 流编程。当需要了解仓颉语言的I/O流模型(InputStream/OutputStream)、ByteBuffer、缓冲流(Buffered)、字符串流(StringReader/StringWriter)、链式流(Chained/Multi)、标准流(Console)、流工具函数(copy/readString/readToEnd)等特性时，应使用此 Skill。"
+description: "仓颉语言 I/O 流编程。当需要了解仓颉语言的I/O流模型(InputStream/OutputStream)、ByteBuffer、缓冲流(Buffered)、字符串流(StringReader/StringWriter)、链式流(Chained/Multi)、标准流(Console)、流工具函数(copy/readString/readToEnd)等特性时，应使用此 Skill"
 ---
 
-# 仓颉语言 I/O 流 Skill
+# 仓颉语言 I/O 流
 
 ## 1. I/O 流概述
 
