@@ -367,7 +367,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `SyncCounter` | `SyncCounter(Int64)` | `dec()`, `waitUntilZero()` | 同步计数器 |
 | `Timer` | `Timer()` | — | 定时器 |
 | `Monitor` | `Monitor()` | `enter()`, `leave()`, `wait()`, `notify()`, `notifyAll()` | ⚠️ 已弃用 |
-| `ReentrantMutex` | `ReentrantMutex()` | 可重入互斥锁 | ⚠️ 已弃用 |
+| `ReentrantMutex` | `ReentrantMutex()` | `lock()`, `unlock()`, `tryLock(): Bool`（可重入） | ⚠️ 已弃用 |
 
 ### 10.3 同步接口
 
