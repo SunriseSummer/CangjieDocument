@@ -114,8 +114,9 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `Thread` | 线程信息 |
 | `ThreadLocal<T>` | 线程本地存储 |
 | `StackTraceElement` | 异常栈帧信息 |
-| `CPointerHandle<T>` | C 指针句柄（用于 FFI） |
-| `CString` | C 风格字符串（用于 FFI） |
+| `CString` | C 字符串包装，原始堆存储，用于 CFFI |
+| `CPointer<T>` | C 指针包装，用于 CFFI |
+| `CPointerHandle<T>` | C 指针管理器，用于 CFFI |
 
 ### 3.3 常用全局函数
 
