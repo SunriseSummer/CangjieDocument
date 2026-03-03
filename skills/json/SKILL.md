@@ -1,6 +1,6 @@
 ---
 name: cangjie-json
-description: "仓颉语言 JSON 编解码（stdx.encoding.json）。当需要了解 JSON 字符串解析、JsonValue 类型体系、JSON 对象/数组的构建与读取、JsonKind 类型判断、JSON 流式序列化与反序列化（JsonWriter/JsonReader）、自定义类型的 JSON 转换（JsonSerializable/JsonDeserializable）、WriteConfig 格式控制等能力时，应使用此 Skill"
+description: "仓颉语言 JSON 编解码。当需要了解 JSON 字符串解析、JsonValue 类型体系、JSON 对象/数组的构建与读取、JsonKind 类型判断、JSON 流式序列化与反序列化（JsonWriter/JsonReader）、自定义类型的 JSON 转换（JsonSerializable/JsonDeserializable）、WriteConfig 格式控制等能力时，应使用此 Skill"
 ---
 
 # 仓颉语言 JSON 编解码 Skill
