@@ -1,6 +1,6 @@
 ---
 name: cangjie-package
-description: "仓颉语言包管理。当需要了解仓颉语言的包声明(package)、程序入口(main)、包导入(import/import as)、重新导出(public import)、顶层访问修饰符(private/internal/protected/public)等特性时，应使用此 Skill。"
+description: "仓颉语言包管理。当需要了解仓颉语言的包声明(package)、程序入口(main)、包导入(import)、重新导出(public import)、顶层访问修饰符(private/internal/protected/public)等特性时，应使用此 Skill"
 ---
 
 # 仓颉语言包管理 Skill
