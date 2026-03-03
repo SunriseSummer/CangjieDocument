@@ -22,39 +22,79 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ## 2. 标准库包功能总表
 
+### 核心与基础
+
 | 包名 | 功能简介 |
 |------|----------|
 | **core** | 核心包（自动导入）。基本类型（Int/Float/Bool/String/Array/Range/Option 等）、print/println/readln、核心接口（Iterable/Comparable/Hashable/ToString 等）、Duration、Thread/Future/spawn、异常基类等 |
+| **convert** | 类型转换与格式化：Parsable（字符串→数值）、Formattable（格式化输出） |
+| **unicode** | Unicode 字符处理 |
+
+### 集合
+
+| 包名 | 功能简介 |
+|------|----------|
 | **collection** | 集合数据结构：ArrayList、HashMap、HashSet、TreeMap、TreeSet、LinkedList、ArrayDeque、ArrayQueue、ArrayStack，以及 List/Map/Set 等接口和函数式迭代操作 |
 | **collection.concurrent** | 并发安全集合：ConcurrentHashMap、ConcurrentLinkedQueue、ArrayBlockingQueue、LinkedBlockingQueue |
+
+### I/O 与文件系统
+
+| 包名 | 功能简介 |
+|------|----------|
 | **io** | I/O 流抽象：InputStream/OutputStream 接口、缓冲流、StringReader/StringWriter、ByteBuffer 等 |
 | **fs** | 文件系统：File 读写、Directory 操作、Path 处理、exists/copy/rename/remove 等 |
 | **env** | 进程环境：标准流、环境变量读写、工作目录、进程 ID、exit 等 |
+
+### 网络与进程
+
+| 包名 | 功能简介 |
+|------|----------|
 | **net** | 网络通信：TcpSocket/TcpServerSocket、UdpSocket、UnixSocket、IP 地址处理 |
+| **process** | 进程管理：execute/launch 创建子进程、等待与信息查询 |
+
+### 并发与同步
+
+| 包名 | 功能简介 |
+|------|----------|
 | **sync** | 并发同步：Atomic 原子操作、Mutex 互斥锁、Monitor、Timer、SyncCounter |
 | **time** | 时间日期：DateTime、Duration、MonoTime、TimeZone、格式化与解析 |
+
+### 数学与数据处理
+
+| 包名 | 功能简介 |
+|------|----------|
 | **math** | 数学运算：三角函数、abs/sqrt/pow/log/ceil/floor、GCD/LCM 等 |
 | **math.numeric** | 扩展数值：BigInt（任意精度整数）、Decimal（任意精度十进制数） |
 | **random** | 伪随机数：Random 类 |
 | **regex** | 正则表达式：Regex 类，查找/分割/替换/验证 |
 | **sort** | 排序：对 Array/ArrayList 进行稳定/不稳定排序 |
-| **convert** | 类型转换与格式化：Parsable（字符串→数值）、Formattable（格式化输出） |
-| **process** | 进程管理：execute/launch 创建子进程、等待与信息查询 |
-| **reflect** | 反射：TypeInfo 获取类型信息、动态访问成员 |
-| **ast** | 语法树：源码解析器和 AST 节点，用于宏编程 |
-| **argopt** | 命令行参数解析：parseArguments 函数，短/长/组合选项 |
 | **binary** | 二进制端序转换：BigEndianOrder/LittleEndianOrder |
+| **overflow** | 整数溢出处理（Option/饱和/异常/截断） |
+
+### 安全与数据库
+
+| 包名 | 功能简介 |
+|------|----------|
 | **crypto.digest** | 摘要算法：MD5、SHA 系列、HMAC、SM3 |
 | **crypto.cipher** | 对称加解密通用接口 |
 | **database.sql** | 数据库接口：连接、查询、事务 |
+
+### 工具与元编程
+
+| 包名 | 功能简介 |
+|------|----------|
+| **reflect** | 反射：TypeInfo 获取类型信息、动态访问成员 |
+| **ast** | 语法树：源码解析器和 AST 节点，用于宏编程 |
 | **deriving** | 自动派生宏：@Derive 生成 ToString/Hashable/Equatable/Comparable |
-| **unicode** | Unicode 字符处理 |
-| **overflow** | 整数溢出处理（Option/饱和/异常/截断） |
+| **argopt** | 命令行参数解析：parseArguments 函数，短/长/组合选项 |
 | **ref** | 弱引用：WeakRef 类 |
-| **objectpool** | 对象池：ObjectPool 缓存与复用 |
 | **posix** | POSIX 系统调用封装 |
 | **runtime** | 运行时环境控制与监视 |
-| **console** | ⚠️ 已弃用，请用 std.env |
+
+### 测试
+
+| 包名 | 功能简介 |
+|------|----------|
 | **unittest** | 单元测试框架（详见 unittest Skill） |
 | **unittest.mock** | Mock 测试框架 |
 | **unittest.testmacro** | 单元测试宏 |
@@ -62,6 +102,13 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | **unittest.common** | 单元测试通用类型 |
 | **unittest.diff** | 测试差异对比 |
 | **unittest.prop_test** | 参数化测试 |
+
+### 已弃用
+
+| 包名 | 功能简介 |
+|------|----------|
+| **objectpool** | ⚠️ 已弃用。对象池：ObjectPool 缓存与复用 |
+| **console** | ⚠️ 已弃用，请用 std.env |
 
 ---
 
@@ -89,6 +136,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ### 3.2 核心类型
 
+#### 基本类型
+
 | 类型 | 说明 |
 |------|------|
 | `Int8`/`Int16`/`Int32`/`Int64` | 有符号整数（`Int` = `Int64`） |
@@ -99,26 +148,48 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `Unit` | 表示无操作 |
 | `Rune` | Unicode 字符 |
 | `String` | UTF-8 字符串 |
+
+#### 容器与包装类型
+
+| 类型 | 说明 |
+|------|------|
 | `Array<T>` | 固定长度的数组 |
 | `Range<T>` | 区间，数值/字符范围 |
 | `Option<T>` | 可空类型包装，`Some(T)` / `None`，等效写法 `?T` |
+| `Box<T>` | 值类型装箱 |
+| `Iterator<T>` | 迭代器接口 |
+| `StringBuilder` | 高效字符串拼接 |
+
+#### 枚举与工具类型
+
+| 类型 | 说明 |
+|------|------|
 | `Ordering` | 比较大小，`LT` / `EQ` / `GT` |
 | `Endian` | 字节序，`Big` / `Little` |
 | `Duration` | 表示时间间隔 |
 | `DefaultHasher` | 默认哈希计算器 |
-| `StringBuilder` | 高效字符串拼接 |
 | `Object` | 所有 class 类型的父类 |
-| `Iterator<T>` | 迭代器接口 |
-| `Box<T>` | 值类型装箱 |
+| `StackTraceElement` | 异常栈帧信息 |
+
+#### 并发相关类型
+
+| 类型 | 说明 |
+|------|------|
 | `Future<T>` | spawn 表达式的返回类型，表示一个异步执行任务 |
 | `Thread` | 线程信息 |
 | `ThreadLocal<T>` | 线程本地存储 |
-| `StackTraceElement` | 异常栈帧信息 |
+
+#### CFFI 相关类型
+
+| 类型 | 说明 |
+|------|------|
 | `CString` | C 字符串包装，原始堆存储，用于 CFFI |
 | `CPointer<T>` | C 指针包装，用于 CFFI |
 | `CPointerHandle<T>` | C 指针管理器，用于 CFFI |
 
 ### 3.3 常用全局函数
+
+#### I/O 函数
 
 | 函数 | 签名 | 说明 |
 |------|------|------|
@@ -127,11 +198,26 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `eprint` | `eprint(String)`, `eprint<T>(T) where T <: ToString` | 输出到 stderr |
 | `eprintln` | `eprintln(String)`, `eprintln<T>(T) where T <: ToString` | 输出到 stderr（换行） |
 | `readln` | `readln(): String` | 读取一行标准输入 |
+
+#### 数学函数
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `min` | `min<T>(T, T, Array<T>): T where T <: Comparable<T>` | 返回较小值（支持多参数） |
 | `max` | `max<T>(T, T, Array<T>): T where T <: Comparable<T>` | 返回较大值（支持多参数） |
+
+#### 并发函数
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `sleep` | `sleep(Duration): Unit` | 当前线程休眠 |
 | `spawn` | `spawn { => ... }` | 创建新线程，返回 `Future<T>` |
 | `synchronized` | `synchronized(lock) { ... }` | 自动加锁/解锁的临界区 |
+
+#### 工具函数
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `refEq` | `refEq(Object, Object): Bool` | 引用相等比较 |
 | `sizeOf` | `sizeOf<T>(): Int64` | 获取类型大小 |
 | `alignOf` | `alignOf<T>(): Int64` | 获取类型对齐 |
@@ -139,10 +225,30 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ### 3.4 异常层次
 
-| 基类 | 子类 | 说明 |
-|------|------|------|
-| `Error` | `OutOfMemoryError`, `StackOverflowError` | 系统错误，不应捕获 |
-| `Exception` | `ArithmeticException`, `IllegalArgumentException`, `IllegalFormatException`, `IllegalMemoryException`, `IllegalStateException`, `IncompatiblePackageException`, `IndexOutOfBoundsException`, `NegativeArraySizeException`, `NoneValueException`, `OverflowException`, `SpawnException`, `UnsupportedException`, `TimeoutException` | 可捕获处理 |
+#### Error（系统错误，不应捕获）
+
+| 异常类型 | 说明 |
+|----------|------|
+| `OutOfMemoryError` | 内存不足 |
+| `StackOverflowError` | 栈溢出 |
+
+#### Exception（可捕获处理）
+
+| 异常类型 | 说明 |
+|----------|------|
+| `ArithmeticException` | 算术运算错误（如除零） |
+| `IllegalArgumentException` | 非法参数 |
+| `IllegalFormatException` | 格式化字符串错误 |
+| `IllegalMemoryException` | 非法内存访问 |
+| `IllegalStateException` | 非法状态 |
+| `IncompatiblePackageException` | 包不兼容 |
+| `IndexOutOfBoundsException` | 索引越界 |
+| `NegativeArraySizeException` | 数组大小为负 |
+| `NoneValueException` | 访问 None 值 |
+| `OverflowException` | 溢出 |
+| `SpawnException` | 线程创建异常 |
+| `UnsupportedException` | 不支持的操作 |
+| `TimeoutException` | 超时 |
 
 ### 3.5 Duration 常用单位
 
@@ -203,24 +309,41 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ### 4.3 函数式迭代操作（应用于 Iterator\<T>）
 
+#### 过滤与转换
+
 | 函数 | 签名 | 说明 |
 |------|------|------|
 | `filter` | `filter(predicate: (T) -> Bool): Iterator<T>` | 过滤元素 |
 | `map` | `map<R>(transform: (T) -> R): Iterator<R>` | 转换元素 |
 | `flatMap` | `flatMap<R>(transform: (T) -> Iterator<R>): Iterator<R>` | 转换并展平 |
+| `flatten` | `flatten(): Iterator<T>` | 展平嵌套迭代器 |
+| `inspect` | `inspect(action: (T) -> Unit): Iterator<T>` | 不修改元素的调试操作 |
+
+#### 聚合与查询
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `fold` | `fold<R>(initial: R, operation: (R, T) -> R): R` | 累积计算（带初始值） |
 | `reduce` | `reduce(operation: (T, T) -> T): Option<T>` | 累积计算（无初始值） |
 | `forEach` | `forEach(action: (T) -> Unit): Unit` | 遍历执行 |
 | `count` | `count(): Int64` | 计数 |
 | `any` / `all` / `none` | `any(predicate: (T) -> Bool): Bool` | 谓词检查 |
 | `first` / `last` | `first(): Option<T>` | 首/尾元素 |
+
+#### 迭代控制
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `take` / `skip` | `take(count: Int64): Iterator<T>` | 取前 n 个 / 跳过前 n 个 |
 | `step` | `step(count: Int64): Iterator<T>` | 按步长取元素 |
 | `enumerate` | `enumerate(): Iterator<(Int64, T)>` | 带索引遍历 |
 | `zip` | `zip<R>(Iterator<R>): Iterator<(T, R)>` | 配对两个迭代器 |
 | `concat` | `concat(Iterator<T>): Iterator<T>` | 连接两个迭代器 |
-| `flatten` | `flatten(): Iterator<T>` | 展平嵌套迭代器 |
-| `inspect` | `inspect(action: (T) -> Unit): Iterator<T>` | 不修改元素的调试操作 |
+
+#### 收集函数
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `collectArray` | `collectArray<T>(Iterable<T>): Array<T>` | 收集为 Array |
 | `collectArrayList` | `collectArrayList<T>(Iterable<T>): ArrayList<T>` | 收集为 ArrayList |
 | `collectHashMap` | `collectHashMap<K, V>(Iterable<(K, V)>): HashMap<K, V>` | 收集为 HashMap |
@@ -315,18 +438,35 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 **导入**：`import std.env.*`
 
+### 8.1 标准流
+
 | 函数 | 签名 | 说明 |
 |------|------|------|
 | `getStdIn` | `getStdIn(): ConsoleReader` | 标准输入 |
 | `getStdOut` | `getStdOut(): ConsoleWriter` | 标准输出 |
 | `getStdErr` | `getStdErr(): ConsoleWriter` | 标准错误 |
+
+### 8.2 环境变量
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `getVariable` | `getVariable(String): ?String` | 读取环境变量 |
 | `setVariable` | `setVariable(String, String): Unit` | 设置环境变量 |
 | `removeVariable` | `removeVariable(String): Unit` | 删除环境变量 |
 | `getVariables` | `getVariables(): Array<(String, String)>` | 获取所有环境变量 |
+
+### 8.3 目录与路径
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `getWorkingDirectory` | `getWorkingDirectory(): Path` | 当前工作目录 |
 | `getHomeDirectory` | `getHomeDirectory(): Path` | 用户主目录 |
 | `getTempDirectory` | `getTempDirectory(): Path` | 临时目录 |
+
+### 8.4 进程信息与控制
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
 | `getCommand` | `getCommand(): String` | 当前可执行文件路径 |
 | `getCommandLine` | `getCommandLine(): Array<String>` | 命令行参数 |
 | `getProcessId` | `getProcessId(): Int64` | 进程 ID |
@@ -557,6 +697,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `BigEndianOrder` | 大端序 |
 | `LittleEndianOrder` | 小端序 |
 
+---
+
 ### crypto.digest — 摘要算法
 
 **导入**：`import std.crypto.digest.*`
@@ -571,6 +713,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `SM3` | 国密 SM3 |
 | `HMAC` | HMAC 消息认证码 |
 
+---
+
 ### overflow — 溢出处理
 
 **导入**：`import std.overflow.*`
@@ -582,6 +726,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 抛异常（throwing） | 溢出抛 OverflowException |
 | 截断（truncating） | 溢出截断 |
 
+---
+
 ### ref — 弱引用
 
 **导入**：`import std.ref.*`
@@ -589,6 +735,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 类型 | 说明 |
 |------|------|
 | `WeakRef<T>` (where T <: Object) | 弱引用。属性：`value: Option<T>`（获取引用对象），`clear()` 清除引用 |
+
+---
 
 ### objectpool — 对象池 ⚠️ 已弃用
 
