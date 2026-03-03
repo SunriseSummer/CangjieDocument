@@ -1,6 +1,6 @@
 ---
 name: cangjie-type-system
-description: "仓颉语言类型系统。当需要了解仓颉语言的子类型关系（继承/接口实现/元组/函数类型）、型变规则（协变/逆变/不型变）、类型转换（is/as操作符）、数值类型转换、Rune转换、Nothing/Any/Object等基础类型关系时，应使用此 Skill。"
+description: "仓颉语言类型系统。当需要了解仓颉语言的子类型关系（继承/接口实现/元组/函数类型）、型变规则（协变/逆变/不型变）、类型转换（is/as操作符）、数值类型转换、Rune转换、Nothing/Any/Object等基础类型关系、类型别名(type)等特性时，应使用此 Skill。"
 ---
 
 # 仓颉语言类型系统 Skill
@@ -85,4 +85,34 @@ b is Base     // true
 let b: Base = Derived()
 b as Derived  // Option<Derived>.Some(b)
 b as String   // Option<String>.None
+```
+
+---
+
+## 5. 类型别名
+
+### 5.1 声明
+- 关键字：`type`
+- 语法：`type Alias = OriginalType`
+- **不创建新类型** — 仅为替代名称
+
+### 5.2 规则
+1. **仅限顶层** — 不能在函数内定义
+2. 原始类型须在别名定义处**可见**
+3. **不允许循环引用** — 直接或间接循环均禁止
+
+### 5.3 使用场景
+1. **作为类型**：`var a: A = B()` 其中 `type A = B`
+2. **作为构造函数**（当别名指向 class/struct 时）：`A()` 构造 `B`
+3. **访问静态成员**：`A.foo()`、`A.b`
+4. **访问枚举构造函数**：`Time.Day` 其中 `type Time = TimeUnit`
+
+### 5.4 限制
+- 用户自定义类型别名**不能**用于类型转换表达式
+
+### 5.5 泛型类型别名
+- 类型别名可声明类型参数
+- **不能**对别名类型参数使用 `where` 约束
+```cangjie
+type RD<T> = RecordData<T>
 ```

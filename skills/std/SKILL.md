@@ -25,7 +25,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 包名 | 功能简介 |
 |------|----------|
 | **core** | 核心包（自动导入）。基本类型（Int/Float/Bool/String/Array/Range/Option 等）、print/println/readln、核心接口（Iterable/Comparable/Hashable/ToString 等）、Duration、Thread/Future/spawn、异常基类等 |
-| **collection** | 集合数据结构：ArrayList、HashMap、HashSet、TreeMap、LinkedList、ArrayDeque、ArrayQueue、ArrayStack，以及 List/Map/Set 等接口和函数式迭代操作 |
+| **collection** | 集合数据结构：ArrayList、HashMap、HashSet、TreeMap、TreeSet、LinkedList、ArrayDeque、ArrayQueue、ArrayStack，以及 List/Map/Set 等接口和函数式迭代操作 |
 | **collection.concurrent** | 并发安全集合：ConcurrentHashMap、ConcurrentLinkedQueue、ArrayBlockingQueue、LinkedBlockingQueue |
 | **io** | I/O 流抽象：InputStream/OutputStream 接口、缓冲流、StringReader/StringWriter、ByteBuffer 等 |
 | **fs** | 文件系统：File 读写、Directory 操作、Path 处理、exists/copy/rename/remove 等 |
@@ -74,13 +74,17 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `Any` | — | 所有类型的父接口 |
 | `ToString` | `toString(): String` | 字符串表示 |
 | `Hashable` | `hashCode(): Int64` | 哈希值 |
+| `Hasher` | `write(Int64)`, `finish(): Int64` | 哈希计算器 |
 | `Equatable<T>` | `==(T): Bool`, `!=(T): Bool` | 相等比较 |
-| `Comparable<T>` | `<(T): Bool`, `>(T): Bool`, `<=(T): Bool`, `>=(T): Bool` | 大小比较 |
-| `Less<T>` / `Greater<T>` | `<(T): Bool` / `>(T): Bool` | 单向比较 |
+| `Equal<T>` / `NotEqual<T>` | `==(T): Bool` / `!=(T): Bool` | 单向相等比较 |
+| `Comparable<T>` | `compare(T): Ordering`, `<`, `>`, `<=`, `>=` | 大小比较（核心方法为 `compare`） |
+| `Less<T>` / `Greater<T>` | `<(T): Bool` / `>(T): Bool` | 单向大小比较 |
+| `LessOrEqual<T>` / `GreaterOrEqual<T>` | `<=(T): Bool` / `>=(T): Bool` | 单向大小比较 |
 | `Iterable<E>` | `iterator(): Iterator<E>` | 支持 for-in 迭代 |
-| `Collection<T>` | `size: Int64`, `isEmpty(): Bool` | 集合基础 |
+| `Collection<T>` | `size: Int64`, `isEmpty(): Bool`, `toArray(): Array<T>` | 集合基础 |
 | `Resource` | `isClosed(): Bool`, `close(): Unit` | try-with-resources |
 | `Countable<T>` | `next(Int64): T`, `position(): Int64` | 可计数类型（用于 Range） |
+| `ThreadContext` | — | 线程上下文标记 |
 | `CType` | — | 可与 C 交互的类型标记 |
 
 ### 3.2 核心类型
@@ -89,42 +93,55 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 |------|------|------|
 | `Int8`/`Int16`/`Int32`/`Int64` | 整数 | 有符号整数（`Int` = `Int64`） |
 | `UInt8`/`UInt16`/`UInt32`/`UInt64` | 整数 | 无符号整数（`Byte` = `UInt8`，`UInt` = `UInt64`） |
+| `IntNative`/`UIntNative` | 整数 | 平台相关大小的整数 |
 | `Float16`/`Float32`/`Float64` | 浮点 | 浮点数 |
 | `Bool` | 布尔 | `true` / `false` |
+| `Unit` | 单元 | 无返回值类型 |
 | `Rune` | 字符 | Unicode 字符 |
-| `String` | 字符串 | UTF-8 字符串 |
-| `Array<T>` | 数组 | 固定大小数组 |
-| `Range<T>` | 范围 | 数值/字符范围 |
+| `String` | 结构体 | UTF-8 字符串 |
+| `Array<T>` | 结构体 | 固定大小数组 |
+| `Range<T>` | 结构体 | 数值/字符范围 |
 | `Option<T>` | 枚举 | `Some(T)` / `None`，可写作 `?T` |
-| `Result<T, E>` | 枚举 | `Ok(T)` / `Err(E)` |
 | `Ordering` | 枚举 | `LT` / `EQ` / `GT` |
+| `Endian` | 枚举 | `Big` / `Little`，字节序 |
 | `Duration` | 结构体 | 时间间隔 |
+| `DefaultHasher` | 结构体 | 默认哈希计算器 |
 | `StringBuilder` | 类 | 高效字符串拼接 |
+| `Object` | 类 | 所有 class 类型的父类 |
+| `Iterator<T>` | 类 | 迭代器基类 |
 | `Box<T>` | 类 | 值类型装箱 |
 | `Future<T>` | 类 | 线程句柄 |
 | `Thread` | 类 | 线程信息 |
+| `ThreadLocal<T>` | 类 | 线程本地存储 |
+| `StackTraceElement` | 类 | 异常栈帧信息 |
+| `CPointerHandle<T>` | 结构体 | C 指针句柄（用于 FFI） |
+| `CString` | 内建 | C 风格字符串（用于 FFI） |
 
 ### 3.3 常用全局函数
 
 | 函数 | 签名 | 说明 |
 |------|------|------|
-| `print` | `print(Any): Unit` | 输出（不换行） |
-| `println` | `println(Any): Unit` | 输出（换行） |
-| `eprint` | `eprint(Any): Unit` | 输出到 stderr |
-| `eprintln` | `eprintln(Any): Unit` | 输出到 stderr（换行） |
-| `readln` | `readln(): ?String` | 读取一行标准输入 |
-| `min` | `min<T>(T, T): T` | 返回较小值 |
-| `max` | `max<T>(T, T): T` | 返回较大值 |
+| `print` | `print(String)`, `print<T>(T) where T <: ToString` | 输出（不换行） |
+| `println` | `println()`, `println(String)`, `println<T>(T) where T <: ToString` | 输出（换行） |
+| `eprint` | `eprint(String)`, `eprint<T>(T) where T <: ToString` | 输出到 stderr |
+| `eprintln` | `eprintln(String)`, `eprintln<T>(T) where T <: ToString` | 输出到 stderr（换行） |
+| `readln` | `readln(): String` | 读取一行标准输入 |
+| `min` | `min<T>(T, T, Array<T>): T where T <: Comparable<T>` | 返回较小值（支持多参数） |
+| `max` | `max<T>(T, T, Array<T>): T where T <: Comparable<T>` | 返回较大值（支持多参数） |
 | `sleep` | `sleep(Duration): Unit` | 当前线程休眠 |
 | `spawn` | `spawn { => ... }` | 创建新线程，返回 `Future<T>` |
 | `synchronized` | `synchronized(lock) { ... }` | 自动加锁/解锁的临界区 |
+| `refEq` | `refEq(Object, Object): Bool` | 引用相等比较 |
+| `sizeOf` | `sizeOf<T>(): Int64` | 获取类型大小 |
+| `alignOf` | `alignOf<T>(): Int64` | 获取类型对齐 |
+| `zeroValue` | `zeroValue<T>(): T` | 获取类型零值 |
 
 ### 3.4 异常层次
 
 | 基类 | 子类 | 说明 |
 |------|------|------|
 | `Error` | `OutOfMemoryError`, `StackOverflowError` | 系统错误，不应捕获 |
-| `Exception` | `ArithmeticException`, `IllegalArgumentException`, `IllegalStateException`, `IndexOutOfBoundsException`, `NegativeArraySizeException`, `NoneValueException`, `NullPointerException`, `OverflowException`, `ConcurrentModificationException`, `UnsupportedException`, `TimeoutException` | 可捕获处理 |
+| `Exception` | `ArithmeticException`, `IllegalArgumentException`, `IllegalFormatException`, `IllegalMemoryException`, `IllegalStateException`, `IncompatiblePackageException`, `IndexOutOfBoundsException`, `NegativeArraySizeException`, `NoneValueException`, `OverflowException`, `SpawnException`, `UnsupportedException`, `TimeoutException` | 可捕获处理 |
 
 ### 3.5 Duration 常用单位
 
@@ -156,9 +173,10 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 类型 | 构造函数 | 说明 |
 |------|----------|------|
 | `ArrayList<T>` | `ArrayList<T>()`, `ArrayList<T>(Int64)`, `ArrayList<T>(Collection<T>)`, `ArrayList<T>(Int64, (Int64) -> T)` | 动态数组 |
-| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)`, `HashMap<K, V>(Array<(K, V)>)`, `HashMap<K, V>(Int64, (Int64) -> (K, V))` | 哈希映射（K 须 Hashable + Equatable） |
-| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)`, `HashSet<T>(Collection<T>)`, `HashSet<T>(Int64, (Int64) -> T)` | 哈希集合（T 须 Hashable + Equatable） |
-| `TreeMap<K, V>` | `TreeMap<K, V>()`, `TreeMap<K, V>(Array<(K, V)>)`, `TreeMap<K, V>(Int64, (Int64) -> (K, V))` | 红黑树有序映射（K 须 Comparable） |
+| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)`, `HashMap<K, V>(Array<(K, V)>)`, `HashMap<K, V>(Int64, (Int64) -> (K, V))` | 哈希映射（K <: Hashable & Equatable\<K>） |
+| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)`, `HashSet<T>(Collection<T>)`, `HashSet<T>(Int64, (Int64) -> T)` | 哈希集合（T <: Hashable & Equatable\<T>） |
+| `TreeMap<K, V>` | `TreeMap<K, V>()`, `TreeMap<K, V>(Array<(K, V)>)`, `TreeMap<K, V>(Int64, (Int64) -> (K, V))` | 红黑树有序映射（K <: Comparable\<K>） |
+| `TreeSet<T>` | `TreeSet<T>()`, `TreeSet<T>(Collection<T>)`, `TreeSet<T>(Int64, (Int64) -> T)` | 红黑树有序集合（T <: Comparable\<T>） |
 | `LinkedList<T>` | `LinkedList<T>()`, `LinkedList<T>(Collection<T>)`, `LinkedList<T>(Int64, (Int64) -> T)` | 双向链表 |
 | `ArrayDeque<T>` | `ArrayDeque<T>()`, `ArrayDeque<T>(Int64)` | 双端队列 |
 | `ArrayQueue<T>` | `ArrayQueue<T>()`, `ArrayQueue<T>(Int64)` | 环形队列 |
@@ -168,12 +186,19 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 接口 | 关键方法 |
 |------|----------|
-| `Collection<T>` | `size`, `isEmpty()` |
+| `Collection<T>` | `size`, `isEmpty()`, `toArray()` |
 | `List<T>` | `get(Int64)`, `set(Int64, T)`, `add(T)`, `remove(at: Int64)` |
+| `ReadOnlyList<T>` | `get(Int64)`, `size` |
 | `Map<K, V>` | `get(K)`, `add(K, V)`, `contains(K)`, `remove(K)` |
-| `Set<T>` | `add(T)`, `contains(T)`, `remove(T)` |
-| `Deque<T>` | `pushFirst(T)`, `pushLast(T)`, `popFirst()`, `popLast()` |
 | `ReadOnlyMap<K, V>` | `get(K)`, `contains(K)`, `size` |
+| `Set<T>` | `add(T)`, `contains(T)`, `remove(T)` |
+| `ReadOnlySet<T>` | `contains(T)`, `size` |
+| `Queue<T>` | `enqueue(T)`, `dequeue()` |
+| `Deque<T>` | `addFirst(T)`, `addLast(T)`, `removeFirst()`, `removeLast()` |
+| `Stack<T>` | `push(T)`, `pop()`, `top()` |
+| `OrderedMap<K, V>` | 有序映射接口 |
+| `OrderedSet<T>` | 有序集合接口 |
+| `EquatableCollection<T>` | 支持相等比较的集合 |
 
 ### 4.3 函数式迭代操作（应用于 Iterator\<T>）
 
@@ -189,12 +214,17 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `any` / `all` / `none` | `any(predicate: (T) -> Bool): Bool` | 谓词检查 |
 | `first` / `last` | `first(): Option<T>` | 首/尾元素 |
 | `take` / `skip` | `take(count: Int64): Iterator<T>` | 取前 n 个 / 跳过前 n 个 |
+| `step` | `step(count: Int64): Iterator<T>` | 按步长取元素 |
 | `enumerate` | `enumerate(): Iterator<(Int64, T)>` | 带索引遍历 |
 | `zip` | `zip<R>(Iterator<R>): Iterator<(T, R)>` | 配对两个迭代器 |
 | `concat` | `concat(Iterator<T>): Iterator<T>` | 连接两个迭代器 |
+| `flatten` | `flatten(): Iterator<T>` | 展平嵌套迭代器 |
+| `inspect` | `inspect(action: (T) -> Unit): Iterator<T>` | 不修改元素的调试操作 |
+| `collectArray` | `collectArray<T>(Iterable<T>): Array<T>` | 收集为 Array |
 | `collectArrayList` | `collectArrayList<T>(Iterable<T>): ArrayList<T>` | 收集为 ArrayList |
 | `collectHashMap` | `collectHashMap<K, V>(Iterable<(K, V)>): HashMap<K, V>` | 收集为 HashMap |
 | `collectHashSet` | `collectHashSet<T>(Iterable<T>): HashSet<T>` | 收集为 HashSet |
+| `collectString` | `collectString(Iterable<String>): String` | 收集为 String |
 
 ---
 
@@ -204,7 +234,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 类型 | 构造函数 | 关键方法 |
 |------|----------|----------|
-| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` | `add(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
+| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` （K <: Hashable & Equatable\<K>） | `add(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
 | `ConcurrentLinkedQueue<T>` | `ConcurrentLinkedQueue<T>()` | `add(T)`, `remove(): ?T`, `peek(): ?T` |
 | `ArrayBlockingQueue<T>` | `ArrayBlockingQueue<T>(Int64)` | `add(T)`, `remove(): T`（阻塞） |
 | `LinkedBlockingQueue<T>` | `LinkedBlockingQueue<T>()` | `add(T)`, `remove(): T`（阻塞） |
@@ -247,15 +277,16 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 函数 | 签名 | 说明 |
 |------|------|------|
 | `exists` | `exists(String): Bool` | 检查路径是否存在 |
-| `copy` | `copy(String, to: String): Unit` | 复制文件 |
-| `rename` | `rename(String, to: String): Unit` | 重命名/移动 |
-| `remove` | `remove(String, recursive: Bool): Unit` | 删除文件或目录 |
+| `copy` | `copy(String, to!: String, overwrite!: Bool = false): Unit` | 复制文件 |
+| `rename` | `rename(String, to!: String, overwrite!: Bool = false): Unit` | 重命名/移动 |
+| `remove` | `remove(String, recursive!: Bool = false): Unit` | 删除文件或目录 |
+| `canonicalize` | `canonicalize(String): Path` | 获取规范化绝对路径 |
 
 ### 7.2 File
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
-| 构造 | `File(String, OpenMode)`, `File.create(String)` | 打开/创建文件 |
+| 构造 | `File(String, OpenMode)`, `File(Path, OpenMode)` | 打开文件 |
 | `readFrom` | `File.readFrom(String): Array<Byte>` | 快捷读文件 |
 | `writeTo` | `File.writeTo(String, Array<Byte>): Unit` | 快捷写文件 |
 
@@ -265,9 +296,17 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
-| `create` | `Directory.create(String, recursive: Bool)` | 创建目录 |
+| `create` | `Directory.create(String, recursive!: Bool = false)` | 创建目录 |
 | `list` | `Directory.list(String): Array<FileInfo>` | 列出目录内容 |
 | `delete` | `Directory.delete(String)` | 删除空目录 |
+
+### 7.4 其他类型
+
+| 类型 | 说明 |
+|------|------|
+| `Path` | 路径处理（拼接、分解、扩展名等） |
+| `FileInfo` | 文件元信息（大小、时间、权限等） |
+| `FileDescriptor` | 文件描述符 |
 
 ---
 
@@ -282,11 +321,16 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `getStdErr` | `getStdErr(): ConsoleWriter` | 标准错误 |
 | `getVariable` | `getVariable(String): ?String` | 读取环境变量 |
 | `setVariable` | `setVariable(String, String): Unit` | 设置环境变量 |
-| `getWorkingDirectory` | `getWorkingDirectory(): String` | 当前工作目录 |
-| `getHomeDirectory` | `getHomeDirectory(): String` | 用户主目录 |
-| `getTempDirectory` | `getTempDirectory(): String` | 临时目录 |
+| `removeVariable` | `removeVariable(String): Unit` | 删除环境变量 |
+| `getVariables` | `getVariables(): Array<(String, String)>` | 获取所有环境变量 |
+| `getWorkingDirectory` | `getWorkingDirectory(): Path` | 当前工作目录 |
+| `getHomeDirectory` | `getHomeDirectory(): Path` | 用户主目录 |
+| `getTempDirectory` | `getTempDirectory(): Path` | 临时目录 |
+| `getCommand` | `getCommand(): String` | 当前可执行文件路径 |
+| `getCommandLine` | `getCommandLine(): Array<String>` | 命令行参数 |
 | `getProcessId` | `getProcessId(): Int64` | 进程 ID |
-| `exit` | `exit(Int64): Unit` | 退出进程 |
+| `atExit` | `atExit(() -> Unit): Unit` | 注册进程退出回调 |
+| `exit` | `exit(Int64): Nothing` | 退出进程 |
 
 ---
 
@@ -315,26 +359,27 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `AtomicUInt8` ~ `AtomicUInt64` | `AtomicUInt64(UInt64)` | 同上 |
 | `AtomicBool` | `AtomicBool(Bool)` | `load()`, `store(v)`, `swap(v)`, `compareAndSwap(old, new)` |
 | `AtomicReference<T>` | `AtomicReference<T>(T)` | `load()`, `store(v)`, `swap(v)`, `compareAndSwap(old, new)` |
+| `AtomicOptionReference<T>` | `AtomicOptionReference<T>(?T)` | `load()`, `store(v)`, `swap(v)`, `compareAndSwap(old, new)` |
 
 ### 10.2 锁与同步
 
-| 类型 | 构造函数 | 关键方法 |
-|------|----------|----------|
-| `Mutex` | `Mutex()` | `lock()`, `unlock()`, `tryLock(): Bool`, `condition(): Condition` |
-| `ReentrantMutex` | `ReentrantMutex()` | 可重入互斥锁，同 Mutex |
-| `Monitor` | `Monitor()` | `enter()`, `leave()`, `wait()`, `notify()`, `notifyAll()` |
-| `SyncCounter` | `SyncCounter(Int64)` | `dec()`, `waitUntilZero()` |
-| `Timer` | `Timer()` | 定时器 |
+| 类型 | 构造函数 | 关键方法 | 备注 |
+|------|----------|----------|------|
+| `Mutex` | `Mutex()` | `lock()`, `unlock()`, `tryLock(): Bool` | 互斥锁 |
+| `Barrier` | `Barrier(Int64)` | `wait()` | 屏障同步 |
+| `Semaphore` | `Semaphore(Int64)` | `acquire()`, `release()`, `tryAcquire(): Bool` | 信号量 |
+| `ReadWriteLock` | `ReadWriteLock()` | `readLock()`, `readUnlock()`, `writeLock()`, `writeUnlock()` | 读写锁 |
+| `SyncCounter` | `SyncCounter(Int64)` | `dec()`, `waitUntilZero()` | 同步计数器 |
+| `Timer` | `Timer()` | — | 定时器 |
+| `Monitor` | `Monitor()` | `enter()`, `leave()`, `wait()`, `notify()`, `notifyAll()` | ⚠️ 已弃用 |
+| `ReentrantMutex` | `ReentrantMutex()` | `lock()`, `unlock()`, `tryLock(): Bool`（可重入） | ⚠️ 已弃用 |
 
-### 10.3 条件变量
+### 10.3 同步接口
 
-| 方法 | 签名 | 说明 |
-|------|------|------|
-| `wait` | `wait(): Unit` | 阻塞等待通知（须在循环中使用） |
-| `wait` | `wait(timeout: Duration): Bool` | 带超时等待 |
-| `waitUntil` | `waitUntil(() -> Bool): Unit` | 等待谓词为 true |
-| `notify` | `notify(): Unit` | 唤醒一个等待线程 |
-| `notifyAll` | `notifyAll(): Unit` | 唤醒所有等待线程 |
+| 接口 | 说明 |
+|------|------|
+| `Lock` | 锁接口（`lock()`, `unlock()`, `tryLock()`） |
+| `Condition` | 条件变量接口 |
 
 ---
 
@@ -342,12 +387,12 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 **导入**：`import std.time.*`
 
-| 类型 | 构造函数 / 工厂方法 | 关键方法 |
-|------|----------------------|----------|
-| `DateTime` | `DateTime.now()`, `DateTime.of(year, month, dayOfMonth, ...)` | `toString(String)`, `+/-` Duration 运算, `year`/`month`/`dayOfMonth` 等属性 |
-| `MonoTime` | `MonoTime.now()` | 单调时间，适合计时（`MonoTime.now() - start` 返回 Duration） |
-| `TimeZone` | `TimeZone.local`, `TimeZone.utc`, `TimeZone.of(String)` | 时区 |
-| `DateTimeFormat` | `DateTimeFormat(String)` | 日期时间格式化/解析 |
+| 类型 | 分类 | 构造函数 / 工厂方法 | 关键方法 |
+|------|------|----------------------|----------|
+| `DateTime` | 结构体 | `DateTime.now()`, `DateTime.of(year, month, dayOfMonth, ...)` | `toString(String)`, `+/-` Duration 运算, `year`/`month`/`dayOfMonth` 等属性 |
+| `MonoTime` | — | `MonoTime.now()` | 单调时间，适合计时（`MonoTime.now() - start` 返回 Duration） |
+| `TimeZone` | — | `TimeZone.local`, `TimeZone.utc`, `TimeZone.of(String)` | 时区 |
+| `DateTimeFormat` | — | `DateTimeFormat(String)` | 日期时间格式化/解析 |
 
 ---
 
@@ -385,10 +430,11 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
-| 构造 | `Random()`, `Random(Int64)` | 无种子 / 指定种子 |
-| `nextInt64` | `nextInt64(): Int64` | 随机 Int64 |
-| `nextUInt64` | `nextUInt64(): UInt64` | 随机 UInt64 |
-| `nextFloat64` | `nextFloat64(): Float64` | [0.0, 1.0) 随机浮点 |
+| 构造 | `Random()`, `Random(seed: UInt64)` | 无种子 / 指定种子 |
+| `nextInt8` ~ `nextInt64` | `nextInt64(): Int64` | 随机有符号整数 |
+| `nextUInt8` ~ `nextUInt64` | `nextUInt64(): UInt64` | 随机无符号整数 |
+| `nextFloat16` ~ `nextFloat64` | `nextFloat64(): Float64` | [0.0, 1.0) 随机浮点 |
+| `nextGaussianFloat64` | `nextGaussianFloat64(Float64, Float64): Float64` | 高斯分布随机数（均值、标准差） |
 | `nextBool` | `nextBool(): Bool` | 随机布尔 |
 
 ---
@@ -414,9 +460,11 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 函数 | 签名 | 说明 |
 |------|------|------|
-| `sort` | `sort<T: Comparable>(Array<T>): Unit` | 原地升序排序 |
-| `sort` | `sort<T>(Array<T>, (T, T) -> Int64): Unit` | 自定义比较器排序 |
-| `sort` | `sort<T: Comparable>(ArrayList<T>): Unit` | ArrayList 排序 |
+| `sort` | `sort<T>(Array<T>) where T <: Comparable<T>` | 默认排序（默认不稳定） |
+| `sort` | `sort<T>(Array<T>, (T, T) -> Ordering)` | 自定义比较器排序 |
+| `sort` | `sort<T>(Array<T>, (T, T) -> Bool)` | 自定义 lessThan 排序 |
+| `sort` | `sort<T, K>(Array<T>, key!: (T) -> K) where K <: Comparable<K>` | 按键排序 |
+| `sort` | 同上各形式也支持 `ArrayList<T>` 和 `List<T>` | 稳定排序可传 `stable!: true` |
 
 ---
 
@@ -441,9 +489,11 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 函数 / 类 | 签名 | 说明 |
 |-----------|------|------|
 | `execute` | `execute(String, Array<String>): Int64` | 执行命令并等待，返回退出码 |
-| `executeWithOutput` | `executeWithOutput(String, Array<String>): (Int64, String, String)` | 执行命令并捕获 stdout/stderr |
-| `launch` | `launch(String, Array<String>): Process` | 异步启动子进程 |
-| `Process.wait` | `wait(): Int64` | 等待子进程结束 |
+| `executeWithOutput` | `executeWithOutput(String, Array<String>): (Int64, Array<Byte>, Array<Byte>)` | 执行命令并捕获 stdout/stderr（字节数组） |
+| `launch` | `launch(String, Array<String>): SubProcess` | 异步启动子进程 |
+| `findProcess` | `findProcess(Int64): Process` | 按 PID 查找进程 |
+| `Process` | `pid`, `name`, `command`, `isAlive()` | 进程信息类 |
+| `SubProcess` | `stdInPipe`, `stdOutPipe`, `stdErrPipe`, `wait()`, `waitOutput()` | 子进程类（继承 Process） |
 
 ---
 
@@ -483,10 +533,15 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 类型 | 关键方法 | 说明 |
 |------|----------|------|
-| `TypeInfo` | `name`, `members`, `methods`, `properties` | 获取类型元信息 |
-| `FieldInfo` | `name`, `type`, `get(Any)`, `set(Any, Any)` | 成员变量信息 |
-| `MethodInfo` | `name`, `parameters`, `invoke(Any, ...)` | 方法信息 |
-| `PropertyInfo` | `name`, `type`, `get(Any)`, `set(Any, Any)` | 属性信息 |
+| `TypeInfo` | `name`, `qualifiedName` | 类型元信息基类 |
+| `ClassTypeInfo` | `members`, `methods`, `properties` | 类的类型信息 |
+| `StructTypeInfo` | `members`, `methods`, `properties` | 结构体的类型信息 |
+| `InterfaceTypeInfo` | `methods` | 接口的类型信息 |
+| `InstanceVariableInfo` | `name`, `type`, `getValue(Any)`, `setValue(Any, Any)` | 实例变量信息 |
+| `InstanceFunctionInfo` | `name`, `parameters`, `apply(Any, ...)` | 实例方法信息 |
+| `InstancePropertyInfo` | `name`, `type`, `getValue(Any)`, `setValue(Any, Any)` | 实例属性信息 |
+| `ConstructorInfo` | `name`, `parameters`, `apply(...)` | 构造函数信息 |
+| `PackageInfo` | `name`, `types` | 包信息 |
 
 ---
 
@@ -505,16 +560,15 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 **导入**：`import std.crypto.digest.*`
 
-| 类型 | 构造函数 | 说明 |
-|------|----------|------|
-| `MD5` | `MD5()` | MD5 摘要 |
-| `SHA1` | `SHA1()` | SHA-1 摘要 |
-| `SHA256` | `SHA256()` | SHA-256 摘要 |
-| `SHA512` | `SHA512()` | SHA-512 摘要 |
-| `SM3` | `SM3()` | 国密 SM3 |
-| `HMAC` | `HMAC(HashAlgorithm, Array<Byte>)` | HMAC 消息认证码 |
-
-通用方法：`update(Array<Byte>)`, `finish(): Array<Byte>`, `reset()`
+| 接口 / 类型 | 说明 |
+|-------------|------|
+| `Digest` | 摘要接口：`write(Array<Byte>)`, `finish(): Array<Byte>`, `reset()`, `size`, `blockSize` |
+| `MD5` | MD5 摘要 |
+| `SHA1` | SHA-1 摘要 |
+| `SHA256` | SHA-256 摘要 |
+| `SHA512` | SHA-512 摘要 |
+| `SM3` | 国密 SM3 |
+| `HMAC` | HMAC 消息认证码 |
 
 ### overflow — 溢出处理
 
@@ -531,11 +585,11 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 **导入**：`import std.ref.*`
 
-| 类型 | 构造函数 | 关键方法 |
-|------|----------|----------|
-| `WeakRef<T>` | `WeakRef<T>(T)` | `tryGet(): ?T` — 对象未回收时返回 Some |
+| 类型 | 说明 |
+|------|------|
+| `WeakRef<T>` (where T <: Object) | 弱引用。属性：`value: Option<T>`（获取引用对象），`clear()` 清除引用 |
 
-### objectpool — 对象池
+### objectpool — 对象池 ⚠️ 已弃用
 
 **导入**：`import std.objectpool.*`
 
@@ -550,7 +604,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 场景 | 建议 |
 |------|------|
 | 资源管理 | 使用 `try (res = ...) { }` 自动关闭 File 等 Resource 对象 |
-| 集合选择 | 随机访问用 ArrayList，键值查找用 HashMap，有序映射用 TreeMap，并发用 ConcurrentHashMap |
+| 集合选择 | 随机访问用 ArrayList，键值查找用 HashMap，有序映射用 TreeMap，有序集合用 TreeSet，并发用 ConcurrentHashMap |
 | 并发编程 | 优先 `synchronized(mtx) { }`；简单计数用 Atomic；用 Future.get() 等待结果 |
 | 错误处理 | 用 `?T` 表示可缺失值，`??` 提供默认值，`?.` 安全链式调用 |
 | I/O 性能 | 用 BufferedInputStream/BufferedOutputStream 包装原始流，写完调 flush() |
