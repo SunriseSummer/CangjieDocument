@@ -117,7 +117,7 @@ main(): Int64 {
 
 ---
 
-## 4. Socket 选项与超时
+## 4. Socket 选项
 
 ### 4.1 通用选项
 | 属性 | 说明 |
@@ -160,7 +160,8 @@ main() {
 ## 5. Unix Domain Socket
 
 - 基于文件路径的进程间通信（IPC），不经过网络栈
-- **不支持 Windows**，路径最大 108 字节
+- 路径最大 108 字节
+- **不支持 Windows**
 - 流式：`UnixServerSocket(bindAt: path)` + `UnixSocket(path)`
 - 数据报式：`UnixDatagramSocket(bindAt: path)`
 - 使用后需手动 `remove(path)` 清理 socket 文件
