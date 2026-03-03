@@ -693,7 +693,7 @@ cjc -L . -l native main.cj -o main
 
 **Windows**
 ```shell
-clang -shared -fstack-protector-all native.c -o native.dll
+clang -shared -fstack-protector-all native.c -o libnative.dll
 cjc -L . -l native main.cj -o main.exe
 ./main.exe
 ```
