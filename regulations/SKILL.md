@@ -332,8 +332,8 @@ test_helper = { path = "./libs/test_helper" }
 推荐在 CI/CD 流程中依次执行以下步骤：
 
 ```bash
-cjpm build              # 1. 编译构建
-cjfmt -d src/            # 2. 代码格式化检查
+cjpm build               # 1. 编译构建
+cjfmt -d src/            # 2. 代码格式化（格式化后检查是否有变更，有则说明代码未预先格式化）
 cjlint -f src/           # 3. 静态代码检查
 cjpm test                # 4. 运行测试
 cjcov --format html      # 5. 生成覆盖率报告
