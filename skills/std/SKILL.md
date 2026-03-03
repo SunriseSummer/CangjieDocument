@@ -22,79 +22,39 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ## 2. 标准库包功能总表
 
-### 核心与基础
-
 | 包名 | 功能简介 |
 |------|----------|
 | **core** | 核心包（自动导入）。基本类型（Int/Float/Bool/String/Array/Range/Option 等）、print/println/readln、核心接口（Iterable/Comparable/Hashable/ToString 等）、Duration、Thread/Future/spawn、异常基类等 |
-| **convert** | 类型转换与格式化：Parsable（字符串→数值）、Formattable（格式化输出） |
-| **unicode** | Unicode 字符处理 |
-
-### 集合
-
-| 包名 | 功能简介 |
-|------|----------|
 | **collection** | 集合数据结构：ArrayList、HashMap、HashSet、TreeMap、TreeSet、LinkedList、ArrayDeque、ArrayQueue、ArrayStack，以及 List/Map/Set 等接口和函数式迭代操作 |
 | **collection.concurrent** | 并发安全集合：ConcurrentHashMap、ConcurrentLinkedQueue、ArrayBlockingQueue、LinkedBlockingQueue |
-
-### I/O 与文件系统
-
-| 包名 | 功能简介 |
-|------|----------|
 | **io** | I/O 流抽象：InputStream/OutputStream 接口、缓冲流、StringReader/StringWriter、ByteBuffer 等 |
 | **fs** | 文件系统：File 读写、Directory 操作、Path 处理、exists/copy/rename/remove 等 |
 | **env** | 进程环境：标准流、环境变量读写、工作目录、进程 ID、exit 等 |
-
-### 网络与进程
-
-| 包名 | 功能简介 |
-|------|----------|
 | **net** | 网络通信：TcpSocket/TcpServerSocket、UdpSocket、UnixSocket、IP 地址处理 |
-| **process** | 进程管理：execute/launch 创建子进程、等待与信息查询 |
-
-### 并发与同步
-
-| 包名 | 功能简介 |
-|------|----------|
 | **sync** | 并发同步：Atomic 原子操作、Mutex 互斥锁、Monitor、Timer、SyncCounter |
 | **time** | 时间日期：DateTime、Duration、MonoTime、TimeZone、格式化与解析 |
-
-### 数学与数据处理
-
-| 包名 | 功能简介 |
-|------|----------|
 | **math** | 数学运算：三角函数、abs/sqrt/pow/log/ceil/floor、GCD/LCM 等 |
 | **math.numeric** | 扩展数值：BigInt（任意精度整数）、Decimal（任意精度十进制数） |
 | **random** | 伪随机数：Random 类 |
 | **regex** | 正则表达式：Regex 类，查找/分割/替换/验证 |
 | **sort** | 排序：对 Array/ArrayList 进行稳定/不稳定排序 |
+| **convert** | 类型转换与格式化：Parsable（字符串→数值）、Formattable（格式化输出） |
+| **process** | 进程管理：execute/launch 创建子进程、等待与信息查询 |
+| **reflect** | 反射：TypeInfo 获取类型信息、动态访问成员 |
+| **ast** | 语法树：源码解析器和 AST 节点，用于宏编程 |
+| **argopt** | 命令行参数解析：parseArguments 函数，短/长/组合选项 |
 | **binary** | 二进制端序转换：BigEndianOrder/LittleEndianOrder |
-| **overflow** | 整数溢出处理（Option/饱和/异常/截断） |
-
-### 安全与数据库
-
-| 包名 | 功能简介 |
-|------|----------|
 | **crypto.digest** | 摘要算法：MD5、SHA 系列、HMAC、SM3 |
 | **crypto.cipher** | 对称加解密通用接口 |
 | **database.sql** | 数据库接口：连接、查询、事务 |
-
-### 工具与元编程
-
-| 包名 | 功能简介 |
-|------|----------|
-| **reflect** | 反射：TypeInfo 获取类型信息、动态访问成员 |
-| **ast** | 语法树：源码解析器和 AST 节点，用于宏编程 |
 | **deriving** | 自动派生宏：@Derive 生成 ToString/Hashable/Equatable/Comparable |
-| **argopt** | 命令行参数解析：parseArguments 函数，短/长/组合选项 |
+| **unicode** | Unicode 字符处理 |
+| **overflow** | 整数溢出处理（Option/饱和/异常/截断） |
 | **ref** | 弱引用：WeakRef 类 |
+| **objectpool** | 对象池：ObjectPool 缓存与复用 |
 | **posix** | POSIX 系统调用封装 |
 | **runtime** | 运行时环境控制与监视 |
-
-### 测试
-
-| 包名 | 功能简介 |
-|------|----------|
+| **console** | ⚠️ 已弃用，请用 std.env |
 | **unittest** | 单元测试框架（详见 unittest Skill） |
 | **unittest.mock** | Mock 测试框架 |
 | **unittest.testmacro** | 单元测试宏 |
@@ -102,13 +62,6 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | **unittest.common** | 单元测试通用类型 |
 | **unittest.diff** | 测试差异对比 |
 | **unittest.prop_test** | 参数化测试 |
-
-### 已弃用
-
-| 包名 | 功能简介 |
-|------|----------|
-| **objectpool** | ⚠️ 已弃用。对象池：ObjectPool 缓存与复用 |
-| **console** | ⚠️ 已弃用，请用 std.env |
 
 ---
 
@@ -136,8 +89,6 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 ### 3.2 核心类型
 
-#### 基本类型
-
 | 类型 | 说明 |
 |------|------|
 | `Int8`/`Int16`/`Int32`/`Int64` | 有符号整数（`Int` = `Int64`） |
@@ -148,46 +99,74 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `Unit` | 表示无操作 |
 | `Rune` | Unicode 字符 |
 | `String` | UTF-8 字符串 |
-
-#### 容器与包装类型
-
-| 类型 | 说明 |
-|------|------|
 | `Array<T>` | 固定长度的数组 |
 | `Range<T>` | 区间，数值/字符范围 |
 | `Option<T>` | 可空类型包装，`Some(T)` / `None`，等效写法 `?T` |
-| `Box<T>` | 值类型装箱 |
-| `Iterator<T>` | 迭代器接口 |
-| `StringBuilder` | 高效字符串拼接 |
-
-#### 枚举与工具类型
-
-| 类型 | 说明 |
-|------|------|
 | `Ordering` | 比较大小，`LT` / `EQ` / `GT` |
 | `Endian` | 字节序，`Big` / `Little` |
 | `Duration` | 表示时间间隔 |
 | `DefaultHasher` | 默认哈希计算器 |
+| `StringBuilder` | 高效字符串拼接 |
 | `Object` | 所有 class 类型的父类 |
-| `StackTraceElement` | 异常栈帧信息 |
-
-#### 并发相关类型
-
-| 类型 | 说明 |
-|------|------|
+| `Iterator<T>` | 迭代器接口 |
+| `Box<T>` | 值类型装箱 |
 | `Future<T>` | spawn 表达式的返回类型，表示一个异步执行任务 |
 | `Thread` | 线程信息 |
 | `ThreadLocal<T>` | 线程本地存储 |
-
-#### CFFI 相关类型
-
-| 类型 | 说明 |
-|------|------|
+| `StackTraceElement` | 异常栈帧信息 |
 | `CString` | C 字符串包装，原始堆存储，用于 CFFI |
 | `CPointer<T>` | C 指针包装，用于 CFFI |
 | `CPointerHandle<T>` | C 指针管理器，用于 CFFI |
 
-### 3.3 常用全局函数
+### 3.3 String 常用方法
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `size` | `size: Int64` | 字节长度 |
+| `isEmpty` | `isEmpty(): Bool` | 是否为空字符串 |
+| `contains` | `contains(String): Bool` | 是否包含子串 |
+| `startsWith` | `startsWith(String): Bool` | 是否以指定前缀开头 |
+| `endsWith` | `endsWith(String): Bool` | 是否以指定后缀结尾 |
+| `indexOf` | `indexOf(String): Option<Int64>` | 查找子串首次出现位置 |
+| `lastIndexOf` | `lastIndexOf(String): Option<Int64>` | 查找子串最后出现位置 |
+| `split` | `split(String, removeEmpty!: Bool = false): Array<String>` | 按分隔符拆分 |
+| `lazySplit` | `lazySplit(String, removeEmpty!: Bool = false): Iterator<String>` | 惰性拆分 |
+| `replace` | `replace(String, String): String` | 替换子串 |
+| `trimAscii` | `trimAscii(): String` | 去除首尾 ASCII 空白 |
+| `trimAsciiStart` | `trimAsciiStart(): String` | 去除开头 ASCII 空白 |
+| `trimAsciiEnd` | `trimAsciiEnd(): String` | 去除结尾 ASCII 空白 |
+| `removePrefix` | `removePrefix(String): String` | 去除前缀 |
+| `removeSuffix` | `removeSuffix(String): String` | 去除后缀 |
+| `toAsciiUpper` | `toAsciiUpper(): String` | ASCII 转大写 |
+| `toAsciiLower` | `toAsciiLower(): String` | ASCII 转小写 |
+| `equalsIgnoreAsciiCase` | `equalsIgnoreAsciiCase(String): Bool` | ASCII 大小写不敏感比较 |
+| `padStart` | `padStart(Int64, padding!: String = " "): String` | 左填充至指定宽度 |
+| `padEnd` | `padEnd(Int64, padding!: String = " "): String` | 右填充至指定宽度 |
+| `count` | `count(String): Int64` | 统计子串出现次数 |
+| `lines` | `lines(): Iterator<String>` | 按行迭代 |
+| `toArray` | `toArray(): Array<Byte>` | 转为字节数组 |
+| `*` | `*(Int64): String` | 重复字符串 n 次 |
+| `[]` | `[Range<Int64>]: String` | 按字节范围切片 |
+
+### 3.4 Array 常用方法
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `size` | `size: Int64` | 数组长度 |
+| `slice` | `slice(Int64, Int64): Array<T>` | 切片（起始索引、长度） |
+| `clone` | `clone(): Array<T>` | 复制整个数组 |
+| `reverse` | `reverse(): Unit` | 原地反转 |
+
+### 3.5 Option 常用方法
+
+| 方法 | 签名 | 说明 |
+|------|------|------|
+| `isSome` | `isSome(): Bool` | 是否为 Some |
+| `isNone` | `isNone(): Bool` | 是否为 None |
+| `getOrDefault` | `getOrDefault(() -> T): T` | 获取值或执行默认闭包 |
+| `getOrThrow` | `getOrThrow(): T` | 获取值或抛 NoneValueException |
+
+### 3.6 常用全局函数
 
 #### I/O 函数
 
@@ -223,7 +202,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `alignOf` | `alignOf<T>(): Int64` | 获取类型对齐 |
 | `zeroValue` | `zeroValue<T>(): T` | 获取类型零值 |
 
-### 3.4 异常层次
+### 3.7 异常层次
 
 #### Error（系统错误，不应捕获）
 
@@ -250,7 +229,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `UnsupportedException` | 不支持的操作 |
 | `TimeoutException` | 超时 |
 
-### 3.5 Duration 常用单位
+### 3.8 Duration 常用单位
 
 | 单位 | 构造示例 |
 |------|----------|
@@ -261,7 +240,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `Duration.minute` | `Duration.minute * 10` |
 | `Duration.hour` | `Duration.hour * 2` |
 
-### 3.6 StringBuilder
+### 3.9 StringBuilder
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
