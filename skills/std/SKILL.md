@@ -130,6 +130,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `max` | `max<T>(T, T, Array<T>): T where T <: Comparable<T>` | 返回较大值（支持多参数） |
 | `sleep` | `sleep(Duration): Unit` | 当前线程休眠 |
 | `spawn` | `spawn { => ... }` | 创建新线程，返回 `Future<T>` |
+| `synchronized` | `synchronized(lock) { ... }` | 自动加锁/解锁的临界区 |
 | `refEq` | `refEq(Object, Object): Bool` | 引用相等比较 |
 | `sizeOf` | `sizeOf<T>(): Int64` | 获取类型大小 |
 | `alignOf` | `alignOf<T>(): Int64` | 获取类型对齐 |
@@ -172,10 +173,10 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 类型 | 构造函数 | 说明 |
 |------|----------|------|
 | `ArrayList<T>` | `ArrayList<T>()`, `ArrayList<T>(Int64)`, `ArrayList<T>(Collection<T>)`, `ArrayList<T>(Int64, (Int64) -> T)` | 动态数组 |
-| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)`, `HashMap<K, V>(Array<(K, V)>)`, `HashMap<K, V>(Int64, (Int64) -> (K, V))` | 哈希映射（K 须 Hashable + Equatable） |
-| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)`, `HashSet<T>(Collection<T>)`, `HashSet<T>(Int64, (Int64) -> T)` | 哈希集合（T 须 Hashable + Equatable） |
-| `TreeMap<K, V>` | `TreeMap<K, V>()`, `TreeMap<K, V>(Array<(K, V)>)`, `TreeMap<K, V>(Int64, (Int64) -> (K, V))` | 红黑树有序映射（K 须 Comparable） |
-| `TreeSet<T>` | `TreeSet<T>()`, `TreeSet<T>(Collection<T>)`, `TreeSet<T>(Int64, (Int64) -> T)` | 红黑树有序集合（T 须 Comparable） |
+| `HashMap<K, V>` | `HashMap<K, V>()`, `HashMap<K, V>(Int64)`, `HashMap<K, V>(Array<(K, V)>)`, `HashMap<K, V>(Int64, (Int64) -> (K, V))` | 哈希映射（K <: Hashable & Equatable\<K>） |
+| `HashSet<T>` | `HashSet<T>()`, `HashSet<T>(Int64)`, `HashSet<T>(Collection<T>)`, `HashSet<T>(Int64, (Int64) -> T)` | 哈希集合（T <: Hashable & Equatable\<T>） |
+| `TreeMap<K, V>` | `TreeMap<K, V>()`, `TreeMap<K, V>(Array<(K, V)>)`, `TreeMap<K, V>(Int64, (Int64) -> (K, V))` | 红黑树有序映射（K <: Comparable\<K>） |
+| `TreeSet<T>` | `TreeSet<T>()`, `TreeSet<T>(Collection<T>)`, `TreeSet<T>(Int64, (Int64) -> T)` | 红黑树有序集合（T <: Comparable\<T>） |
 | `LinkedList<T>` | `LinkedList<T>()`, `LinkedList<T>(Collection<T>)`, `LinkedList<T>(Int64, (Int64) -> T)` | 双向链表 |
 | `ArrayDeque<T>` | `ArrayDeque<T>()`, `ArrayDeque<T>(Int64)` | 双端队列 |
 | `ArrayQueue<T>` | `ArrayQueue<T>()`, `ArrayQueue<T>(Int64)` | 环形队列 |
@@ -199,31 +200,31 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `OrderedSet<T>` | 有序集合接口 |
 | `EquatableCollection<T>` | 支持相等比较的集合 |
 
-### 4.3 函数式迭代操作
+### 4.3 函数式迭代操作（应用于 Iterator\<T>）
 
-| 函数 | 说明 |
-|------|------|
-| `filter` | 过滤元素 |
-| `map` | 转换元素 |
-| `flatMap` | 转换并展平 |
-| `fold` | 累积计算（带初始值） |
-| `reduce` | 累积计算（无初始值） |
-| `forEach` | 遍历执行 |
-| `count` | 计数 |
-| `any` / `all` / `none` | 谓词检查 |
-| `first` / `last` | 首/尾元素 |
-| `take` / `skip` | 取前 n 个 / 跳过前 n 个 |
-| `step` | 按步长取元素 |
-| `enumerate` | 带索引遍历 |
-| `zip` | 配对两个迭代器 |
-| `concat` | 连接两个迭代器 |
-| `flatten` | 展平嵌套迭代器 |
-| `inspect` | 不修改元素的调试操作 |
-| `collectArray` | 收集为 Array |
-| `collectArrayList` | 收集为 ArrayList |
-| `collectHashMap` | 收集为 HashMap |
-| `collectHashSet` | 收集为 HashSet |
-| `collectString` | 收集为 String |
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `filter` | `filter(predicate: (T) -> Bool): Iterator<T>` | 过滤元素 |
+| `map` | `map<R>(transform: (T) -> R): Iterator<R>` | 转换元素 |
+| `flatMap` | `flatMap<R>(transform: (T) -> Iterator<R>): Iterator<R>` | 转换并展平 |
+| `fold` | `fold<R>(initial: R, operation: (R, T) -> R): R` | 累积计算（带初始值） |
+| `reduce` | `reduce(operation: (T, T) -> T): Option<T>` | 累积计算（无初始值） |
+| `forEach` | `forEach(action: (T) -> Unit): Unit` | 遍历执行 |
+| `count` | `count(): Int64` | 计数 |
+| `any` / `all` / `none` | `any(predicate: (T) -> Bool): Bool` | 谓词检查 |
+| `first` / `last` | `first(): Option<T>` | 首/尾元素 |
+| `take` / `skip` | `take(count: Int64): Iterator<T>` | 取前 n 个 / 跳过前 n 个 |
+| `step` | `step(count: Int64): Iterator<T>` | 按步长取元素 |
+| `enumerate` | `enumerate(): Iterator<(Int64, T)>` | 带索引遍历 |
+| `zip` | `zip<R>(Iterator<R>): Iterator<(T, R)>` | 配对两个迭代器 |
+| `concat` | `concat(Iterator<T>): Iterator<T>` | 连接两个迭代器 |
+| `flatten` | `flatten(): Iterator<T>` | 展平嵌套迭代器 |
+| `inspect` | `inspect(action: (T) -> Unit): Iterator<T>` | 不修改元素的调试操作 |
+| `collectArray` | `collectArray<T>(Iterable<T>): Array<T>` | 收集为 Array |
+| `collectArrayList` | `collectArrayList<T>(Iterable<T>): ArrayList<T>` | 收集为 ArrayList |
+| `collectHashMap` | `collectHashMap<K, V>(Iterable<(K, V)>): HashMap<K, V>` | 收集为 HashMap |
+| `collectHashSet` | `collectHashSet<T>(Iterable<T>): HashSet<T>` | 收集为 HashSet |
+| `collectString` | `collectString(Iterable<String>): String` | 收集为 String |
 
 ---
 
@@ -233,7 +234,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 
 | 类型 | 构造函数 | 关键方法 |
 |------|----------|----------|
-| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` （K 须 Hashable + Equatable） | `add(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
+| `ConcurrentHashMap<K, V>` | `ConcurrentHashMap<K, V>()` （K <: Hashable & Equatable\<K>） | `add(K, V)`, `get(K): ?V`, `contains(K)`, `remove(K)` |
 | `ConcurrentLinkedQueue<T>` | `ConcurrentLinkedQueue<T>()` | `add(T)`, `remove(): ?T`, `peek(): ?T` |
 | `ArrayBlockingQueue<T>` | `ArrayBlockingQueue<T>(Int64)` | `add(T)`, `remove(): T`（阻塞） |
 | `LinkedBlockingQueue<T>` | `LinkedBlockingQueue<T>()` | `add(T)`, `remove(): T`（阻塞） |
@@ -286,6 +287,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 方法 | 签名 | 说明 |
 |------|------|------|
 | 构造 | `File(String, OpenMode)`, `File(Path, OpenMode)` | 打开文件 |
+| `readFrom` | `File.readFrom(String): Array<Byte>` | 快捷读文件 |
+| `writeTo` | `File.writeTo(String, Array<Byte>): Unit` | 快捷写文件 |
 
 **打开模式**：`OpenMode.Read` | `OpenMode.Write` | `OpenMode.Append` | `OpenMode.ReadWrite`
 
@@ -294,6 +297,8 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | 方法 | 签名 | 说明 |
 |------|------|------|
 | `create` | `Directory.create(String, recursive!: Bool = false)` | 创建目录 |
+| `list` | `Directory.list(String): Array<FileInfo>` | 列出目录内容 |
+| `delete` | `Directory.delete(String)` | 删除空目录 |
 
 ### 7.4 其他类型
 
