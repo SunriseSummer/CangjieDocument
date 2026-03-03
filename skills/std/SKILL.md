@@ -148,16 +148,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `*` | `*(Int64): String` | 重复字符串 n 次 |
 | `[]` | `[Range<Int64>]: String` | 按字节范围切片 |
 
-### 3.4 Array 常用方法
-
-| 方法 | 签名 | 说明 |
-|------|------|------|
-| `size` | `size: Int64` | 数组长度 |
-| `slice` | `slice(Int64, Int64): Array<T>` | 切片（起始索引、长度） |
-| `clone` | `clone(): Array<T>` | 复制整个数组 |
-| `reverse` | `reverse(): Unit` | 原地反转 |
-
-### 3.5 Option 常用方法
+### 3.4 Option 常用方法
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
@@ -166,7 +157,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `getOrDefault` | `getOrDefault(() -> T): T` | 获取值或执行默认闭包 |
 | `getOrThrow` | `getOrThrow(): T` | 获取值或抛 NoneValueException |
 
-### 3.6 常用全局函数
+### 3.5 常用全局函数
 
 #### I/O 函数
 
@@ -202,7 +193,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `alignOf` | `alignOf<T>(): Int64` | 获取类型对齐 |
 | `zeroValue` | `zeroValue<T>(): T` | 获取类型零值 |
 
-### 3.7 异常层次
+### 3.6 异常层次
 
 #### Error（系统错误，不应捕获）
 
@@ -229,7 +220,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `UnsupportedException` | 不支持的操作 |
 | `TimeoutException` | 超时 |
 
-### 3.8 Duration 常用单位
+### 3.7 Duration 常用单位
 
 | 单位 | 构造示例 |
 |------|----------|
@@ -240,7 +231,7 @@ import std.collection.{ArrayList, HashMap} // 按需导入 API
 | `Duration.minute` | `Duration.minute * 10` |
 | `Duration.hour` | `Duration.hour * 2` |
 
-### 3.9 StringBuilder
+### 3.8 StringBuilder
 
 | 方法 | 签名 | 说明 |
 |------|------|------|
