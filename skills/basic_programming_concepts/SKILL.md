@@ -78,20 +78,18 @@ description: "仓颉编程语言基本概念和规则。当需要了解仓颉语
 - 代码块 `{exprs}`：代码块只是便于文档描述而提出的概念，仓颉**不允许独立的 `{exprs}` 块**作为表达式（如 `let r = { let x = 2; x ** 3 }` 不合法）。代码块只能依附于 if/while/for-in/match/函数等表达式使用（构造这些复合表达式），一般情况下，含有代码块结构的表达式，其值/类型为所执行代码块（分支）中最后一个表达式的值/类型（空块类型为 `Unit`，值为 `()`）
 
 ### 3.2 if 表达式
-- 语法：`if (cond) { exprs1 } else { exprs2 }`
-- cond 只能是 `Bool` 类型表达式
+- 语法：`if (cond) { exprs1 } else { exprs2 }`，`cond` 是 `Bool` 类型表达式
 - 支持 `else if` 链式使用
-- 用作值时：有 `else` 时类型由上下文或各分支最小公共父类型决定，值为所执行分支最后一个表达式的值。无 `else` 时类型始终为 `Unit`
-- 支持 `let pattern <- expr` 作为条件（if-let 模式匹配语法糖），并且可用 `&&`/`||` 组合其他条件。注意模式中绑定的变量仅在 `if` 分支中可用（`else` 分支不可用）
+- 用作值时：有 `else` 时类型由上下文或各分支最小公共父类型决定，值为所执行分支最后一个表达式的值，无 `else` 时类型始终为 `Unit`
+- 条件表达式可以用 `let pattern <- expr` 做模式匹配，详见 `cangjie-pattern-match` Skill
 
 ### 3.3 while / do-while 循环
-- `while (cond) { exprs }` 和 `do { exprs } while (cond)`
+- `while (cond) { exprs }` 和 `do { exprs } while (cond)`，`cond` 是 `Bool` 类型表达式
 - 返回类型始终为 `Unit`
-- 条件规则与 `if` 相同，支持 while-let 模式匹配语法糖
+- 条件表达式可以用 `let pattern <- expr` 做模式匹配
 
 ### 3.4 for-in 循环
-- `for (item in sequence) { exprs }`，其中 `sequence` 须实现 `Iterable<T>`
-- 如果 sequence 是表达式，仅在首次迭代前求值一次
+- `for (item in sequence) { exprs }`，其中 `sequence` 类型须实现 `Iterable<T>`
 - 迭代变量 item 不可变，如果循环体中不引用迭代变量，可用通配符 `_` 占位
 - 支持元组解构：`for ((x, y) in arr)`
 - `where` 子句过滤迭代：`for (i in 0..8 where i % 2 == 1)`
