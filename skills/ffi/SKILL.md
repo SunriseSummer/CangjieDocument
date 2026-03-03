@@ -555,11 +555,7 @@ main() {
 
 ## 5. 编译构建
 
-> **详细的编译构建指导**请参考 `cangjie-ffi-build` Skill，包含 cjc/cjpm 编译命令、不同平台（Linux/macOS/Windows）的 C 库编译方式、cjpm.toml 中 `[ffi.c]` 配置、链接安全加固选项等完整说明。
-
-### 基本流程
-- 先将 C 代码编译为动态库或静态库（使用 clang 等编译器，建议启用 `-fstack-protector-all`）
-- 使用 `cjc -L <path> -l <name>` 链接，或在 `cjpm.toml` 中配置 `[ffi.c]` 依赖后用 `cjpm build` 构建
+> **详细编译构建指导**请参考 `cangjie-ffi-build` Skill
 
 ---
 
