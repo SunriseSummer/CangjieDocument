@@ -13,7 +13,7 @@ description: "仓颉语言 Socket 编程。当需要了解仓颉语言的TCP/UDP
 
 ### 1.2 关键规则
 - 网络操作在仓颉线程级别是**阻塞**的，但不阻塞 OS 线程（仓颉线程让出）
-- 所有 Socket 均实现 `Resource`，使用 `try-with-resource` 自动清理
+- 所有 Socket 均实现 `Resource`，可使用 `try-with-resource` 自动清理资源
 
 ### 1.3 地址类型
 - `SocketAddress`（抽象基类）→ `IPSocketAddress`（IP+端口）、`UnixSocketAddress`（文件路径）
