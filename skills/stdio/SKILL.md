@@ -1,9 +1,9 @@
 ---
 name: cangjie-stdio
-description: "仓颉语言标准输入输出。当需要了解仓颉语言的标准输出(print/println)、标准错误输出(eprint/eprintln)、标准输入(readln/read)、控制台读写(ConsoleReader/ConsoleWriter)、标准流获取(getStdIn/getStdOut/getStdErr)等特性时，应使用此 Skill。"
+description: "仓颉语言标准输入输出。当需要了解仓颉语言的标准输出(print/println)、标准错误输出(eprint/eprintln)、标准输入(readln/read)、控制台读写、标准流获取(getStdIn/getStdOut/getStdErr)等特性时，应使用此 Skill"
 ---
 
-# 仓颉语言标准输入输出 Skill
+# 仓颉语言标准输入输出
 
 ## 1. 最基本的输入输出
 
