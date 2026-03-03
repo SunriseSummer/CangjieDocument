@@ -1,6 +1,6 @@
 ---
 name: cangjie-socket
-description: "仓颉语言 Socket 编程。当需要了解仓颉语言的TCP/UDP Socket编程、Socket选项与超时、Unix Domain Socket、IP地址工具、TLS/SSL加密通信等特性时，应使用此 Skill。"
+description: "仓颉语言 Socket 编程。当需要了解仓颉语言的TCP/UDP Socket编程、Socket选项、Unix Domain Socket时，应使用此 Skill"
 ---
 
 # 仓颉语言 Socket 编程 Skill
