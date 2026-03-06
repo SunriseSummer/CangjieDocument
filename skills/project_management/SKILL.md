@@ -1,6 +1,6 @@
 ---
 name: cangjie-project-management
-description: "当需要了解仓颉项目管理工具 cjpm 的详细用法，包括创建项目(init)、配置 cjpm.toml、管理依赖(dependencies)、构建(build)、运行(run)、测试(test)、基准测试(bench)、清理(clean)、安装(install)、工作区(workspace)、交叉编译(target)、构建脚本(build.cj)、增量编译、环境变量替换等，应使用此 Skill。"
+description: "当需要了解仓颉项目管理工具 cjpm 的详细用法，包括创建项目(init)、依赖检查与更新(check/update)、依赖树(tree)、配置 cjpm.toml、管理依赖(dependencies)、构建(build)、运行(run)、测试(test)、基准测试(bench)、清理(clean)、安装与卸载(install/uninstall)、工作区(workspace)、交叉编译(target)、构建脚本(build.cj)、增量编译、环境变量替换等，应使用此 Skill。"
 ---
 
 # 仓颉语言项目管理 Skill

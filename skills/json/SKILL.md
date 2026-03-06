@@ -15,6 +15,8 @@ description: "仓颉语言 JSON 编解码。当需要了解 JSON 字符串解析
 | **JSON 流式处理** | `import stdx.encoding.json.stream.*` | 流式处理，自定义类型与 JSON 互转，适合复杂场景 |
 
 > 使用前需配置好 stdx，详见 `cangjie-stdx` Skill
+>
+> 使用 `cjc` 手动链接 stdx 时需注意：`stdx.encoding.json` 依赖 `stdx.serialization.serialization`，链接顺序必须满足依赖关系；使用 `cjpm` 时通常无需手工处理链接顺序。
 
 ---
 
