@@ -11,7 +11,8 @@
 #   --run           编译后运行（默认仅编译）
 #
 # 环境变量：
-#   CANGJIE_STDX_PATH  stdx 静态库路径
+#   CANGJIE_STDX_PATH    stdx 静态库路径
+#   CANGJIE_RUN_TIMEOUT  运行超时秒数（默认 10）
 #
 # 示例：
 #   ./test_block.sh /tmp/test.cj --run
@@ -55,7 +56,11 @@ if grep -q "import stdx\." "$CJ_FILE"; then
 fi
 
 # stdx 路径
-STDX_PATH="${CANGJIE_STDX_PATH:-/tmp/cangjie-stdx/linux_x86_64_cjnative/static/stdx}"
+STDX_PATH="${CANGJIE_STDX_PATH:-}"
+if [ "$USE_STDX" = true ] && [ -z "$STDX_PATH" ]; then
+    echo "警告: 未设置 CANGJIE_STDX_PATH 环境变量"
+    echo "  请设置: export CANGJIE_STDX_PATH=/path/to/cangjie-stdx/linux_x86_64_cjnative/static/stdx"
+fi
 
 # 创建临时项目
 PROJECT_DIR=$(mktemp -d /tmp/cjpm_test_block_XXXXXX)
@@ -116,6 +121,6 @@ if [ "$DO_RUN" = true ]; then
     echo ""
     echo "🚀 运行中..."
     echo "---"
-    timeout 10 cjpm run 2>&1 | grep -v "cjpm run finished" || true
+    timeout "${CANGJIE_RUN_TIMEOUT:-10}" cjpm run 2>&1 | grep -v "cjpm run finished" || true
     echo "---"
 fi

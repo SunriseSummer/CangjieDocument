@@ -146,18 +146,13 @@ def get_skip_reason(classification: dict) -> Optional[str]:
 # ======================== 项目构建 ========================
 
 def get_stdx_path() -> str:
-    """获取 stdx 库路径"""
+    """获取 stdx 库路径，优先使用 CANGJIE_STDX_PATH 环境变量"""
     path = os.environ.get('CANGJIE_STDX_PATH', '')
+    if path and os.path.exists(path):
+        return path
     if not path:
-        # 尝试常见路径
-        candidates = [
-            '/tmp/cangjie-stdx/linux_x86_64_cjnative/static/stdx',
-            os.path.expanduser('~/cangjie-stdx/linux_x86_64_cjnative/static/stdx'),
-        ]
-        for c in candidates:
-            if os.path.exists(c):
-                path = c
-                break
+        print("警告: 未设置 CANGJIE_STDX_PATH 环境变量，使用 stdx 的代码块可能无法编译")
+        print("  请设置: export CANGJIE_STDX_PATH=/path/to/cangjie-stdx/linux_x86_64_cjnative/static/stdx")
     return path
 
 
