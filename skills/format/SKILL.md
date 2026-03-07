@@ -176,6 +176,6 @@ main() {
 
     // 4. 二进制位查看
     let flags: Int32 = 0xAB
-    println(flags.format("010b"))                // "10101011"
+    println(flags.format("010b"))                // "0010101011"
 }
 ```
