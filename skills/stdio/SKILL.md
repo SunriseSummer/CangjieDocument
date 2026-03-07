@@ -197,6 +197,8 @@ main() {
 ### 6.1 交互式输入输出
 
 ```cangjie
+import std.convert.*
+
 main() {
     print("请输入你的年龄：")
     let input = readln()

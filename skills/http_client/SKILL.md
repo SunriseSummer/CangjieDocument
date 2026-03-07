@@ -73,7 +73,7 @@ main() {
 
 ```cangjie
 import stdx.net.http.*
-import std.time.Duration
+import std.time.*
 
 main() {
     let client = ClientBuilder()
@@ -198,7 +198,7 @@ main() {
 
 ```cangjie
 import stdx.net.http.*
-import std.time.Duration
+import std.time.*
 
 main() {
     let client = ClientBuilder()
@@ -294,7 +294,12 @@ main() {
 
     // 遍历所有响应头
     for ((name, values) in resp.headers) {
-        println("${name}: ${values}")
+        var valStr = ""
+        for (v in values) {
+            if (valStr.size > 0) { valStr = valStr + ", " }
+            valStr = valStr + v
+        }
+        println("${name}: ${valStr}")
     }
 
     // 读取 body 以释放连接
