@@ -152,29 +152,27 @@ Usage: mytool [-v] [--output <file>] <input>...
 
 ### 3.2 带回调的参数解析
 
-回调方式适合在解析时立即处理每个参数：
+回调方式适合在解析时立即处理每个参数。注意：回调 lambda 中不能捕获外部 `var` 变量（仓颉语言限制），可通过 `parseArguments` 返回的结果获取选项值：
 
 ```cangjie
 import std.argopt.*
 
 main(args: Array<String>): Unit {
-    var verbose = false
-    var output = ""
-    var inputs = Array<String>([])
-
     let specs = [
-        Short(r'v', NoValue) { _ => verbose = true },
-        Long("output", RequiredValue) { v => output = v },
+        Short(r'v', NoValue),
+        Long("output", RequiredValue),
         Full("config", r'c', RequiredValue) { v =>
             println("Loading config: ${v}")
         },
-        NonOptions { files => inputs = files }
     ]
 
     try {
-        parseArguments(args, specs)
+        let result = parseArguments(args, specs)
+        let verbose = result.options.contains('v')
+        let output = result.options.get("output") ?? ""
+
         println("Verbose: ${verbose}, Output: ${output}")
-        println("Inputs: ${inputs}")
+        println("Inputs: ${result.nonOptions}")
     } catch (e: ArgumentParseException) {
         println("Error: ${e}")
     }
@@ -190,27 +188,27 @@ import std.io.*
 import std.env.*
 
 main(args: Array<String>): Unit {
-    var showHelp = false
-    var showVersion = false
-    var outputPath = ""
-    var format = "text"
-    var inputFiles = Array<String>([])
-
     let specs = [
-        Full("help", r'h', NoValue) { _ => showHelp = true },
-        Full("version", r'V', NoValue) { _ => showVersion = true },
-        Full("output", r'o', RequiredValue) { v => outputPath = v },
-        Full("format", r'f', RequiredValue) { v => format = v },
-        NonOptions { files => inputFiles = files }
+        Full("help", r'h', NoValue),
+        Full("version", r'V', NoValue),
+        Full("output", r'o', RequiredValue),
+        Full("format", r'f', RequiredValue),
     ]
 
+    var result: ParsedArguments
     try {
-        parseArguments(args, specs)
+        result = parseArguments(args, specs)
     } catch (e: ArgumentParseException) {
         eprintln("Error: ${e}")
         eprintln("Try '--help' for more information.")
         exit(1)
     }
+
+    let showHelp = result.options.contains("help") || result.options.contains('h')
+    let showVersion = result.options.contains("version") || result.options.contains('V')
+    let outputPath = result.options.get("output") ?? ""
+    let format = result.options.get("format") ?? "text"
+    let inputFiles = result.nonOptions
 
     if (showVersion) {
         println("mytool 1.0.0")

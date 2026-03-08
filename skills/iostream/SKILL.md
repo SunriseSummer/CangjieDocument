@@ -127,11 +127,17 @@ main(): Unit {
 ```cangjie
 import std.io.*
 
-main(): Unit {
-    let s1 = ByteBuffer(); s1.write("Hello ".toArray())
-    let s2 = ByteBuffer(); s2.write("World".toArray())
+main() {
+    let s1 = ByteBuffer()
+    s1.write("Hello ".toArray())
+    let s2 = ByteBuffer()
+    s2.write("World".toArray())
     let chained = ChainedInputStream([s1, s2])
-    println(readString(chained))  // "Hello World"
+    let buffer = Array<Byte>(256, repeat: 0)
+    chained.read(buffer) // 从 s1 读取
+    println(String.fromUtf8(buffer))  // "Hello"
+    chained.read(buffer) // s1 耗尽，自动切换到 s2
+    println(String.fromUtf8(buffer))  // "World"
 }
 ```
 

@@ -216,11 +216,14 @@ public macro AutoToString(input: Tokens): Tokens {
         }
     }
 
-    // 构建 toString 方法体中的字段拼接
-    var parts = quote(var result = "${$(className)}{")
+    // 使用 quote 构建 toString 方法体：拼接所有字段
+    // 注意：$(expr) 在 quote 的字符串字面量内不会被插值，
+    // 需通过 .value 获取字符串，再用 $(str) 插入为字面量 Token
+    var parts = quote(var result = $(className.value) + "{")
     for (f in fields) {
+        let label = " " + f.value + "="
         parts = quote($(parts)
-            result += " $(f)=" + this.$(f).toString()
+            result += $(label) + this.$(f).toString()
         )
     }
     parts = quote($(parts)
@@ -228,13 +231,13 @@ public macro AutoToString(input: Tokens): Tokens {
         return result
     )
 
-    // 添加 toString 方法到 class
-    let toStringFunc = FuncDecl(quote(
+    // 用 quote + parseDecl 生成 toString 方法并添加到 class
+    let funcDecl = parseDecl(quote(
         public func toString(): String {
             $(parts)
         }
     ))
-    classDecl.body.decls.add(toStringFunc)
+    classDecl.body.decls.add(funcDecl)
     return classDecl.toTokens()
 }
 ```
@@ -270,11 +273,12 @@ import std.ast.*
 public macro Log(attrTokens: Tokens, inputTokens: Tokens): Tokens {
     let level = attrTokens.toString().trimAscii()
     let funcDecl = FuncDecl(inputTokens)
-    let funcName = funcDecl.identifier
+    let funcName = funcDecl.identifier.value
 
-    let logStmt = quote(
-        println("[$(level)] entering $(funcName)")
-    )
+    // 在宏展开阶段构造日志消息字符串，通过 quote 插入为字符串字面量
+    // 注意：$(expr) 在 quote 的字符串字面量内不会被插值
+    let logMsg = "[${level}] entering ${funcName}"
+    let logStmt = quote(println($(logMsg)))
 
     // 在函数体开头插入日志语句
     let oldNodes = funcDecl.block.nodes

@@ -110,7 +110,7 @@ main() {
     println(f.format("G"))            // "1234.5"（G 自动选择精简表示）
 
     // 补零
-    println("\"${f.format("012.2")}\"") // "0000001234.50"
+    println("\"${f.format("012.2")}\"") // "000001234.50"
 }
 ```
 
@@ -176,6 +176,6 @@ main() {
 
     // 4. 二进制位查看
     let flags: Int32 = 0xAB
-    println(flags.format("#010b"))               // "0b10101011"
+    println(flags.format("010b"))                // "0010101011"
 }
 ```

@@ -39,6 +39,7 @@ main() {
     let r2 = Int32.tryParse("42")         // Some(42)
 
     // 配合模式匹配使用
+    let userInput = "999"
     match (Int64.tryParse(userInput)) {
         case Some(v) => println("解析成功: ${v}")
         case None => println("无效输入")

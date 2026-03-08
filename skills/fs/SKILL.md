@@ -122,7 +122,7 @@ main() {
     println(p.extensionName)              // "md"
     println(p.fileNameWithoutExtension)   // "readme"
     println(p.isAbsolute())               // true
-    println(p.join("../notes"))           // "/home/user/docs/../notes"
+    println(p.join("../notes"))           // "/home/user/docs/readme.md/../notes"
     println(canonicalize(Path(".")))      // 当前目录的绝对路径
 }
 ```

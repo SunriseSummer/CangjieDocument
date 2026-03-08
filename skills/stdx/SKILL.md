@@ -558,13 +558,13 @@ main() {
     // Base64 编解码
     let b64Encoded = toBase64String(data)
     println("Base64: ${b64Encoded}")
-    let b64Decoded = fromBase64String(b64Encoded)
+    let b64Decoded = fromBase64String(b64Encoded).getOrThrow()
     println("Decoded: ${String.fromUtf8(b64Decoded)}")
 
     // Hex 编解码
     let hexEncoded = toHexString(data)
     println("Hex: ${hexEncoded}")
-    let hexDecoded = fromHexString(hexEncoded)
+    let hexDecoded = fromHexString(hexEncoded).getOrThrow()
     println("Decoded: ${String.fromUtf8(hexDecoded)}")
 }
 ```
@@ -588,6 +588,6 @@ main() {
     let form = Form()
     form.add("name", "张三")
     form.add("age", "30")
-    println("form: ${form.toString()}")
+    println("form: ${form.toEncodeString()}")
 }
 ```

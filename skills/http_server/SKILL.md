@@ -78,7 +78,7 @@ main() {
 
 ```cangjie
 import stdx.net.http.*
-import std.time.Duration
+import std.time.*
 
 main() {
     var transportCfg = TransportConfig()

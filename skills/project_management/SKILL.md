@@ -263,6 +263,8 @@ compile-option = "-O1"
 
 ### 5.2 模板
 ```cangjie
+import std.process.*
+
 main() {
     match (Process.current.arguments[0]) {
         case "pre-build" => 0

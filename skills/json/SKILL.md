@@ -134,8 +134,9 @@ main() {
     writer.writeName("age").writeValue(30)
     writer.writeName("scores")
     writer.startArray()
-        .writeValue(90).writeValue(85)
-    .endArray()
+    writer.writeValue(90)
+    writer.writeValue(85)
+    writer.endArray()
     writer.endObject()
     writer.flush()
 
