@@ -294,7 +294,7 @@ main() {
 
     // 遍历所有响应头
     for ((name, values) in resp.headers) {
-        println("${name}: ${values}")
+        println("${name}: ${values.toArray()}")
     }
 
     // 读取 body 以释放连接
