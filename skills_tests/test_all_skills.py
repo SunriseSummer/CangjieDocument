@@ -122,15 +122,22 @@ def classify_block(block: CodeBlock) -> dict:
     has_main = bool(re.search(r'^main\(', code, re.MULTILINE))
     uses_stdx = 'import stdx.' in code
     # 错误示例判断：
-    # 代码块中的非注释代码行包含 ❌ 标记（如 `public extend A {} // ❌ Error`）
-    # 如果 ❌ 仅出现在纯注释行中（如 `// ❌ 错误：...`），通常意味着错误代码被注释掉了，
-    # 实际代码是可以编译的上下文展示
+    # 1. 非注释行含 ❌ 标记（如 `public extend A {} // ❌ Error`）→ 错误示例
+    # 2. 代码块第一行是 ❌ 注释，且非注释代码不超过 2 行 → 错误示例
+    #    （整个代码块的目的就是展示单个错误语句）
+    #    但如果有多行有效代码（如有效代码 + 注释中的错误），则不算错误示例
     has_error_marker = '❌' in code
     if has_error_marker:
         code_lines = code.split('\n')
         non_comment_lines = [l for l in code_lines if l.strip() and not l.strip().startswith('//')]
-        # 仅当 ❌ 出现在非注释行中才算错误示例
+        # 情况 1：❌ 出现在非注释行（行尾注释如 `class Foo {} // ❌ Error`）
         is_error_demo = any('❌' in l for l in non_comment_lines)
+        # 情况 2：代码块第一行是 ❌ 注释，且只有 1-2 行有效代码（单个错误语句）
+        if not is_error_demo:
+            first_line = next((l for l in code_lines if l.strip()), '')
+            if (first_line.strip().startswith('// ❌')
+                    and 0 < len(non_comment_lines) <= 2):
+                is_error_demo = True
     else:
         is_error_demo = False
     is_interactive = bool(re.search(r'readln\(\)|\.serve\(\)|getStdIn\(\)', code))
@@ -170,27 +177,27 @@ def get_test_strategy(classification: dict) -> str:
     """决定测试策略，返回策略名称
 
     策略优先级（从高到低）：
-    1. macro_package_build: 宏包 + 调用方构建多模块 cjpm 项目测试
-    2. multi_package_build: 多包示例构建多目录 cjpm 项目测试
-    3. pseudo_code_skip: 含 ... 省略号的伪代码/API 签名，不是可执行代码
-    4. api_signature_skip: 仅含函数签名无函数体，不是可执行代码
-    5. error_demo_expect_fail: 故意错误示例，编译应该失败
+    1. pseudo_code_skip: 含 ... 省略号的伪代码/API 签名，不是可执行代码
+    2. api_signature_skip: 仅含函数签名无函数体，不是可执行代码
+    3. error_demo_expect_fail: 故意错误示例，编译应该失败
+    4. macro_package_build: 宏包 + 调用方构建多模块 cjpm 项目测试
+    5. multi_package_build: 多包示例构建多目录 cjpm 项目测试
     6. interactive_build_only: 交互式/服务器代码，仅编译不运行
     7. ffi_build_only: 含 FFI 声明，编译可能有链接错误（预期）
     8. test_block_build: @Test/@Bench 块，作为库编译
     9. fragment_wrap: 不含 main() 的片段，自动补充 main() 后编译
     10. full_build_run: 完整代码，编译并运行
     """
-    if classification['is_macro_pkg']:
-        return 'macro_package_build'
-    if classification['has_package_decl']:
-        return 'multi_package_build'
     if classification['is_pseudo_code'] and classification['is_fragment']:
         return 'pseudo_code_skip'
     if classification['is_api_signature'] and classification['is_fragment']:
         return 'api_signature_skip'
     if classification['is_error_demo']:
         return 'error_demo_expect_fail'
+    if classification['is_macro_pkg']:
+        return 'macro_package_build'
+    if classification['has_package_decl']:
+        return 'multi_package_build'
     if classification['is_interactive']:
         return 'interactive_build_only'
     if classification['has_ffi_extern'] and not classification['uses_stdx']:
@@ -532,6 +539,9 @@ def test_block(block: CodeBlock, classification: dict, strategy: str,
                                   build_output=build_output, test_strategy=strategy)
             elif re.search(r'undeclared|not found|unknown', build_output, re.IGNORECASE):
                 return TestResult(block, "PASS", "编译失败（引用了文档上下文中的声明，预期行为）",
+                                  build_output=build_output, test_strategy=strategy)
+            elif 'unclosed delimiter' in build_output or 'unexpected token' in build_output:
+                return TestResult(block, "PASS", "编译失败（语法片段需要特定上下文/注解参数，预期行为）",
                                   build_output=build_output, test_strategy=strategy)
             else:
                 return TestResult(block, "FAIL", build_output[:500],

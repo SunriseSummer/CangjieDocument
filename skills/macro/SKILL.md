@@ -206,35 +206,28 @@ public macro AutoToString(input: Tokens): Tokens {
                 "AutoToString 只能用于 class 声明", "此处不是 class")
             return input
     }
-    let className = classDecl.identifier
+    let className = classDecl.identifier.value
 
     // 收集所有 var/let 成员变量名
-    var fields = ArrayList<Token>()
+    var fields = ArrayList<String>()
     for (d in classDecl.body.decls) {
         if (let Some(varDecl) <- (d as VarDecl)) {
-            fields.add(varDecl.identifier)
+            fields.add(varDecl.identifier.value)
         }
     }
 
-    // 构建 toString 方法体中的字段拼接
-    var parts = quote(var result = "${$(className)}{")
+    // 构建 toString 方法体：拼接所有字段
+    var bodyCode = "var result = \"${className}{\"\n"
     for (f in fields) {
-        parts = quote($(parts)
-            result += " $(f)=" + this.$(f).toString()
-        )
+        bodyCode += "result += \" ${f}=\" + this.${f}.toString()\n"
     }
-    parts = quote($(parts)
-        result += " }"
-        return result
-    )
+    bodyCode += "result += \" }\"\nreturn result\n"
 
-    // 添加 toString 方法到 class
-    let toStringFunc = FuncDecl(quote(
-        public func toString(): String {
-            $(parts)
-        }
-    ))
-    classDecl.body.decls.add(toStringFunc)
+    // 用 cangjieLex 将代码字符串转为 Tokens，再解析为声明插入类体
+    let funcCode = "public func toString(): String {\n${bodyCode}}"
+    let funcTokens = cangjieLex(funcCode)
+    let funcDecl = parseDecl(funcTokens)
+    classDecl.body.decls.add(funcDecl)
     return classDecl.toTokens()
 }
 ```
@@ -270,16 +263,17 @@ import std.ast.*
 public macro Log(attrTokens: Tokens, inputTokens: Tokens): Tokens {
     let level = attrTokens.toString().trimAscii()
     let funcDecl = FuncDecl(inputTokens)
-    let funcName = funcDecl.identifier
+    let funcName = funcDecl.identifier.value
 
-    let logStmt = quote(
-        println("[$(level)] entering $(funcName)")
-    )
+    // 用 cangjieLex 构建日志语句，避免 quote 中 $ 的歧义
+    let logCode = "println(\"[${level}] entering ${funcName}\")"
+    let logTokens = cangjieLex(logCode)
+    let logExpr = parseExpr(logTokens)
 
     // 在函数体开头插入日志语句
     let oldNodes = funcDecl.block.nodes
     funcDecl.block.nodes = ArrayList<Node>()
-    funcDecl.block.nodes.add(parseExpr(logStmt))
+    funcDecl.block.nodes.add(logExpr)
     for (n in oldNodes) {
         funcDecl.block.nodes.add(n)
     }

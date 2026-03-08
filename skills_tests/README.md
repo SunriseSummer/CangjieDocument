@@ -66,15 +66,15 @@ AI（辅助测试人员）在脚本测试的基础上执行以下补充工作：
 
 | 策略名称 | 适用条件 | 测试方式 | PASS 条件 |
 |----------|---------|---------|-----------|
-| `full_build_run` | 含 `main()` 的完整代码 | `cjpm build` + `cjpm run` | 编译和运行均成功 |
+| `pseudo_code_skip` | 含 `{ ... }` 伪代码 | **跳过** | — |
 | `error_demo_expect_fail` | 上下文含 `❌` 的错误示例 | `cjpm build`（期望失败） | 编译失败（符合文档描述） |
+| `macro_package_build` | 含 `macro package` | 创建多模块 cjpm 项目（宏模块 + 主模块），`cjpm build` + `cjpm run` | 编译成功 |
+| `multi_package_build` | 含自定义 `package` 声明 | 创建多目录 cjpm 项目（每个 package 对应子目录），`cjpm build` | 编译成功 |
+| `full_build_run` | 含 `main()` 的完整代码 | `cjpm build` + `cjpm run` | 编译和运行均成功 |
 | `interactive_build_only` | 含 `readln()` / `.serve()` | `cjpm build`（跳过运行） | 编译成功 |
 | `ffi_build_only` | 含 `foreign func`（非 stdx） | `cjpm build`（允许链接错误） | 编译通过语法检查 |
 | `test_block_build` | 含 `@Test` / `@Bench` | 作为静态库编译 | 编译成功或因引用未包含的函数而失败 |
 | `fragment_wrap` | 不含 `main()` 的代码片段 | 补充 `main()` 后 `cjpm build` | 编译成功或因缺少上下文声明而失败 |
-| `macro_package_build` | 含 `macro package` | 创建多模块 cjpm 项目（宏模块 + 主模块），`cjpm build` + `cjpm run` | 编译成功 |
-| `multi_package_build` | 含自定义 `package` 声明 | 创建多目录 cjpm 项目（每个 package 对应子目录），`cjpm build` | 编译成功 |
-| `pseudo_code_skip` | 含 `{ ... }` 伪代码 | **跳过** | — |
 
 ### 宏包测试方法（`macro_package_build`）
 
@@ -412,9 +412,9 @@ HTTP 客户端、HTTPS、WebSocket、TLS、Socket 等网络相关示例在编译
 | 指标 | 数量 |
 |------|------|
 | 总代码块数 | 577 |
-| 通过测试 | 427 |
+| 通过测试 | 426 |
 | 失败 | 0 |
-| 跳过（伪代码/API 签名） | 150 |
+| 跳过（伪代码/API 签名） | 151 |
 | 运行时异常（网络/文件，预期行为） | 34 |
 
 > 宏包和多包示例已通过构建多模块/多目录 cjpm 项目测试，不再跳过。
