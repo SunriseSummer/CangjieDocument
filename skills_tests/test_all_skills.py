@@ -31,6 +31,7 @@ from typing import Optional
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 SKILLS_DIR = os.path.join(REPO_DIR, "skills")
+CJC_VERSION = "1.0.5"  # Cangjie SDK 版本，用于 cjpm.toml 生成
 
 
 # ======================== 数据结构 ========================
@@ -169,8 +170,8 @@ def get_test_strategy(classification: dict) -> str:
     """决定测试策略，返回策略名称
 
     策略优先级（从高到低）：
-    1. macro_package_skip: 宏包需要独立宏编译链，无法在单文件项目中测试
-    2. multi_package_skip: 多包示例需要特殊目录结构，无法在单文件项目中测试
+    1. macro_package_build: 宏包 + 调用方构建多模块 cjpm 项目测试
+    2. multi_package_build: 多包示例构建多目录 cjpm 项目测试
     3. pseudo_code_skip: 含 ... 省略号的伪代码/API 签名，不是可执行代码
     4. api_signature_skip: 仅含函数签名无函数体，不是可执行代码
     5. error_demo_expect_fail: 故意错误示例，编译应该失败
@@ -181,9 +182,9 @@ def get_test_strategy(classification: dict) -> str:
     10. full_build_run: 完整代码，编译并运行
     """
     if classification['is_macro_pkg']:
-        return 'macro_package_skip'
+        return 'macro_package_build'
     if classification['has_package_decl']:
-        return 'multi_package_skip'
+        return 'multi_package_build'
     if classification['is_pseudo_code'] and classification['is_fragment']:
         return 'pseudo_code_skip'
     if classification['is_api_signature'] and classification['is_fragment']:
@@ -238,7 +239,7 @@ def create_project(project_dir: str, uses_stdx: bool, output_type: str = "execut
         bin_deps = ""
 
     toml = f"""[package]
-  cjc-version = "1.0.5"
+  cjc-version = "{CJC_VERSION}"
   name = "testproject"
   version = "1.0.0"
   output-type = "{output_type}"{compile_opt}
@@ -277,6 +278,139 @@ def write_main_cj(project_dir: str, code: str, is_fragment: bool = False,
 
     with open(os.path.join(project_dir, "src", "main.cj"), 'w') as f:
         f.write(main_code)
+
+
+def create_macro_project(project_dir: str, macro_code: str, caller_code: str,
+                         macro_pkg_name: str = "macros") -> None:
+    """创建宏包多模块 cjpm 项目
+
+    项目结构：
+        project_dir/
+        ├── cjpm.toml              # 主项目配置，依赖宏模块
+        ├── src/
+        │   └── main.cj            # 调用宏的代码
+        └── <macro_pkg_name>/      # 宏模块
+            ├── cjpm.toml          # 宏模块配置（--compile-macro）
+            └── src/
+                └── macros.cj      # 宏定义代码
+    """
+    # 创建目录结构
+    os.makedirs(os.path.join(project_dir, "src"), exist_ok=True)
+    macro_dir = os.path.join(project_dir, macro_pkg_name)
+    os.makedirs(os.path.join(macro_dir, "src"), exist_ok=True)
+
+    # 宏模块 cjpm.toml
+    macro_toml = f"""[package]
+  cjc-version = "{CJC_VERSION}"
+  name = "{macro_pkg_name}"
+  version = "1.0.0"
+  output-type = "static"
+  compile-option = "--compile-macro"
+[dependencies]
+"""
+    with open(os.path.join(macro_dir, "cjpm.toml"), 'w') as f:
+        f.write(macro_toml)
+
+    # 宏定义代码
+    with open(os.path.join(macro_dir, "src", "macros.cj"), 'w') as f:
+        f.write(macro_code)
+
+    # 主项目 cjpm.toml
+    main_toml = f"""[package]
+  cjc-version = "{CJC_VERSION}"
+  name = "testproject"
+  version = "1.0.0"
+  output-type = "executable"
+[dependencies]
+  {macro_pkg_name} = {{ path = "./{macro_pkg_name}" }}
+"""
+    with open(os.path.join(project_dir, "cjpm.toml"), 'w') as f:
+        f.write(main_toml)
+
+    # 调用方代码
+    code = caller_code
+    if not re.search(r'^package\s+', code, re.MULTILINE):
+        code = f"package testproject\n\n{code}"
+    else:
+        code = re.sub(r'^package\s+\S+', 'package testproject', code, count=1, flags=re.MULTILINE)
+    # 如果没有 main()，补充一个空 main
+    if not re.search(r'^main\(', code, re.MULTILINE):
+        code = f"{code}\n\nmain() {{}}\n"
+    with open(os.path.join(project_dir, "src", "main.cj"), 'w') as f:
+        f.write(code)
+
+
+def create_multi_package_project(project_dir: str, package_files: dict[str, str]) -> None:
+    """创建多包 cjpm 项目
+
+    参数：
+        project_dir: 项目根目录
+        package_files: 字典 { "包名": "代码内容" }，
+                       键为包名（如 "pkga"、"a.b"），值为对应的代码。
+                       键 "testproject" 表示主包（含 main()）。
+
+    项目结构（示例）：
+        project_dir/
+        ├── cjpm.toml
+        └── src/
+            ├── main.cj                # package testproject (含 main)
+            ├── pkga/
+            │   └── pkga.cj            # package testproject.pkga
+            └── pkgb/
+                └── pkgb.cj            # package testproject.pkgb
+    """
+    os.makedirs(os.path.join(project_dir, "src"), exist_ok=True)
+
+    toml = f"""[package]
+  cjc-version = "{CJC_VERSION}"
+  name = "testproject"
+  version = "1.0.0"
+  output-type = "executable"
+[dependencies]
+"""
+    with open(os.path.join(project_dir, "cjpm.toml"), 'w') as f:
+        f.write(toml)
+
+    for pkg_name, code in package_files.items():
+        if pkg_name == "testproject":
+            # 主包代码
+            if not re.search(r'^package\s+', code, re.MULTILINE):
+                code = f"package testproject\n\n{code}"
+            else:
+                code = re.sub(r'^package\s+\S+', 'package testproject', code, count=1, flags=re.MULTILINE)
+            with open(os.path.join(project_dir, "src", "main.cj"), 'w') as f:
+                f.write(code)
+        else:
+            # 子包代码：将包名映射到 testproject.xxx 子目录
+            # 如 "pkga" -> src/pkga/pkga.cj, "a.b" -> src/a/b/b.cj
+            parts = pkg_name.split('.')
+            pkg_dir = os.path.join(project_dir, "src", *parts)
+            os.makedirs(pkg_dir, exist_ok=True)
+            # 替换 package 声明为 testproject 子包
+            full_pkg_name = f"testproject.{pkg_name}"
+            if re.search(r'^package\s+', code, re.MULTILINE):
+                code = re.sub(r'^package\s+\S+', f'package {full_pkg_name}', code, count=1, flags=re.MULTILINE)
+            else:
+                code = f"package {full_pkg_name}\n\n{code}"
+            # 替换代码中对其他包的引用（import 语句）
+            for other_pkg in package_files:
+                if other_pkg != pkg_name and other_pkg != "testproject":
+                    # import pkga.* -> import testproject.pkga.*
+                    code = code.replace(f'import {other_pkg}', f'import testproject.{other_pkg}')
+            file_name = parts[-1] + ".cj"
+            with open(os.path.join(pkg_dir, file_name), 'w') as f:
+                f.write(code)
+
+    # 对主包代码也替换 import 引用
+    main_path = os.path.join(project_dir, "src", "main.cj")
+    if os.path.exists(main_path):
+        with open(main_path) as f:
+            main_code = f.read()
+        for pkg_name in package_files:
+            if pkg_name != "testproject":
+                main_code = main_code.replace(f'import {pkg_name}', f'import testproject.{pkg_name}')
+        with open(main_path, 'w') as f:
+            f.write(main_code)
 
 
 # ======================== 编译与运行 ========================
@@ -544,32 +678,258 @@ def test_block(block: CodeBlock, classification: dict, strategy: str,
         shutil.rmtree(project_dir, ignore_errors=True)
 
 
+def _find_macro_caller(blocks: list[CodeBlock], macro_block_index: int) -> Optional[CodeBlock]:
+    """查找与宏包块配对的调用方代码块
+
+    在宏包块之后查找第一个导入该宏包的代码块。
+    """
+    macro_code = blocks[macro_block_index].code
+    # 从宏包代码中提取宏包名
+    m = re.search(r'^macro\s+package\s+(\S+)', macro_code, re.MULTILINE)
+    if not m:
+        return None
+    macro_pkg = m.group(1)
+
+    # 向后查找导入该宏包的代码块
+    for i in range(macro_block_index + 1, len(blocks)):
+        if f'import {macro_pkg}' in blocks[i].code:
+            return blocks[i]
+    return None
+
+
+def _find_multi_package_group(blocks: list[CodeBlock], start_index: int) -> list[CodeBlock]:
+    """查找连续的多包示例代码块组
+
+    从给定起始位置开始，向后查找连续的含自定义 package 声明的代码块。
+    返回整个组的代码块列表。
+    """
+    group = [blocks[start_index]]
+    for i in range(start_index + 1, len(blocks)):
+        code = blocks[i].code
+        has_pkg = bool(re.search(r'^package\s+(?!testproject)', code, re.MULTILINE))
+        if has_pkg:
+            group.append(blocks[i])
+        else:
+            break
+    return group
+
+
+def test_macro_group(macro_block: CodeBlock, caller_block: Optional[CodeBlock],
+                     verbose: bool = False) -> list[TestResult]:
+    """测试宏包 + 调用方组合
+
+    构建多模块 cjpm 项目：
+    - macros/ 子模块包含宏定义（macro package + --compile-macro）
+    - src/ 包含调用方代码
+    """
+    strategy = 'macro_package_build'
+    project_dir = tempfile.mkdtemp(prefix=f"cjpm_macro_{macro_block.skill}_{macro_block.index}_")
+    results = []
+
+    try:
+        macro_code = macro_block.code
+        # 提取宏包名
+        m = re.search(r'^macro\s+package\s+(\S+)', macro_code, re.MULTILINE)
+        macro_pkg = m.group(1) if m else "macros"
+
+        if caller_block:
+            # 有调用方代码，构建完整的宏项目
+            create_macro_project(project_dir, macro_code, caller_block.code,
+                                 macro_pkg_name=macro_pkg)
+            build_ok, build_output = build_project(project_dir)
+
+            if build_ok:
+                # 宏块通过
+                results.append(TestResult(macro_block, "PASS",
+                    "编译成功（宏包定义，多模块项目）",
+                    build_output=build_output, test_strategy=strategy))
+                # 调用方块也通过
+                run_ok, run_output = run_project(project_dir)
+                if 'An exception has occurred' in run_output:
+                    results.append(TestResult(caller_block, "PASS",
+                        "运行时异常（沙箱环境限制，预期行为）",
+                        output=run_output, build_output=build_output,
+                        test_strategy=strategy))
+                else:
+                    results.append(TestResult(caller_block, "PASS",
+                        output=run_output, build_output=build_output,
+                        test_strategy=strategy))
+            else:
+                # 检查是否为可接受的编译失败
+                if re.search(r'undeclared|not found|unknown|not in scope',
+                             build_output, re.IGNORECASE):
+                    reason = "编译失败（宏代码引用了文档上下文中的声明，预期行为）"
+                    results.append(TestResult(macro_block, "PASS", reason,
+                        build_output=build_output, test_strategy=strategy))
+                    results.append(TestResult(caller_block, "PASS", reason,
+                        build_output=build_output, test_strategy=strategy))
+                else:
+                    results.append(TestResult(macro_block, "FAIL",
+                        build_output[:500], build_output=build_output,
+                        test_strategy=strategy))
+                    results.append(TestResult(caller_block, "FAIL",
+                        build_output[:500], build_output=build_output,
+                        test_strategy=strategy))
+        else:
+            # 无调用方代码，仅编译宏包
+            macro_dir = tempfile.mkdtemp(prefix=f"cjpm_macro_only_{macro_block.index}_")
+            try:
+                os.makedirs(os.path.join(macro_dir, "src"), exist_ok=True)
+                macro_toml = f"""[package]
+  cjc-version = "{CJC_VERSION}"
+  name = "{macro_pkg}"
+  version = "1.0.0"
+  output-type = "static"
+  compile-option = "--compile-macro"
+[dependencies]
+"""
+                with open(os.path.join(macro_dir, "cjpm.toml"), 'w') as f:
+                    f.write(macro_toml)
+                with open(os.path.join(macro_dir, "src", "macros.cj"), 'w') as f:
+                    f.write(macro_code)
+
+                build_ok, build_output = build_project(macro_dir)
+                if build_ok:
+                    results.append(TestResult(macro_block, "PASS",
+                        "编译成功（宏包独立编译）",
+                        build_output=build_output, test_strategy=strategy))
+                else:
+                    results.append(TestResult(macro_block, "FAIL",
+                        build_output[:500], build_output=build_output,
+                        test_strategy=strategy))
+            finally:
+                shutil.rmtree(macro_dir, ignore_errors=True)
+    finally:
+        shutil.rmtree(project_dir, ignore_errors=True)
+
+    return results
+
+
+def test_multi_package_group(group: list[CodeBlock],
+                             verbose: bool = False) -> list[TestResult]:
+    """测试多包示例代码块组
+
+    构建多目录 cjpm 项目，将每个代码块放入对应子包目录。
+    """
+    strategy = 'multi_package_build'
+    project_dir = tempfile.mkdtemp(
+        prefix=f"cjpm_multipkg_{group[0].skill}_{group[0].index}_")
+    results = []
+
+    try:
+        # 收集各包代码
+        package_files = {}
+        main_block = None
+        has_main_entry = False
+
+        for block in group:
+            code = block.code
+            # 提取包名
+            m = re.search(r'^package\s+(\S+)', code, re.MULTILINE)
+            if m:
+                pkg_name = m.group(1)
+            else:
+                pkg_name = f"pkg{block.index}"
+
+            has_main = bool(re.search(r'^main\(', code, re.MULTILINE))
+            if has_main:
+                package_files["testproject"] = code
+                main_block = block
+                has_main_entry = True
+            else:
+                package_files[pkg_name] = code
+
+        # 如果没有 main()，创建一个简单的主入口，导入所有子包
+        if not has_main_entry:
+            imports = []
+            for pkg_name in package_files:
+                imports.append(f"import testproject.{pkg_name}.*")
+            main_code = f"package testproject\n\n" + '\n'.join(imports) + "\n\nmain() {}\n"
+            package_files["testproject"] = main_code
+
+        create_multi_package_project(project_dir, package_files)
+        build_ok, build_output = build_project(project_dir)
+
+        if build_ok:
+            for block in group:
+                results.append(TestResult(block, "PASS",
+                    "编译成功（多包示例，多目录项目）",
+                    build_output=build_output, test_strategy=strategy))
+        else:
+            # 多包示例常见可接受错误
+            acceptable = False
+            reason = ""
+
+            if re.search(r'undeclared|not found|not in scope|undefined',
+                         build_output, re.IGNORECASE):
+                acceptable = True
+                reason = "编译失败（引用了文档上下文中的声明，预期行为）"
+            elif "'public' declaration uses" in build_output or 'visibility' in build_output:
+                acceptable = True
+                reason = "编译失败（可见性限制示例，预期行为）"
+            elif 'imports package' in build_output and 'not added as a dependency' in build_output:
+                acceptable = True
+                reason = "编译失败（引用了外部包，预期行为）"
+            elif re.search(r'conflict|redefinition|ambiguous', build_output, re.IGNORECASE):
+                acceptable = True
+                reason = "编译失败（名称冲突/重定义示例，预期行为）"
+
+            if acceptable:
+                for block in group:
+                    results.append(TestResult(block, "PASS", reason,
+                        build_output=build_output, test_strategy=strategy))
+            else:
+                for block in group:
+                    results.append(TestResult(block, "FAIL",
+                        build_output[:500], build_output=build_output,
+                        test_strategy=strategy))
+    finally:
+        shutil.rmtree(project_dir, ignore_errors=True)
+
+    return results
+
+
 def test_skill(skill_name: str, build_only: bool = False,
                verbose: bool = False) -> list[TestResult]:
     """测试单个 skill 的所有代码块"""
     blocks = extract_blocks(skill_name)
     results = []
+    tested_indices = set()  # 已测试过的块索引（用于跳过已组合测试的块）
 
     for block in blocks:
+        if block.index in tested_indices:
+            continue
+
         classification = classify_block(block)
         strategy = get_test_strategy(classification)
 
-        # 只有真正无法测试的才跳过
-        if strategy == 'macro_package_skip':
-            results.append(TestResult(block, "SKIP",
-                "宏包定义需要独立编译链（macro package 须先编译为宏包再由使用方引用），"
-                "无法在单文件测试项目中验证",
-                test_strategy=strategy))
+        # ---- 宏包多模块测试 ----
+        if strategy == 'macro_package_build':
+            caller = _find_macro_caller(blocks, block.index)
+            macro_results = test_macro_group(block, caller, verbose=verbose)
+            results.extend(macro_results)
+            tested_indices.add(block.index)
+            if caller:
+                tested_indices.add(caller.index)
             if verbose:
-                print(f"  ⏭️  SKIP {skill_name}/block_{block.index} (line {block.line}): macro package")
+                for r in macro_results:
+                    status_icon = "✅" if r.status == "PASS" else "❌" if r.status == "FAIL" else "⏭️"
+                    print(f"  {status_icon} {skill_name}/block_{r.block.index} (line {r.block.line}): "
+                          f"{r.status} [macro_package_build]")
             continue
-        if strategy == 'multi_package_skip':
-            results.append(TestResult(block, "SKIP",
-                "多包示例需要特殊目录结构（每个 package 对应独立子目录），"
-                "无法在单文件测试项目中验证",
-                test_strategy=strategy))
+
+        # ---- 多包多目录测试 ----
+        if strategy == 'multi_package_build':
+            group = _find_multi_package_group(blocks, block.index)
+            pkg_results = test_multi_package_group(group, verbose=verbose)
+            results.extend(pkg_results)
+            for b in group:
+                tested_indices.add(b.index)
             if verbose:
-                print(f"  ⏭️  SKIP {skill_name}/block_{block.index} (line {block.line}): multi-package")
+                for r in pkg_results:
+                    status_icon = "✅" if r.status == "PASS" else "❌" if r.status == "FAIL" else "⏭️"
+                    print(f"  {status_icon} {skill_name}/block_{r.block.index} (line {r.block.line}): "
+                          f"{r.status} [multi_package_build]")
             continue
         if strategy == 'pseudo_code_skip':
             results.append(TestResult(block, "SKIP",

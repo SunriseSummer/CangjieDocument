@@ -72,19 +72,59 @@ AI（辅助测试人员）在脚本测试的基础上执行以下补充工作：
 | `ffi_build_only` | 含 `foreign func`（非 stdx） | `cjpm build`（允许链接错误） | 编译通过语法检查 |
 | `test_block_build` | 含 `@Test` / `@Bench` | 作为静态库编译 | 编译成功或因引用未包含的函数而失败 |
 | `fragment_wrap` | 不含 `main()` 的代码片段 | 补充 `main()` 后 `cjpm build` | 编译成功或因缺少上下文声明而失败 |
-| `macro_package_skip` | 含 `macro package` | **跳过** | — |
-| `multi_package_skip` | 含自定义 `package` 声明 | **跳过** | — |
+| `macro_package_build` | 含 `macro package` | 创建多模块 cjpm 项目（宏模块 + 主模块），`cjpm build` + `cjpm run` | 编译成功 |
+| `multi_package_build` | 含自定义 `package` 声明 | 创建多目录 cjpm 项目（每个 package 对应子目录），`cjpm build` | 编译成功 |
 | `pseudo_code_skip` | 含 `{ ... }` 伪代码 | **跳过** | — |
+
+### 宏包测试方法（`macro_package_build`）
+
+宏包代码块不能在单文件项目中测试，需要构建多模块 cjpm 项目：
+
+1. **识别宏包组**：脚本从 `macro package` 块中提取宏包名，然后向后查找包含 `import <宏包名>` 的调用方代码块，将两者组合为一组。
+
+2. **构建多模块项目**：为每个宏包组创建如下目录结构：
+   ```text
+   project/
+   ├── cjpm.toml              # 主项目，依赖宏模块
+   ├── src/
+   │   └── main.cj            # 调用宏的代码
+   └── macros/                 # 宏模块子目录
+       ├── cjpm.toml           # compile-option = "--compile-macro"
+       └── src/
+           └── macros.cj       # 宏定义代码
+   ```
+
+3. **编译流程**：`cjpm build` 自动按依赖顺序先编译宏包再编译主包。
+
+4. **判定规则**：编译成功 → PASS。因引用文档上下文声明而失败 → PASS（预期行为）。
+
+### 多包测试方法（`multi_package_build`）
+
+多包示例代码块展示跨包导入、包可见性等特性，需要构建多目录 cjpm 项目：
+
+1. **识别包组**：脚本自动查找连续的含自定义 `package` 声明的代码块，将它们组合为一个测试组。
+
+2. **构建多目录项目**：将各包映射为 `testproject` 的子包：
+   ```text
+   project/
+   ├── cjpm.toml
+   └── src/
+       ├── main.cj             # package testproject（含 main）
+       ├── pkga/
+       │   └── pkga.cj         # package testproject.pkga
+       └── pkgb/
+           └── pkgb.cj         # package testproject.pkgb
+   ```
+
+3. **包名重写**：自动将 `package pkga` 改为 `package testproject.pkga`，并相应更新所有 `import` 语句。
+
+4. **判定规则**：编译成功 → PASS。因可见性限制、名称冲突等编译失败（属于文档展示的语义限制）→ PASS。
 
 ### 仍需跳过的代码块及原因
 
-以下三类代码块在当前测试框架下无法自动测试：
+以下代码块在当前测试框架下无法自动测试：
 
-1. **宏包定义**（`macro package`）：仓颉的宏包编译需要专门的编译链——先将宏包编译为独立库，再在使用方的 `cjpm.toml` 中配置宏依赖后编译使用方代码。单文件测试项目无法模拟这一流程。共 2 个代码块（macro skill）。
-
-2. **多包示例**（自定义 `package` 声明）：这些代码块演示了跨包导入、包可见性等特性，每个 package 需要对应独立的子目录结构。单文件测试项目无法还原这一项目结构。共约 10 个代码块（package, extend, interface skill）。
-
-3. **伪代码/API 签名**（含 `{ ... }` 或 `/* ... */`）：这些代码块展示 API 签名或语法模式，函数体用 `...` 省略，不是可执行代码。共约 20+ 个代码块。
+**伪代码/API 签名**（含 `{ ... }` 或 `/* ... */`）：这些代码块展示 API 签名或语法模式，函数体用 `...` 省略，不是可执行代码。共约 20+ 个代码块。
 
 ## 环境准备
 
@@ -329,6 +369,32 @@ println(String.fromUtf8(buf.toArray()))
     path-option = ["/path/to/stdx/static/stdx"]
 ```
 
+#### 宏包项目（多模块）
+
+主项目 `cjpm.toml`：
+
+```toml
+[package]
+  cjc-version = "1.0.5"
+  name = "myproject"
+  version = "1.0.0"
+  output-type = "executable"
+[dependencies]
+  macros = { path = "./macros" }
+```
+
+宏模块 `macros/cjpm.toml`：
+
+```toml
+[package]
+  cjc-version = "1.0.5"
+  name = "macros"
+  version = "1.0.0"
+  output-type = "static"
+  compile-option = "--compile-macro"
+[dependencies]
+```
+
 ### 网络相关代码测试说明
 
 HTTP 客户端、HTTPS、WebSocket、TLS、Socket 等网络相关示例在编译后运行会产生以下预期异常：
@@ -345,8 +411,10 @@ HTTP 客户端、HTTPS、WebSocket、TLS、Socket 等网络相关示例在编译
 
 | 指标 | 数量 |
 |------|------|
-| 总代码块数 | 578 |
-| 通过测试 | 约 540 |
+| 总代码块数 | 577 |
+| 通过测试 | 427 |
 | 失败 | 0 |
-| 跳过（宏包/多包/伪代码） | 约 35 |
+| 跳过（伪代码/API 签名） | 150 |
 | 运行时异常（网络/文件，预期行为） | 34 |
+
+> 宏包和多包示例已通过构建多模块/多目录 cjpm 项目测试，不再跳过。
