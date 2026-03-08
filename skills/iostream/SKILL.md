@@ -126,22 +126,18 @@ main(): Unit {
 
 ```cangjie
 import std.io.*
-import std.collection.*
 
-main(): Unit {
-    let s1 = ByteBuffer(); s1.write("Hello ".toArray())
-    let s2 = ByteBuffer(); s2.write("World".toArray())
+main() {
+    let s1 = ByteBuffer()
+    s1.write("Hello ".toArray())
+    let s2 = ByteBuffer()
+    s2.write("World".toArray())
     let chained = ChainedInputStream([s1, s2])
-    let buf = ArrayList<Byte>()
-    let tmp = Array<Byte>(256, {_ => 0})
-    while (true) {
-        let n = chained.read(tmp)
-        if (n <= 0) { break }
-        for (i in 0..n) {
-            buf.add(tmp[i])
-        }
-    }
-    println(String.fromUtf8(buf.toArray()))  // "Hello World"
+    let buffer = Array<Byte>(256, repeat: 0)
+    chained.read(buffer) // 从 s1 读取
+    println(String.fromUtf8(buffer))  // "Hello"
+    chained.read(buffer) // s1 耗尽，自动切换到 s2
+    println(String.fromUtf8(buffer))  // "World"
 }
 ```
 

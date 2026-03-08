@@ -294,12 +294,7 @@ main() {
 
     // 遍历所有响应头
     for ((name, values) in resp.headers) {
-        var valStr = ""
-        for (v in values) {
-            if (valStr.size > 0) { valStr = valStr + ", " }
-            valStr = valStr + v
-        }
-        println("${name}: ${valStr}")
+        println("${name}: ${values}")
     }
 
     // 读取 body 以释放连接

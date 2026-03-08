@@ -206,27 +206,37 @@ public macro AutoToString(input: Tokens): Tokens {
                 "AutoToString 只能用于 class 声明", "此处不是 class")
             return input
     }
-    let className = classDecl.identifier.value
+    let className = classDecl.identifier
 
     // 收集所有 var/let 成员变量名
-    var fields = ArrayList<String>()
+    var fields = ArrayList<Token>()
     for (d in classDecl.body.decls) {
         if (let Some(varDecl) <- (d as VarDecl)) {
-            fields.add(varDecl.identifier.value)
+            fields.add(varDecl.identifier)
         }
     }
 
-    // 构建 toString 方法体：拼接所有字段
-    var bodyCode = "var result = \"${className}{\"\n"
+    // 使用 quote 构建 toString 方法体：拼接所有字段
+    // 注意：$(expr) 在 quote 的字符串字面量内不会被插值，
+    // 需通过 .value 获取字符串，再用 $(str) 插入为字面量 Token
+    var parts = quote(var result = $(className.value) + "{")
     for (f in fields) {
-        bodyCode += "result += \" ${f}=\" + this.${f}.toString()\n"
+        let label = " " + f.value + "="
+        parts = quote($(parts)
+            result += $(label) + this.$(f).toString()
+        )
     }
-    bodyCode += "result += \" }\"\nreturn result\n"
+    parts = quote($(parts)
+        result += " }"
+        return result
+    )
 
-    // 用 cangjieLex 将代码字符串转为 Tokens，再解析为声明插入类体
-    let funcCode = "public func toString(): String {\n${bodyCode}}"
-    let funcTokens = cangjieLex(funcCode)
-    let funcDecl = parseDecl(funcTokens)
+    // 用 quote + parseDecl 生成 toString 方法并添加到 class
+    let funcDecl = parseDecl(quote(
+        public func toString(): String {
+            $(parts)
+        }
+    ))
     classDecl.body.decls.add(funcDecl)
     return classDecl.toTokens()
 }
@@ -265,15 +275,15 @@ public macro Log(attrTokens: Tokens, inputTokens: Tokens): Tokens {
     let funcDecl = FuncDecl(inputTokens)
     let funcName = funcDecl.identifier.value
 
-    // 用 cangjieLex 构建日志语句，避免 quote 中 $ 的歧义
-    let logCode = "println(\"[${level}] entering ${funcName}\")"
-    let logTokens = cangjieLex(logCode)
-    let logExpr = parseExpr(logTokens)
+    // 在宏展开阶段构造日志消息字符串，通过 quote 插入为字符串字面量
+    // 注意：$(expr) 在 quote 的字符串字面量内不会被插值
+    let logMsg = "[${level}] entering ${funcName}"
+    let logStmt = quote(println($(logMsg)))
 
     // 在函数体开头插入日志语句
     let oldNodes = funcDecl.block.nodes
     funcDecl.block.nodes = ArrayList<Node>()
-    funcDecl.block.nodes.add(logExpr)
+    funcDecl.block.nodes.add(parseExpr(logStmt))
     for (n in oldNodes) {
         funcDecl.block.nodes.add(n)
     }
