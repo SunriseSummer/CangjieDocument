@@ -299,6 +299,10 @@ import macros.*
 func compute(x: Int64): Int64 {
     return x * 2
 }
+
+main() {
+    println(compute(2))
+}
 ```
 
 ### 6.7 AST 操作：遍历并修改节点
