@@ -1,6 +1,6 @@
 # 第二章：HTTP 协议封装 (结构体与枚举)
 
-> HTTP 协议本质上是文本的交互。我们需要定义一套数据结构来描述“请求”和“响应”，这是框架通信的通用语言，也是中间件链的核心载体。
+> HTTP 协议本质上是文本的交互。我们需要定义一套数据结构来描述"请求"和"响应"，这是框架通信的通用语言，也是中间件链的核心载体。
 
 ## 本章目标
 
@@ -12,6 +12,7 @@
 
 HTTP 方法（GET, POST 等）是有限且固定的，非常适合使用枚举 (`enum`)。
 
+<!-- check:run project=http_protocol -->
 ```cangjie
 enum HttpMethod {
     | GET
@@ -37,6 +38,7 @@ extend HttpMethod {
 
 请求对象需要在中间件链中传递和修改，适合用引用类型 (`class`)。
 
+<!-- check:run project=http_protocol -->
 ```cangjie
 class Context {
     let path: String
@@ -72,6 +74,11 @@ main() {
     println("响应内容: ${ctx.responseBody}")
 }
 ```
+
+<!-- expected_output:
+收到请求: GET /home
+响应内容: <h1>Hello Cangjie Web</h1>
+-->
 
 ## 工程化提示
 

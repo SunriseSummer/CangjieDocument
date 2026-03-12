@@ -8,7 +8,7 @@
 
 *   理解 DSL 在提升路由声明可读性上的价值。
 *   认识宏与元编程的核心概念与边界。
-*   学会区分“编译期生成”与“运行期执行”的差异。
+*   学会区分"编译期生成"与"运行期执行"的差异。
 
 ## 1. 宏的概念
 
@@ -16,6 +16,7 @@
 
 假设我们定义了一个 `@Route` 宏。
 
+<!-- check:skip -->
 ```cangjie
 // 概念代码：宏定义 (伪代码)
 // macro Route(path: String, method: String) {
@@ -29,6 +30,7 @@
 
 如果不使用宏，我们需要手动注册：
 
+<!-- check:skip -->
 ```cangjie
 // 手动方式
 // router.add("/user", GET, handleUser)
@@ -36,6 +38,7 @@
 
 如果有了宏，我们可以这样写（更加声明式）：
 
+<!-- check:skip -->
 ```cangjie
 /*
 @Controller("/api")
@@ -56,28 +59,29 @@ class UserApi {
 
 ## 3. 模拟宏生成的代码
 
-既然宏在编译期生成代码，我们可以模拟一下宏“展开”后的样子。这就是元编程的本质：**写代码的代码**。
+既然宏在编译期生成代码，我们可以模拟一下宏"展开"后的样子。这就是元编程的本质：**写代码的代码**。
 
+<!-- check:run -->
 ```cangjie
+// 复用之前的 Router 类定义 (简化版)
+class Router {
+    public func add(path: String, handler: (String)->Unit) {
+        println("Registered: ${path}")
+    }
+}
+
 // 模拟宏展开后的结果
 class GeneratedUserApiRoutes {
     public static func registerRoutes(router: Router) {
         println("Macro: 正在扫描注解并生成路由表...")
 
-        router.add("/api/info", { ctx =>
+        router.add("/api/info") { ctx =>
             println("调用 UserApi.userInfo()")
-        })
+        }
 
-        router.add("/api/login", { ctx =>
+        router.add("/api/login") { ctx =>
             println("调用 UserApi.login()")
-        })
-    }
-}
-
-// 复用之前的 Router 类定义 (简化版)
-class Router {
-    public func add(path: String, handler: (String)->Unit) {
-        println("Registered: ${path}")
+        }
     }
 }
 
@@ -88,6 +92,12 @@ main() {
 }
 ```
 
+<!-- expected_output:
+Macro: 正在扫描注解并生成路由表...
+Registered: /api/info
+Registered: /api/login
+-->
+
 ## 工程化提示
 
 *   DSL 设计要保持一致性，避免引入歧义。
@@ -97,4 +107,4 @@ main() {
 ## 小试身手
 
 1. 设计一个 `@Put` 路由宏的使用示例，并描述生成代码。
-2. 在宏展开示例中添加“路由分组”逻辑。
+2. 在宏展开示例中添加"路由分组"逻辑。

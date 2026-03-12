@@ -1,18 +1,47 @@
 # 第四章：中间件链 (闭包与函数式编程)
 
-> 现代 Web 框架的灵魂是“洋葱模型”的中间件系统。日志记录、鉴权、耗时统计等功能都可以作为中间件层层包裹业务逻辑，让核心业务保持干净。
+> 现代 Web 框架的灵魂是"洋葱模型"的中间件系统。日志记录、鉴权、耗时统计等功能都可以作为中间件层层包裹业务逻辑，让核心业务保持干净。
 
 ## 本章目标
 
 *   理解中间件链的执行顺序与职责边界。
-*   学会使用闭包构建“前后包裹”的逻辑。
+*   学会使用闭包构建"前后包裹"的逻辑。
 *   认识中间件在横切关注点中的价值。
 
 ## 1. 定义中间件 (Handler Chaining)
 
-中间件本质上是一个“包装函数”，它接收下一个处理函数，返回一个新的处理函数。
+中间件本质上是一个"包装函数"，它接收下一个处理函数，返回一个新的处理函数。
 
+<!-- check:run project=middleware_chain -->
 ```cangjie
+import std.collection.*
+
+enum HttpMethod {
+    | GET
+    | POST
+    | PUT
+    | DELETE
+}
+
+class Context {
+    let path: String
+    let method: HttpMethod
+    var responseBody: String = ""
+    var statusCode: Int64 = 200
+    public init(path: String, method: HttpMethod) {
+        this.path = path
+        this.method = method
+    }
+    public func string(content: String) {
+        this.responseBody = content
+    }
+    public func json(json: String) {
+        this.responseBody = json
+    }
+}
+
+type Handler = (Context) -> Unit
+
 // Next 代表后续的处理逻辑
 type Next = () -> Unit
 
@@ -23,14 +52,14 @@ class Engine {
     var middlewares = ArrayList<Middleware>()
 
     public func use(mw: Middleware) {
-        middlewares.append(mw)
+        middlewares.add(mw)
     }
 
     // 模拟执行链
     public func run(ctx: Context, finalHandler: Handler) {
         // 构建洋葱模型
         // 这里用简化的递归模拟：index 指向当前中间件
-        func dispatch(index: Int64) {
+        func dispatch(index: Int64): Unit {
             if (index >= middlewares.size) {
                 finalHandler(ctx) // 链条末端，执行业务
                 return
@@ -51,6 +80,7 @@ class Engine {
 
 ## 2. 实战：日志与鉴权
 
+<!-- check:run project=middleware_chain -->
 ```cangjie
 main() {
     let app = Engine()
@@ -65,7 +95,7 @@ main() {
     // 2. 鉴权中间件
     app.use { ctx, next =>
         if (ctx.path == "/admin") {
-            println("[Auth] ⚠️ 权限不足！拦截请求。")
+            println("[Auth] 权限不足！拦截请求。")
             ctx.statusCode = 403
             ctx.string("Forbidden")
             // 不调用 next()，请求到此终止
@@ -76,7 +106,7 @@ main() {
 
     // 业务处理
     let handler = { ctx: Context =>
-        println("--> 执行业务逻辑...")
+        println("==> 执行业务逻辑...")
         ctx.string("Success")
     }
 
@@ -85,10 +115,22 @@ main() {
     app.run(Context("/home", HttpMethod.GET), handler)
 
     // 测试 2: 受限请求
-    println("\n=== 测试 /admin ===")
+    println("")
+    println("=== 测试 /admin ===")
     app.run(Context("/admin", HttpMethod.GET), handler)
 }
 ```
+
+<!-- expected_output:
+=== 测试 /home ===
+[Log] Start Request: /home
+==> 执行业务逻辑...
+[Log] End Request (Status: 200)
+=== 测试 /admin ===
+[Log] Start Request: /admin
+[Auth] 权限不足！拦截请求。
+[Log] End Request (Status: 403)
+-->
 
 ## 工程化提示
 
@@ -98,5 +140,5 @@ main() {
 
 ## 小试身手
 
-1. 添加一个“耗时统计”中间件，输出请求执行耗时。
+1. 添加一个"耗时统计"中间件，输出请求执行耗时。
 2. 将 `Engine` 改为支持在运行时插入全局错误处理中间件。
