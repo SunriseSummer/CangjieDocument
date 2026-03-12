@@ -12,6 +12,7 @@
 
 商品信息通常是静态的数据集合，适合用 `struct`。
 
+<!-- check:run project=order_system -->
 ```cangjie
 import std.collection.*
 
@@ -36,6 +37,7 @@ struct Product {
 
 订单需要被追踪、状态需要被修改，且可能涉及复杂的业务逻辑，适合用 `class`。
 
+<!-- check:run project=order_system -->
 ```cangjie
 class Order {
     let orderId: String
@@ -50,7 +52,7 @@ class Order {
 
     // 添加商品
     public func addItem(p: Product) {
-        items.append(p)
+        items.add(p)
         println("已添加: ${p.name}")
     }
 
@@ -79,6 +81,12 @@ main() {
     myOrder.checkout()
 }
 ```
+
+<!-- expected_output:
+已添加: 机械键盘
+已添加: 人体工学椅
+订单 ORD-2024-001 支付成功！总计: ¥1698.000000
+-->
 
 通过区分值类型（数据）和引用类型（行为实体），我们构建了一个清晰的业务模型。
 

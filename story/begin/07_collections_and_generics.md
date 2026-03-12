@@ -1,17 +1,18 @@
 # 07. 集合与泛型：音乐播放器列表
 
-我们都用过音乐 App。播放列表既要保存歌曲，也要支持播客、专辑等不同内容。要做到“同一结构、不同类型”，集合与泛型是关键。
+我们都用过音乐 App。播放列表既要保存歌曲，也要支持播客、专辑等不同内容。要做到"同一结构、不同类型"，集合与泛型是关键。
 
 ## 本章目标
 
-*   理解泛型在“复用数据结构”中的意义。
+*   理解泛型在"复用数据结构"中的意义。
 *   熟悉数组、哈希表与列表等常用集合的使用场景。
-*   形成“选择合适容器”的工程意识。
+*   形成"选择合适容器"的工程意识。
 
 ## 1. 泛型播放列表 (Generics)
 
-我们不想为每种音频类型都写一个列表类。我们可以定义一个“万能盒子”。
+我们不想为每种音频类型都写一个列表类。我们可以定义一个"万能盒子"。
 
+<!-- check:run -->
 ```cangjie
 // T 代表某种类型，由使用者决定
 class Playlist<T> {
@@ -26,7 +27,7 @@ class Playlist<T> {
     public func add(item: T) {
         // 简易扩容逻辑演示
         let newItems = Array<T>(items.size + 1) { i =>
-            if (i < items.size) items[i] else item
+            if (i < items.size) { items[i] } else { item }
         }
         items = newItems
         println("添加到 [${name}]: 1 首新曲目")
@@ -36,23 +37,34 @@ class Playlist<T> {
 struct Song {
     let title: String
     let artist: String
+
+    public init(title: String, artist: String) {
+        this.title = title
+        this.artist = artist
+    }
 }
 
 main() {
-    // 创建一个“歌曲”播放列表
+    // 创建一个"歌曲"播放列表
     let popList = Playlist<Song>("流行金曲")
     popList.add(Song("稻香", "周杰伦"))
 
-    // 创建一个“字符串”列表 (模拟文件名)
+    // 创建一个"字符串"列表 (模拟文件名)
     let fileList = Playlist<String>("本地文件")
     fileList.add("audio_001.mp3")
 }
 ```
 
+<!-- expected_output:
+添加到 [流行金曲]: 1 首新曲目
+添加到 [本地文件]: 1 首新曲目
+-->
+
 ## 2. 歌手与专辑库 (HashMap)
 
 我们需要快速查找某个歌手的所有专辑或销量。`HashMap` 是最佳选择。
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 
@@ -81,27 +93,33 @@ main() {
 
 ## 3. 动态歌单 (ArrayList)
 
-用户的“我喜欢的音乐”列表是随时变化的，使用 `ArrayList` 可以高效增删，同时保持顺序。
+用户的"我喜欢的音乐"列表是随时变化的，使用 `ArrayList` 可以高效增删，同时保持顺序。
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 
 main() {
     let myFavorites = ArrayList<String>()
 
-    myFavorites.append("Hotel California")
-    myFavorites.append("Yesterday")
+    myFavorites.add("Hotel California")
+    myFavorites.add("Yesterday")
 
     println("当前收藏数: ${myFavorites.size}")
 
     // 移除非最爱
-    myFavorites.remove(1) // 移除第二个
+    myFavorites.remove(1..2) // 移除第二个
 
     for (song in myFavorites) {
         println("正在播放: " + song)
     }
 }
 ```
+
+<!-- expected_output:
+当前收藏数: 2
+正在播放: Hotel California
+-->
 
 ## 工程化提示
 
