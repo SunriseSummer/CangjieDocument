@@ -12,6 +12,7 @@
 
 我们需要同时启动温度监控和安防监控。
 
+<!-- check:run -->
 ```cangjie
 import std.time.*
 import std.sync.*
@@ -47,8 +48,9 @@ main() {
 
 ## 2. 共享资源保护 (Atomic)
 
-假设有多个传感器同时向一个“总能耗计数器”上报数据。如果没有保护，计数会出错。
+假设有多个传感器同时向一个"总能耗计数器"上报数据。如果没有保护，计数会出错。
 
+<!-- check:run -->
 ```cangjie
 import std.sync.*
 import std.collection.*
@@ -56,17 +58,17 @@ import std.collection.*
 main() {
     // 全屋总能耗 (原子变量，线程安全)
     let totalPowerUsage = AtomicInt64(0)
-    let tasks = ArrayList<Future<Unit>>()
+    let tasks = ArrayList<Future<Int64>>()
 
     println("开始统计全屋能耗...")
 
     // 模拟 10 个设备同时上报能耗，每个消耗 50W
-    for (i in 0..10) {
+    for (_ in 0..10) {
         let f = spawn {
             sleep(Duration.millisecond * 10)
             totalPowerUsage.fetchAdd(50) // 原子加法
         }
-        tasks.append(f)
+        tasks.add(f)
     }
 
     // 等待统计完成
@@ -76,6 +78,11 @@ main() {
 }
 ```
 
+<!-- expected_output:
+开始统计全屋能耗...
+当前实时总功率: 500 W
+-->
+
 ## 工程化提示
 
 *   并发任务应设置超时与失败回调，避免阻塞主流程。
@@ -84,5 +91,5 @@ main() {
 
 ## 小试身手
 
-1. 为温度监控加入“采集次数”返回值，并在主线程汇总。
-2. 将能耗统计改为“加/减”混合场景，验证最终结果。
+1. 为温度监控加入"采集次数"返回值，并在主线程汇总。
+2. 将能耗统计改为"加/减"混合场景，验证最终结果。

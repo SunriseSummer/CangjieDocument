@@ -1,6 +1,6 @@
 # 第八章：系统容错 (错误处理)
 
-> 物理世界是不稳定的：网络会断，传感器会坏。一个健壮的系统必须能处理这些“意外”，并提供可观测的降级路径，而不是直接崩溃。
+> 物理世界是不稳定的：网络会断，传感器会坏。一个健壮的系统必须能处理这些"意外"，并提供可观测的降级路径，而不是直接崩溃。
 
 ## 本章目标
 
@@ -12,10 +12,11 @@
 
 获取一个设备的状态时，设备可能已经离线（不存在状态）。
 
+<!-- check:run -->
 ```cangjie
 func getDeviceStatus(id: String): Option<String> {
     if (id == "OFFLINE_DEV") {
-        return None // 获取失败，但这是一种预期内的“空”状态
+        return None // 获取失败，但这是一种预期内的"空"状态
     }
     return Some("Active")
 }
@@ -35,6 +36,7 @@ main() {
 
 对于不可恢复的错误（如配置文件损坏、I/O 错误），我们抛出异常并在上层捕获。
 
+<!-- check:run -->
 ```cangjie
 func connectToCloud() {
     let networkAvailable = false
@@ -58,10 +60,18 @@ main() {
 }
 ```
 
+<!-- expected_output:
+正在初始化云服务...
+❌ 严重错误: 云端连接超时
+🔄 正在切换至离线本地模式...
+初始化流程结束
+-->
+
 ## 3. 指令解析 (Pattern Matching)
 
 用户通过语音控制发送指令，系统需要解析意图。
 
+<!-- check:run -->
 ```cangjie
 enum VoiceCommand {
     | TurnOn(String)       // "打开 X"
@@ -82,6 +92,10 @@ main() {
     execute(cmd)
 }
 ```
+
+<!-- expected_output:
+执行: 设定温控 -> 26°C
+-->
 
 ## 工程化提示
 

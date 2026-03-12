@@ -12,6 +12,7 @@
 
 我们需要根据房间名快速查找该房间内的所有设备 ID。
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 
@@ -21,13 +22,13 @@ main() {
 
     // 初始化客厅
     let livingList = ArrayList<String>()
-    livingList.append("L-001 (Main Light)")
-    livingList.append("AC-001 (Air Conditioner)")
+    livingList.add("L-001 (Main Light)")
+    livingList.add("AC-001 (Air Conditioner)")
     roomDevices["Living Room"] = livingList
 
     // 初始化卧室
     let bedList = ArrayList<String>()
-    bedList.append("L-002 (Bed Light)")
+    bedList.add("L-002 (Bed Light)")
     roomDevices["Bedroom"] = bedList
 
     // 查询客厅有哪些设备
@@ -40,14 +41,26 @@ main() {
 }
 ```
 
+<!-- expected_output:
+客厅设备清单:
+- L-001 (Main Light)
+- AC-001 (Air Conditioner)
+-->
+
 ## 2. 通用配置加载器 (Generics)
 
 系统配置项有多种类型：有的配置是数字（超时时间），有的是字符串（WiFi密码）。我们定义一个泛型配置类。
 
+<!-- check:run -->
 ```cangjie
-struct ConfigItem<T> {
+struct ConfigItem<T> where T <: ToString {
     let key: String
     let value: T
+
+    public init(key: String, value: T) {
+        this.key = key
+        this.value = value
+    }
 
     public func printConfig() {
         println("配置项 [${key}] = ${value}")
@@ -65,10 +78,16 @@ main() {
 }
 ```
 
+<!-- expected_output:
+配置项 [TimeoutMS] = 5000
+配置项 [SSID] = MySmartHome_5G
+-->
+
 ## 3. 历史数据缓存 (ArrayList)
 
 我们需要缓存最近 10 条温度记录用于绘图。
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 
@@ -76,9 +95,9 @@ main() {
     let history = ArrayList<Float64>()
 
     // 模拟存入数据
-    history.append(23.5)
-    history.append(23.6)
-    history.append(23.8)
+    history.add(23.5)
+    history.add(23.6)
+    history.add(23.8)
 
     println("缓存记录数: ${history.size}")
 
@@ -97,5 +116,5 @@ main() {
 
 ## 小试身手
 
-1. 为 `roomDevices` 增加“删除设备”逻辑，并在输出中验证。
+1. 为 `roomDevices` 增加"删除设备"逻辑，并在输出中验证。
 2. 将温度缓存改为固定容量（超过 10 条时移除最旧记录）。

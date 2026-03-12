@@ -1,19 +1,20 @@
 # 第十章：智能中枢 (综合实战)
 
-> 我们将整合所有模块，构建一个“智能家居控制中枢 CLI”，它能够注册设备、批量控制并输出状态报告。
+> 我们将整合所有模块，构建一个"智能家居控制中枢 CLI"，它能够注册设备、批量控制并输出状态报告。
 > 功能：
 > 1.  **设备注册**：支持不同类型设备。
-> 2.  **并发控制**：一键开启“离家模式”（并行关闭所有设备）。
+> 2.  **并发控制**：一键开启"离家模式"（并行关闭所有设备）。
 > 3.  **状态查询**：实时显示系统概览。
 
 ## 本章目标
 
 *   综合运用接口、集合与并发机制实现完整流程。
 *   理解设备注册、批量控制与状态汇总的关键步骤。
-*   建立“模块拆分 + 统一调度”的工程思路。
+*   建立"模块拆分 + 统一调度"的工程思路。
 
 ## 1. 完整系统实现
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 import std.sync.*
@@ -33,7 +34,7 @@ class SmartLight <: SmartDevice {
 
     public init(name: String) { this.name = name }
 
-    public func getName() = name
+    public func getName(): String { return name }
 
     public func turnOff() {
         // 模拟网络延迟
@@ -42,7 +43,7 @@ class SmartLight <: SmartDevice {
         println("💡 [${name}] 已熄灭")
     }
 
-    public func getStatus() = if (isOn) "ON" else "OFF"
+    public func getStatus(): String { return if (isOn) { "ON" } else { "OFF" } }
 }
 
 class SmartSpeaker <: SmartDevice {
@@ -51,7 +52,7 @@ class SmartSpeaker <: SmartDevice {
 
     public init(name: String) { this.name = name }
 
-    public func getName() = name
+    public func getName(): String { return name }
 
     public func turnOff() {
         sleep(Duration.millisecond * 200)
@@ -59,7 +60,7 @@ class SmartSpeaker <: SmartDevice {
         println("🔇 [${name}] 已停止播放")
     }
 
-    public func getStatus() = if (isPlaying) "PLAYING" else "IDLE"
+    public func getStatus(): String { return if (isPlaying) { "PLAYING" } else { "IDLE" } }
 }
 
 // === 3. 控制中枢 ===
@@ -67,7 +68,7 @@ class SmartHomeHub {
     var devices = ArrayList<SmartDevice>()
 
     public func addDevice(dev: SmartDevice) {
-        devices.append(dev)
+        devices.add(dev)
         println("系统: 接入新设备 -> ${dev.getName()}")
     }
 
@@ -82,7 +83,7 @@ class SmartHomeHub {
             let f = spawn {
                 dev.turnOff()
             }
-            futures.append(f)
+            futures.add(f)
         }
 
         // 等待所有设备响应
