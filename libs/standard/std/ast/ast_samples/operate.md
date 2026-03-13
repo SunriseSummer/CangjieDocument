@@ -2,7 +2,7 @@
 
 获取 [ClassDecl](../ast_package_api/ast_package_classes.md#class-classdecl) 类型的节点后，可以对该节点进行增、删、改、查等操作。代码如下所示：
 
-<!-- verify -->
+<!-- check:run -->
 
 ```cangjie
 import std.ast.*
@@ -30,6 +30,11 @@ main() {
     0
 }
 ```
+
+<!-- expected_output:
+Identifier value is Data
+ClassDecl body size is 3
+-->
 
 运行结果：
 

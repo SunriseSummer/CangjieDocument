@@ -8,7 +8,7 @@
 
 没有参数的 `main`：
 
-<!-- run -->
+<!-- check:run -->
 
 ```cangjie
 // main.cj
@@ -19,7 +19,7 @@ main(): Int64 { // OK.
 
 参数类型为 `Array<String>` 的 `main`：
 
-<!-- run -->
+<!-- check:run -->
 
 ```cangjie
 // main.cj
@@ -39,7 +39,7 @@ World
 
 以下是一些错误示例：
 
-<!-- compile.error  -->
+<!-- check:compile_error -->
 
 ```cangjie
 // main.cj
@@ -48,7 +48,7 @@ main(): String { // Error, return type of 'main' is not 'Integer' or 'Unit'.
 }
 ```
 
-<!-- compile.error  -->
+<!-- check:compile_error -->
 
 ```cangjie
 // main.cj
@@ -57,7 +57,7 @@ main(args: Array<Int8>): Int64 { // Error, 'main' cannot be defined with paramet
 }
 ```
 
-<!-- compile.error  -->
+<!-- check:compile_error -->
 
 ```cangjie
 // main.cj

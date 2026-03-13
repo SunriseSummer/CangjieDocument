@@ -2,6 +2,8 @@
 
 宏定义如下：
 
+<!-- check:compile_error project=ctx1 type=macro_def -->
+
 ```cangjie
 // macro_definition.cj
 macro package macro_definition
@@ -20,10 +22,10 @@ public macro Inner(input: Tokens): Tokens {
 
 宏调用如下：
 
+<!-- check:compile_error project=ctx1 -->
+
 ```cangjie
 // macro_call.cj
-package macro_calling
-
 import macro_definition.*
 
 main() {
@@ -45,6 +47,8 @@ cjc macro_call.cj -o demo
 如上代码所示，`Inner` 宏在定义时使用了 `assertParentContext` 函数用于检查其在调用阶段是否位于 `Outter` 宏中，在代码示例的宏调用场景下，由于 `Outter` 和 `Inner` 在调用时不存在这样的嵌套关系，因此编译器将报告一个错误。
 
 宏定义如下：
+
+<!-- check:run project=ctx2 type=macro_def -->
 
 ```cangjie
 // macro_definition.cj
@@ -72,6 +76,8 @@ public macro Inner(input: Tokens): Tokens {
 
 宏调用如下：
 
+<!-- check:run project=ctx2 -->
+
 ```cangjie
 // macro_call.cj
 import std.ast.*
@@ -84,6 +90,10 @@ main() {
     println(cnt)
 }
 ```
+
+<!-- expected_output:
+0
+-->
 
 编译命令如下：
 

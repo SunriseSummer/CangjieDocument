@@ -40,6 +40,8 @@ class CodeBlock:
     source_file: str        # 来源文档路径
     heading: str            # 所在章节标题
     block_index: int        # 在文档中的序号
+    lang: str = 'cangjie'   # 代码块语言（cangjie / c）
+    block_type: Optional[str] = None  # 代码块类型（如 macro_def 表示宏定义包）
 
 
 @dataclass
@@ -51,6 +53,8 @@ class TestCase:
     expected_output: Optional[str]
     source_file: str
     heading: str
+    has_macro_def: bool = False      # 是否包含宏定义代码块
+    c_files: dict = field(default_factory=dict)  # C 源文件 {path: code}
     project_dir: Optional[Path] = None  # 生成的项目目录
 
 
@@ -75,6 +79,12 @@ EXPECTED_OUTPUT_RE = re.compile(
 # 匹配代码块
 CODE_BLOCK_RE = re.compile(
     r'```cangjie\s*\n(?P<code>.*?)```',
+    re.DOTALL
+)
+
+# 匹配带语言标记的代码块（cangjie 或 c）
+CODE_BLOCK_LANG_RE = re.compile(
+    r'```(?P<lang>cangjie|c)\s*\n(?P<code>.*?)```',
     re.DOTALL
 )
 
@@ -133,14 +143,27 @@ def extract_code_blocks(md_path: str) -> tuple:
             options = parse_options(ann_match.group('options') or '')
             project = options.get('project')
             file_path = options.get('file')
+            block_lang = options.get('lang', 'cangjie')
+            block_type = options.get('type')
 
-            # 向后查找紧跟的 cangjie 代码块
+            # 向后查找紧跟的 cangjie 或 c 代码块
             j = i + 1
             # 跳过空行
             while j < len(lines) and lines[j].strip() == '':
                 j += 1
 
-            if j < len(lines) and lines[j].strip().startswith('```cangjie'):
+            # 匹配 ```cangjie 或 ```c 代码块
+            detected_lang = None
+            if j < len(lines):
+                fence_line = lines[j].strip()
+                if fence_line.startswith('```cangjie'):
+                    detected_lang = 'cangjie'
+                elif fence_line.startswith('```c') and not fence_line.startswith('```cangjie'):
+                    detected_lang = 'c'
+
+            if detected_lang:
+                if detected_lang != 'cangjie':
+                    block_lang = detected_lang
                 annotated_line_set.add(j)
                 # 找代码块结束
                 code_lines = []
@@ -177,6 +200,8 @@ def extract_code_blocks(md_path: str) -> tuple:
                     source_file=md_path,
                     heading=heading,
                     block_index=block_index,
+                    lang=block_lang,
+                    block_type=block_type,
                 ))
 
                 i = k + 1
@@ -228,6 +253,9 @@ def blocks_to_testcases(blocks: list, md_path: str) -> list:
     # 处理独立代码块
     for b in standalone_blocks:
         name = _make_project_name(md_path, b.heading, b.block_index)
+        if b.lang == 'c':
+            # 独立的 C 代码块不能单独构成测试用例，跳过
+            continue
         testcases.append(TestCase(
             name=name,
             directive=b.directive,
@@ -248,17 +276,50 @@ def blocks_to_testcases(blocks: list, md_path: str) -> list:
             if b.expected_output is not None:
                 expected_output = b.expected_output
 
-        # 组装文件
+        # 分离 Cangjie 代码块和 C 代码块、宏定义块
+        cj_blocks = [b for b in proj_blocks if b.lang == 'cangjie']
+        c_blocks = [b for b in proj_blocks if b.lang == 'c']
+        has_macro_def = any(b.block_type == 'macro_def' for b in proj_blocks)
+
+        # 组装 Cangjie 文件
         files = {}
-        if any(b.file_path for b in proj_blocks):
+        if has_macro_def:
+            # 宏项目：宏定义块和非宏块需要分开
+            macro_cj_blocks = [b for b in cj_blocks if b.block_type == 'macro_def']
+            main_cj_blocks = [b for b in cj_blocks if b.block_type != 'macro_def']
+
+            # 宏定义块合并到 macro_def_code（由 create_cjpm_project 放入宏子模块）
+            if any(b.file_path for b in macro_cj_blocks):
+                for b in macro_cj_blocks:
+                    fp = b.file_path or 'src/macros.cj'
+                    files[fp] = b.code
+            else:
+                macro_combined = '\n\n'.join(b.code for b in macro_cj_blocks)
+                files['__macro_src__'] = macro_combined
+
+            # 主代码块
+            if any(b.file_path for b in main_cj_blocks):
+                for b in main_cj_blocks:
+                    fp = b.file_path or 'src/main.cj'
+                    files[fp] = b.code
+            elif main_cj_blocks:
+                main_combined = '\n\n'.join(b.code for b in main_cj_blocks)
+                files['src/main.cj'] = main_combined
+        elif any(b.file_path for b in cj_blocks):
             # 多文件模式
-            for b in proj_blocks:
+            for b in cj_blocks:
                 fp = b.file_path or 'src/main.cj'
                 files[fp] = b.code
         else:
-            # 合并模式：所有代码块合到一个文件
-            combined = '\n\n'.join(b.code for b in proj_blocks)
+            # 合并模式：所有 Cangjie 代码块合到一个文件
+            combined = '\n\n'.join(b.code for b in cj_blocks)
             files['src/main.cj'] = combined
+
+        # 组装 C 文件
+        c_files = {}
+        for b in c_blocks:
+            fp = b.file_path or 'src/helper.c'
+            c_files[fp] = b.code
 
         name = _make_project_name(md_path, proj_blocks[0].heading, proj_blocks[0].block_index, proj_name)
         testcases.append(TestCase(
@@ -268,6 +329,8 @@ def blocks_to_testcases(blocks: list, md_path: str) -> list:
             expected_output=expected_output,
             source_file=proj_blocks[0].source_file,
             heading=proj_blocks[0].heading,
+            has_macro_def=has_macro_def,
+            c_files=c_files,
         ))
 
     return testcases
@@ -303,10 +366,114 @@ CJPM_TOML_TEMPLATE = """\
   cjc-version = "1.0.5"
   name = "{name}"
   version = "1.0.0"
-  output-type = "executable"
+  output-type = "{output_type}"
 
 [dependencies]
 """
+
+CJPM_TOML_MACRO_MODULE_TEMPLATE = """\
+[package]
+  cjc-version = "1.0.5"
+  name = "{name}"
+  version = "1.0.0"
+  output-type = "static"
+  compile-option = "--compile-macro"
+
+[dependencies]
+"""
+
+CJPM_TOML_WITH_MACRO_DEP_TEMPLATE = """\
+[package]
+  cjc-version = "1.0.5"
+  name = "{name}"
+  version = "1.0.0"
+  output-type = "executable"
+
+[dependencies]
+  [dependencies.{macro_module}]
+    path = "./{macro_module}"
+"""
+
+
+def _find_c_compiler() -> Optional[str]:
+    """查找 C 编译器，优先使用 clang"""
+    for compiler in ['clang', 'gcc']:
+        if shutil.which(compiler):
+            return compiler
+    return None
+
+
+def _compile_c_files(proj_dir: Path, c_files: dict) -> tuple:
+    """编译 C 源文件为共享库。返回 (success, output_message)"""
+    cc = _find_c_compiler()
+    if cc is None:
+        return False, 'No C compiler found (need clang or gcc)'
+
+    all_output = []
+    for rel_path, code in c_files.items():
+        c_file_path = proj_dir / rel_path
+        c_file_path.parent.mkdir(parents=True, exist_ok=True)
+        c_file_path.write_text(code, encoding='utf-8')
+
+        # 编译为 .o 文件
+        obj_path = c_file_path.with_suffix('.o')
+        try:
+            result = subprocess.run(
+                [cc, '-c', '-fPIC', '-o', str(obj_path), str(c_file_path)],
+                cwd=str(proj_dir),
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            all_output.append(result.stdout + result.stderr)
+            if result.returncode != 0:
+                return False, f'C compilation failed:\n' + result.stderr
+        except subprocess.TimeoutExpired:
+            return False, 'C compilation timed out'
+        except Exception as e:
+            return False, str(e)
+
+    # 如果有多个 .o 文件，链接为共享库
+    obj_files = list(proj_dir.rglob('*.o'))
+    if obj_files:
+        lib_path = proj_dir / 'libffi_helper.a'
+        try:
+            result = subprocess.run(
+                ['ar', 'rcs', str(lib_path)] + [str(o) for o in obj_files],
+                cwd=str(proj_dir),
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            all_output.append(result.stdout + result.stderr)
+            if result.returncode != 0:
+                return False, f'ar failed:\n' + result.stderr
+        except Exception as e:
+            return False, str(e)
+
+    return True, '\n'.join(all_output)
+
+
+def _extract_macro_package_name(code: str) -> Optional[str]:
+    """从宏定义代码中提取 macro package 名称"""
+    m = re.search(r'^\s*macro\s+package\s+(\w+)', code, re.MULTILINE)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _extract_package_name(code: str) -> Optional[str]:
+    """从代码中提取 package 声明的包名（不含 macro package）"""
+    m = re.search(r'^\s*(?!macro\s)package\s+([\w.]+)', code, re.MULTILINE)
+    if m:
+        return m.group(1).split('.')[0]  # 取根包名
+    return None
+
+
+def _has_main_function(files: dict) -> bool:
+    """检查代码文件中是否包含 main 函数"""
+    all_code = '\n'.join(files.values())
+    return bool(re.search(r'^\s*main\s*\(', all_code, re.MULTILINE))
 
 
 def create_cjpm_project(tc: TestCase, output_dir: Path) -> Path:
@@ -321,29 +488,97 @@ def create_cjpm_project(tc: TestCase, output_dir: Path) -> Path:
     if not pkg_name[0].isalpha():
         pkg_name = 'p_' + pkg_name
 
-    toml_content = CJPM_TOML_TEMPLATE.format(name=pkg_name)
-    (proj_dir / 'cjpm.toml').write_text(toml_content, encoding='utf-8')
-
-    # 写代码文件
+    # 尝试从源代码中提取 package 名称，以匹配 cjpm.toml 的项目名
+    # 跳过宏定义文件（__macro_src__ 和 macro package 声明的文件）
     for rel_path, code in tc.files.items():
-        file_path = proj_dir / rel_path
-        file_path.parent.mkdir(parents=True, exist_ok=True)
+        if rel_path == '__macro_src__':
+            continue
+        if _extract_macro_package_name(code):
+            continue
+        src_pkg = _extract_package_name(code)
+        if src_pkg:
+            pkg_name = src_pkg
+            break
 
-        # 自动添加 package 声明（如果代码中没有）
-        if not re.search(r'^\s*package\s+', code, re.MULTILINE):
-            # 根据文件路径确定包名
-            if rel_path == 'src/main.cj' or rel_path.startswith('src/'):
-                code = f'package {pkg_name}\n\n' + code
+    if tc.has_macro_def:
+        # 宏项目：需要创建多模块结构
+        # 从文件中分离宏定义和主代码
+        macro_module_name = None
+        macro_files = {}
+        main_files = {}
+
+        for rel_path, code in tc.files.items():
+            if rel_path == '__macro_src__' or _extract_macro_package_name(code):
+                # 这是宏定义代码
+                if not macro_module_name:
+                    macro_module_name = _extract_macro_package_name(code) or 'macro_mod'
+                macro_files['src/macros.cj'] = code
             else:
+                main_files[rel_path] = code
+
+        if not macro_module_name:
+            macro_module_name = 'macro_mod'
+
+        # 创建宏模块
+        macro_dir = proj_dir / macro_module_name
+        macro_dir.mkdir(parents=True, exist_ok=True)
+
+        macro_toml = CJPM_TOML_MACRO_MODULE_TEMPLATE.format(name=macro_module_name)
+        (macro_dir / 'cjpm.toml').write_text(macro_toml, encoding='utf-8')
+
+        for rel_path, code in macro_files.items():
+            file_path = macro_dir / rel_path
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.write_text(code, encoding='utf-8')
+
+        # 创建主项目
+        main_toml = CJPM_TOML_WITH_MACRO_DEP_TEMPLATE.format(
+            name=pkg_name,
+            macro_module=macro_module_name,
+        )
+        (proj_dir / 'cjpm.toml').write_text(main_toml, encoding='utf-8')
+
+        # 写主项目代码文件
+        for rel_path, code in main_files.items():
+            file_path = proj_dir / rel_path
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # 自动添加 package 声明（如果代码中没有）
+            if not re.search(r'^\s*package\s+', code, re.MULTILINE):
                 code = f'package {pkg_name}\n\n' + code
 
-        file_path.write_text(code, encoding='utf-8')
+            file_path.write_text(code, encoding='utf-8')
+    else:
+        # 标准项目
+        # 自动检测 output-type：有 main() 用 executable，否则用 static
+        if _has_main_function(tc.files):
+            output_type = 'executable'
+        elif tc.directive in ('build_only', 'compile_error'):
+            output_type = 'static'
+        else:
+            output_type = 'executable'
+
+        toml_content = CJPM_TOML_TEMPLATE.format(name=pkg_name, output_type=output_type)
+        (proj_dir / 'cjpm.toml').write_text(toml_content, encoding='utf-8')
+
+        # 写代码文件
+        for rel_path, code in tc.files.items():
+            file_path = proj_dir / rel_path
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # 自动添加 package 声明（如果代码中没有）
+            if not re.search(r'^\s*(macro\s+)?package\s+', code, re.MULTILINE):
+                # 根据文件路径确定包名
+                code = f'package {pkg_name}\n\n' + code
+
+            file_path.write_text(code, encoding='utf-8')
 
     tc.project_dir = proj_dir
     return proj_dir
 
 
-def run_testcase(tc: TestCase, timeout_build: int = 60, timeout_run: int = 30) -> dict:
+def run_testcase(tc: TestCase, timeout_build: int = 60, timeout_run: int = 30,
+                 verbose: bool = False) -> dict:
     """执行测试用例，返回结果字典"""
     result = {
         'name': tc.name,
@@ -366,6 +601,17 @@ def run_testcase(tc: TestCase, timeout_build: int = 60, timeout_run: int = 30) -
         return result
 
     proj_dir = tc.project_dir
+
+    # 编译 C 文件（如果有）
+    if tc.c_files:
+        c_ok, c_output = _compile_c_files(proj_dir, tc.c_files)
+        if not c_ok:
+            result['build_output'] = c_output
+            result['status'] = 'FAIL'
+            result['error'] = f'C compilation failed: {c_output}'
+            return result
+        if verbose:
+            result['build_output'] = c_output + '\n'
 
     # 编译
     try:

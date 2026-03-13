@@ -20,7 +20,7 @@
 - `import` 支持使用全部访问修饰符，默认修饰符为 `private`。
 - 其他顶层声明支持使用全部访问修饰符，默认修饰符为 `internal`。
 
-<!-- compile -->
+<!-- check:build_only -->
 
 ```cangjie
 package a
@@ -35,7 +35,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - 函数声明中的参数与返回值
 
-    <!-- compile.error -->
+    <!-- check:compile_error -->
 
     ```cangjie
     // a.cj
@@ -57,7 +57,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - 变量声明
 
-    <!-- compile.error -->
+    <!-- check:compile_error -->
 
     ```cangjie
     // a.cj
@@ -69,7 +69,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - 泛型类型的类型实参
 
-    <!-- compile.error -->
+    <!-- check:compile_error -->
 
     ```cangjie
     // a.cj
@@ -81,7 +81,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - `where` 约束中的类型上界
 
-    <!-- compile.error -->
+    <!-- check:compile_error -->
 
     ```cangjie
     // a.cj
@@ -94,7 +94,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - `public` 修饰的声明在其初始化表达式或者函数体里面可以使用本包可见的任意类型，包括被 `public` 修饰的类型和不被 `public` 修饰的类型。
 
-    <!-- compile -->
+    <!-- check:build_only -->
 
     ```cangjie
     // a.cj
@@ -118,7 +118,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - `public` 修饰的顶层声明能使用匿名函数，或者任意顶层函数，包括被 `public` 修饰的类型和不被 `public` 修饰的顶层函数。
 
-    <!-- compile -toplevel-->
+    <!-- check:build_only -->
 
     ```cangjie
     public var t1: () -> Unit = { => } // OK.
@@ -133,7 +133,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 - 内置类型诸如 `Rune` 和 `Int64` 等默认的修饰符是 `public`。
 
-    <!-- compile -toplevel-->
+    <!-- check:build_only -->
 
     ```cangjie
     var num = 5
@@ -146,7 +146,7 @@ public func f4() { 4 }    // f4 当前模块内外均可见
 
 例如在以下程序中，`example1.cj` 与 `example2.cj`文件包名相同，在 `example1.cj` 文件中定义了 `private` 修饰的类 `A`, 在 `example2.cj` 文件中定义了 `private` 修饰的结构体 `A`。
 
-<!-- compile -->
+<!-- check:compile_error project=priv_a file=src/example1.cj -->
 
 ```cangjie
 // example1.cj
@@ -159,7 +159,7 @@ public class D<T> {
 }
 ```
 
-<!-- compile -->
+<!-- check:compile_error project=priv_a file=src/example2.cj -->
 
 ```cangjie
 // example2.cj

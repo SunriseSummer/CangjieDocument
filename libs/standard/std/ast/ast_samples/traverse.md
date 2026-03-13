@@ -2,7 +2,7 @@
 
 定义访问变量声明节点的行为：继承 [Visitor](../ast_package_api/ast_package_classes.md#class-visitor) 并重写访问函数，找到未定义变量，将其变量词法单元存起来。
 
-<!-- verify -->
+<!-- check:run -->
 
 ```cangjie
 import std.ast.*
@@ -31,6 +31,10 @@ main(): Int64 {
     0
 }
 ```
+
+<!-- expected_output:
+Uninitialized VarDecl size is 1
+-->
 
 运行结果：
 
