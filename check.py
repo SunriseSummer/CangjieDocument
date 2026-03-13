@@ -158,7 +158,7 @@ def extract_code_blocks(md_path: str) -> tuple:
                 fence_line = lines[j].strip()
                 if fence_line.startswith('```cangjie'):
                     detected_lang = 'cangjie'
-                elif fence_line.startswith('```c') and not fence_line.startswith('```cangjie'):
+                elif fence_line.startswith('```c'):
                     detected_lang = 'c'
 
             if detected_lang:
@@ -464,7 +464,7 @@ def _extract_macro_package_name(code: str) -> Optional[str]:
 
 def _extract_package_name(code: str) -> Optional[str]:
     """从代码中提取 package 声明的包名（不含 macro package）"""
-    m = re.search(r'^\s*(?!macro\s)package\s+([\w.]+)', code, re.MULTILINE)
+    m = re.search(r'^\s*(?!macro\s+package\b)package\s+([\w.]+)', code, re.MULTILINE)
     if m:
         return m.group(1).split('.')[0]  # 取根包名
     return None
