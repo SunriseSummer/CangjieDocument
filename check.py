@@ -116,6 +116,9 @@ class TestCase:
 # 标注解析
 # ============================================================
 
+# 访问修饰符的正则匹配模式（用于 package 声明检测）
+_ACCESS_MOD_RE = r'(?:(?:public|protected|internal|private)\s+)?'
+
 # 匹配 <!-- check:DIRECTIVE [key=value ...] -->
 CHECK_ANNOTATION_RE = re.compile(
     r'<!--\s*check\s*:\s*'
@@ -518,7 +521,7 @@ def _extract_macro_package_name(code: str) -> Optional[str]:
 
 def _extract_package_name(code: str) -> Optional[str]:
     """从代码中提取 package 声明的包名（不含 macro package）"""
-    m = re.search(r'^\s*(?:(?:public|protected|internal|private)\s+)?(?!macro\s+package\b)package\s+([\w.]+)', code, re.MULTILINE)
+    m = re.search(rf'^\s*{_ACCESS_MOD_RE}(?!macro\s+package\b)package\s+([\w.]+)', code, re.MULTILINE)
     if m:
         return m.group(1).split('.')[0]  # 取根包名
     return None
@@ -621,7 +624,7 @@ def create_cjpm_project(tc: TestCase, output_dir: Path) -> Path:
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             # 自动添加 package 声明（如果代码中没有）
-            if not re.search(r'^\s*(?:(?:public|protected|internal|private)\s+)?(?:macro\s+)?package\s+', code, re.MULTILINE):
+            if not re.search(rf'^\s*{_ACCESS_MOD_RE}(?:macro\s+)?package\s+', code, re.MULTILINE):
                 # 根据文件路径确定包名
                 code = f'package {pkg_name}\n\n' + code
 
