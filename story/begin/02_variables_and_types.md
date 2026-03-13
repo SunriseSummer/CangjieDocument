@@ -55,9 +55,12 @@ main() {
 
 仓颉是强类型语言，这意味着你不能把“生命值”（数字）赋值给“名字”（字符串），这保护了你的程序不会出现低级错误。
 
-<!-- check:skip -->
+<!-- check:compile_error -->
 ```cangjie
-// heroName = 100 // 编译错误！不能将整数赋值给字符串变量
+main() {
+    let heroName: String = "Cangjie Hero"
+    heroName = 100 // 编译错误！不能将整数赋值给字符串变量，且 let 不可变
+}
 ```
 
 这种严谨性确保了大型项目的稳定性。

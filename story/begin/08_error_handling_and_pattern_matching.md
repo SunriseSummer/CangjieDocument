@@ -116,6 +116,27 @@ main() {
 清理资源...
 -->
 
+## 4. 未捕获异常 (Runtime Error)
+
+如果异常没有被 `try-catch` 捕获，程序会直接崩溃。这是典型的运行时错误：
+
+<!-- check:runtime_error -->
+```cangjie
+func riskyOperation(value: Int64) {
+    if (value < 0) {
+        throw Exception("值不能为负数！")
+    }
+    println("操作成功: ${value}")
+}
+
+main() {
+    riskyOperation(10)
+    riskyOperation(-1) // 未捕获的异常，程序崩溃
+}
+```
+
+这就是为什么我们需要 `try-catch` —— 让程序有机会优雅地处理错误而不是直接崩溃。
+
 ## 工程化提示
 
 *   能用 `Option`/`Result` 表达的错误尽量不要抛异常，让逻辑更可控。

@@ -41,9 +41,12 @@ main() {
 为什么仓颉要区分 `Float64` 和 `Int64`？
 在嵌入式开发中，资源是宝贵的。类型系统帮助我们在编译阶段就发现"将电压（数字）赋值给日志（文本）"这类逻辑错误，避免系统在运行时崩溃。
 
-<!-- check:skip -->
+<!-- check:compile_error -->
 ```cangjie
-// currentTemp = "Error" // ❌ 编译器拦截：防止脏数据污染系统
+main() {
+    var currentTemp: Float64 = 23.5
+    currentTemp = "Error" // ❌ 编译器拦截：防止脏数据污染系统
+}
 ```
 
 ## 工程化提示

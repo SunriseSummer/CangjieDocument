@@ -103,6 +103,27 @@ main() {
 *   `try-catch` 中至少记录关键上下文，避免问题难以排查。
 *   语音指令要设置兜底分支，处理无法识别的输入。
 
+## 4. 未捕获异常的危害
+
+如果关键操作没有 `try-catch` 保护，未捕获的异常会导致系统直接崩溃，影响所有设备。下面的代码展示了这种危险情况：
+
+<!-- check:runtime_error -->
+```cangjie
+func initSensor(name: String) {
+    if (name == "") {
+        throw Exception("传感器名称不能为空")
+    }
+    println("传感器 ${name} 已就绪")
+}
+
+main() {
+    initSensor("温度计")
+    initSensor("")  // 未捕获异常 → 系统崩溃！
+}
+```
+
+这就是为什么每个关键路径都需要容错保护。
+
 ## 小试身手
 
 1. 为 `VoiceCommand` 增加 `TurnOff` 分支，并在 `execute` 中处理。

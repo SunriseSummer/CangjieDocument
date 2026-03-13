@@ -391,10 +391,12 @@ def run_testcase(tc: TestCase, timeout_build: int = 60, timeout_run: int = 30) -
             actual_output = '\n'.join(actual_lines)
 
             result['run_output'] = actual_output
-            result['run_ok'] = (run_proc.returncode == 0)
+            stderr_text = run_proc.stderr.strip()
+            has_runtime_exception = 'An exception has occurred' in stderr_text
+            result['run_ok'] = (run_proc.returncode == 0) and not has_runtime_exception
 
             if tc.directive == 'runtime_error':
-                if result['run_ok']:
+                if not has_runtime_exception and run_proc.returncode == 0:
                     result['status'] = 'FAIL'
                     result['error'] = 'Expected runtime error but run succeeded'
                 else:
@@ -403,7 +405,7 @@ def run_testcase(tc: TestCase, timeout_build: int = 60, timeout_run: int = 30) -
 
             if not result['run_ok']:
                 result['status'] = 'FAIL'
-                result['error'] = f'Run failed: {run_proc.stderr.strip()}'
+                result['error'] = f'Run failed: {stderr_text}'
                 return result
 
             # 检查输出
