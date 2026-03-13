@@ -103,18 +103,38 @@ project_dir/
 | `toplevel_access.md` | `<!-- compile -->` → `<!-- check:build_only -->`；`<!-- compile.error -->` → `<!-- check:compile_error -->`；最后两个跨文件示例使用 `compile_error project=priv_a file=...` 合并为一个项目 |
 | `package_overview.md` | 无代码块，无需修改 |
 
-## 四、check.md 文档更新
+## 四、模块化拆分
 
-- **2.2 节**：新增 `ast` 指令说明；新增可选参数表（`project`、`file`、`type=macro`、`lang`）；更新 `skip` 说明为仅用于多文件合并等场景
-- **2.3 节**：新增 `check:ast` 示例；更新 `check:skip` 示例说明
-- **2.6 节**：宏包项目参数从 `type=macro_def` 改为 `type=macro`
-- **2.8 节**：新增 AST 语法检查规则说明
-- **3.3 节**：新增 AST 语法检查、宏项目结构说明；`type=macro_def` 改为 `type=macro`
+原 `check.py`（1196 行）拆分为 `check/` 目录下 8 个模块文件，每个文件不超过 250 行：
 
-## 五、测试结果
+| 文件 | 行数 | 职责 |
+|------|------|------|
+| `__init__.py` | 1 | 包初始化 |
+| `__main__.py` | 4 | `python3 -m check` 入口 |
+| `models.py` | 79 | 数据模型（CodeBlock、TestCase）和正则常量 |
+| `parser.py` | 144 | Markdown 解析，代码块提取 |
+| `assembler.py` | 124 | 测试用例组装（代码块→TestCase） |
+| `project.py` | 248 | cjpm 项目生成（含宏项目、标准项目） |
+| `runner.py` | 224 | 测试执行、tree-sitter AST 检查 |
+| `report.py` | 141 | 测试报告生成 |
+| `cli.py` | 164 | 命令行参数解析和摘要输出 |
+| `main.py` | 222 | 主流程调度 |
+
+新增选项：
+- `--skip-ast`：跳过 `check:ast` 语法解析检查
+
+原 `check.md` 移至 `check/readme.md`，内容中的命令引用更新为 `python3 -m check`。
+
+## 五、check/readme.md 文档更新
+
+- 命令行用法从 `check.py` 改为 `python3 -m check`
+- 新增 `--skip-ast` 参数说明
+- 文档结构保持不变
+
+## 六、测试结果
 
 ### ast_samples 目录
-- 测试用例：8 个（2 宏项目 + 5 独立项目 + 1 语法检查）
+- 测试用例：9 个（2 宏项目 + 6 独立项目 + 1 语法检查）
 - 未标注代码块：0 个
 
 ### package 目录
@@ -122,6 +142,11 @@ project_dir/
 - 跳过：6 个（多文件/多包声明合并片段，无法独立解析）
 - 未标注代码块：0 个
 
-## 六、安全扫描
+### story 目录
+- 测试用例：86 个
+- 跳过：7 个
+- 未标注代码块：0 个
+
+## 七、安全扫描
 
 - CodeQL 扫描结果：0 个告警，无安全问题

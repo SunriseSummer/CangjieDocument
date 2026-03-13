@@ -1,6 +1,6 @@
-# check.md — 仓颉文档示例代码测试框架
+# check — 仓颉文档示例代码测试框架
 
-本文档介绍 `check.py` 测试框架的设计方案与使用方法，包括文档中的标注约定、工作机制和命令行用法。
+本文档介绍 `check` 测试框架的设计方案与使用方法，包括文档中的标注约定、工作机制和命令行用法。
 
 ---
 
@@ -9,7 +9,7 @@
 Markdown 文档中常包含仓颉代码示例。为保证这些示例代码的正确性，本框架提供：
 
 1. **标注约定** — 在 Markdown 文档中用 HTML 注释标注每个代码块的预期行为。
-2. **自动提取** — `check.py` 解析文档，提取所有带标注的仓颉代码块。
+2. **自动提取** — `check` 解析文档，提取所有带标注的仓颉代码块。
 3. **统一构建** — 每个代码块（或多个代码块组合）生成一个独立的 `cjpm` 项目。
 4. **自动验证** — 编译、运行并校验输出，支持正向示例和负向示例（编译错误 / 运行错误）。
 5. **未标注检测** — 自动发现文档中缺少标注的代码块，提醒开发者整改。
@@ -306,7 +306,7 @@ main() {
 
 ---
 
-## 三、check.py 工作机制
+## 三、工作机制
 
 ### 3.1 处理流程
 
@@ -398,19 +398,19 @@ check_output/
 source /path/to/cangjie/envsetup.sh
 
 # 测试当前目录下的所有文档
-python3 check.py
+python3 -m check
 
 # 测试指定目录下的文档
-python3 check.py path/to/docs
+python3 -m check path/to/docs
 
 # 测试指定的子目录
-python3 check.py path/to/docs -s subdir_name
+python3 -m check path/to/docs -s subdir_name
 
 # 测试指定文件
-python3 check.py -f path/to/file.md
+python3 -m check -f path/to/file.md
 
 # 显示详细输出
-python3 check.py -v
+python3 -m check -v
 ```
 
 ### 4.2 完整参数说明
@@ -423,6 +423,7 @@ python3 check.py -v
 | `-s, --subdir NAME` | 只处理指定的子目录 | — |
 | `--clean` | 测试完成后清理生成的项目目录 | 不清理 |
 | `--extract-only` | 仅提取代码，不构建运行 | — |
+| `--skip-ast` | 跳过 check:ast 语法解析检查 | — |
 | `-v, --verbose` | 显示详细输出 | — |
 | `--json FILE` | 将测试结果输出为 JSON 文件 | — |
 
@@ -430,19 +431,19 @@ python3 check.py -v
 
 ```bash
 # 仅提取代码，不编译运行（用于检查提取是否正确）
-python3 check.py docs/ --extract-only -v
+python3 -m check docs/ --extract-only -v
 
 # 测试后清理项目目录
-python3 check.py docs/ -s chapter1 --clean
+python3 -m check docs/ -s chapter1 --clean
 
 # 输出 JSON 格式的测试结果
-python3 check.py docs/ --json results.json
+python3 -m check docs/ --json results.json
 
 # 指定自定义输出目录
-python3 check.py docs/ -o /tmp/my_tests -s chapter2
+python3 -m check docs/ -o /tmp/my_tests -s chapter2
 
 # 同时测试多个文件
-python3 check.py -f docs/01_intro.md -f docs/02_basics.md
+python3 -m check -f docs/01_intro.md -f docs/02_basics.md
 ```
 
 ### 4.4 输出示例
