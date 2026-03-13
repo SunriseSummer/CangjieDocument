@@ -8,7 +8,7 @@
 
 宏定义如下：
 
-<!-- check:compile_error project=rpt1 type=macro_def -->
+<!-- check:compile_error project=rpt1 type=macro -->
 
 ```cangjie
 // macro_definition.cj

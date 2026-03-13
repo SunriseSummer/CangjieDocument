@@ -24,6 +24,60 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+# tree-sitter 仓颉语法解析（用于 check:ast 指令）
+_ts_parser = None
+
+
+def _get_ts_parser():
+    """延迟初始化 tree-sitter 仓颉解析器"""
+    global _ts_parser
+    if _ts_parser is not None:
+        return _ts_parser
+    try:
+        import tree_sitter_cangjie as tsc
+        import tree_sitter
+        lang = tsc.language()
+        _ts_parser = tree_sitter.Parser(tree_sitter.Language(lang))
+        return _ts_parser
+    except ImportError:
+        return None
+
+
+def _find_ts_errors(node) -> list:
+    """递归查找 tree-sitter 语法树中的 ERROR 节点，返回 [(line, col, end_line, end_col), ...]"""
+    errors = []
+    if node.type == 'ERROR' or node.is_missing:
+        errors.append((
+            node.start_point[0] + 1,
+            node.start_point[1],
+            node.end_point[0] + 1,
+            node.end_point[1],
+        ))
+    for child in node.children:
+        errors.extend(_find_ts_errors(child))
+    return errors
+
+
+def check_ast(code: str) -> tuple:
+    """使用 tree-sitter 对仓颉代码做语法解析检查。
+
+    返回 (ok, errors)：
+        ok: bool — 语法是否正确
+        errors: list — [(line, col, end_line, end_col), ...]
+    """
+    parser = _get_ts_parser()
+    if parser is None:
+        # tree-sitter 不可用，跳过检查
+        return True, []
+    # 确保代码以换行符结尾，避免 tree-sitter 误报
+    if not code.endswith('\n'):
+        code += '\n'
+    tree = parser.parse(code.encode('utf-8'))
+    if not tree.root_node.has_error:
+        return True, []
+    errors = _find_ts_errors(tree.root_node)
+    return False, errors
+
 
 # ============================================================
 # 数据模型
@@ -41,7 +95,7 @@ class CodeBlock:
     heading: str            # 所在章节标题
     block_index: int        # 在文档中的序号
     lang: str = 'cangjie'   # 代码块语言（cangjie / c）
-    block_type: Optional[str] = None  # 代码块类型（如 macro_def 表示宏定义包）
+    block_type: Optional[str] = None  # 代码块类型（如 macro 表示宏定义包）
 
 
 @dataclass
@@ -243,7 +297,7 @@ def blocks_to_testcases(blocks: list, md_path: str) -> list:
     standalone_blocks = []
 
     for b in blocks:
-        if b.directive == 'skip':
+        if b.directive in ('skip', 'ast'):
             continue
         if b.project:
             project_blocks.setdefault(b.project, []).append(b)
@@ -279,16 +333,16 @@ def blocks_to_testcases(blocks: list, md_path: str) -> list:
         # 分离 Cangjie 代码块和 C 代码块、宏定义块
         cj_blocks = [b for b in proj_blocks if b.lang == 'cangjie']
         c_blocks = [b for b in proj_blocks if b.lang == 'c']
-        has_macro_def = any(b.block_type == 'macro_def' for b in proj_blocks)
+        has_macro_def = any(b.block_type == 'macro' for b in proj_blocks)
 
         # 组装 Cangjie 文件
         files = {}
         if has_macro_def:
             # 宏项目：宏定义块和非宏块需要分开
-            macro_cj_blocks = [b for b in cj_blocks if b.block_type == 'macro_def']
-            main_cj_blocks = [b for b in cj_blocks if b.block_type != 'macro_def']
+            macro_cj_blocks = [b for b in cj_blocks if b.block_type == 'macro']
+            main_cj_blocks = [b for b in cj_blocks if b.block_type != 'macro']
 
-            # 宏定义块合并到 macro_def_code（由 create_cjpm_project 放入宏子模块）
+            # 宏定义块合并到 macro 代码（由 create_cjpm_project 放入宏子模块）
             if any(b.file_path for b in macro_cj_blocks):
                 for b in macro_cj_blocks:
                     fp = b.file_path or 'src/macros.cj'
@@ -464,7 +518,7 @@ def _extract_macro_package_name(code: str) -> Optional[str]:
 
 def _extract_package_name(code: str) -> Optional[str]:
     """从代码中提取 package 声明的包名（不含 macro package）"""
-    m = re.search(r'^\s*(?!macro\s+package\b)package\s+([\w.]+)', code, re.MULTILINE)
+    m = re.search(r'^\s*(?:(?:public|protected|internal|private)\s+)?(?!macro\s+package\b)package\s+([\w.]+)', code, re.MULTILINE)
     if m:
         return m.group(1).split('.')[0]  # 取根包名
     return None
@@ -567,7 +621,7 @@ def create_cjpm_project(tc: TestCase, output_dir: Path) -> Path:
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
             # 自动添加 package 声明（如果代码中没有）
-            if not re.search(r'^\s*(macro\s+)?package\s+', code, re.MULTILINE):
+            if not re.search(r'^\s*(?:(?:public|protected|internal|private)\s+)?(?:macro\s+)?package\s+', code, re.MULTILINE):
                 # 根据文件路径确定包名
                 code = f'package {pkg_name}\n\n' + code
 
@@ -864,6 +918,7 @@ def main():
               <!-- check:compile_error -->        预期编译失败
               <!-- check:runtime_error -->        预期运行时错误
               <!-- check:build_only -->           仅编译，不运行
+              <!-- check:ast -->                    使用 tree-sitter 做语法解析检查
               <!-- check:skip -->                 跳过此代码块
               <!-- check:run project=NAME -->     多代码块项目的一部分
 
@@ -986,6 +1041,7 @@ def main():
 
         rel_display = str(rel)
         skip_count = sum(1 for b in blocks if b.directive == 'skip')
+        ast_blocks = [b for b in blocks if b.directive == 'ast']
         if skip_count > 0:
             skipped += skip_count
 
@@ -993,6 +1049,8 @@ def main():
         info_parts = []
         if testcases:
             info_parts.append(f"{len(testcases)} 个测试用例")
+        if ast_blocks:
+            info_parts.append(f"{len(ast_blocks)} 个语法检查")
         if skip_count:
             info_parts.append(f"{skip_count} 个跳过")
         if unannotated_count:
@@ -1000,6 +1058,45 @@ def main():
 
         detail = f" ({', '.join(info_parts)})" if info_parts else ""
         print(f"  📄 {rel_display}:{detail}")
+
+        # 处理 ast 语法检查块（不依赖 cjpm，始终执行）
+        for b in ast_blocks:
+            total += 1
+            ast_name = _make_project_name(md_file, b.heading, b.block_index)
+            ast_ok, ast_errors = check_ast(b.code)
+            ast_result = {
+                'name': ast_name,
+                'directive': 'ast',
+                'source_file': b.source_file,
+                'heading': b.heading,
+                'status': 'PASS' if ast_ok else 'FAIL',
+                'build_ok': ast_ok,
+                'run_ok': False,
+                'build_output': '',
+                'run_output': '',
+                'error': '',
+                'expected_output': None,
+                'output_match': None,
+            }
+            if not ast_ok:
+                error_details = '; '.join(
+                    f'line {ln}:{col}' for ln, col, _, _ in ast_errors
+                )
+                ast_result['error'] = f'Syntax errors found: {error_details}'
+                ast_result['build_output'] = f'tree-sitter detected {len(ast_errors)} syntax error(s):\n' + \
+                    '\n'.join(f'  line {ln}:{col} - line {eln}:{ecol}' for ln, col, eln, ecol in ast_errors)
+
+            all_results.append(ast_result)
+            if ast_result['status'] == 'PASS':
+                passed += 1
+                if args.verbose:
+                    print(f"    ✅ AST PASS: {ast_name}")
+            else:
+                failed += 1
+                errors.append(ast_result)
+                print(f"    ❌ AST FAIL: {ast_name}")
+                if args.verbose:
+                    print(f"       {ast_result['error']}")
 
         for tc in testcases:
             total += 1

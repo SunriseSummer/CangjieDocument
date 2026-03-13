@@ -30,6 +30,9 @@ main(args: Array<String>): Unit { // OK.
 }
 ```
 
+<!-- expected_output:
+-->
+
 使用 `cjc main.cj` 编译完成后，通过命令行执行：`./main Hello, World`，将会得到如下输出：
 
 ```text

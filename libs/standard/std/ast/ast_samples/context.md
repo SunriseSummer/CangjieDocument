@@ -2,7 +2,7 @@
 
 宏定义如下：
 
-<!-- check:compile_error project=ctx1 type=macro_def -->
+<!-- check:compile_error project=ctx1 type=macro -->
 
 ```cangjie
 // macro_definition.cj
@@ -48,7 +48,7 @@ cjc macro_call.cj -o demo
 
 宏定义如下：
 
-<!-- check:run project=ctx2 type=macro_def -->
+<!-- check:run project=ctx2 type=macro -->
 
 ```cangjie
 // macro_definition.cj

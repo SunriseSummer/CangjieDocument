@@ -150,7 +150,7 @@ public macro M(input: Tokens) {
 
 利用 parseProgram 函数将上述代码解析为一个 Program 节点对象，代码如下所示：
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 internal import std.ast.*

@@ -9,11 +9,11 @@
 
 ## 二、check.py 框架增强
 
-### 2.1 新增宏包项目支持 (`type=macro_def`)
+### 2.1 新增宏包项目支持 (`type=macro`)
 
 **问题**：原框架只支持单模块 cjpm 项目，无法处理文档中"宏定义包 + 宏调用包"的多模块示例（如 `context.md`、`report.md`）。
 
-**方案**：新增 `type=macro_def` 标注参数。标记为 `type=macro_def` 的代码块会被识别为宏定义代码，框架自动创建多模块 cjpm 项目结构：
+**方案**：新增 `type=macro` 标注参数。标记为 `type=macro` 的代码块会被识别为宏定义代码，框架自动创建多模块 cjpm 项目结构：
 
 ```
 project_dir/
@@ -49,28 +49,36 @@ project_dir/
 - 新增 `_compile_c_files()` 函数处理 C 编译流程
 - `run_testcase()` 在 cjpm build 前执行 C 编译
 
-### 2.3 自动检测 output-type
+### 2.3 新增 `check:ast` 指令（tree-sitter 语法检查）
 
-**问题**：原框架固定使用 `output-type = "executable"`，导致无 `main()` 函数的代码块（如只声明类型和函数的库代码）编译失败。
+**问题**：许多代码片段无法编译（如仅含 import 语句的片段、依赖外部文件的示例），原来只能标记为 `check:skip`，缺乏语法层面的验证。
+
+**方案**：新增 `check:ast` 指令，使用 tree-sitter 仓颉插件对代码做语法解析检查：
+- 不需要编译器环境（不依赖 cjpm/cjc），始终执行
+- 能检测语法错误并报告具体行号和列号
+- 适合代码片段、不可编译但语法正确的示例
+- 替代 `check:skip`，提供更好的代码看护
+
+**改动点**：
+- 新增 `_get_ts_parser()` 延迟初始化 tree-sitter 解析器
+- 新增 `_find_ts_errors()` 递归查找语法树中的错误节点
+- 新增 `check_ast()` 公共函数执行语法检查
+- 代码末尾自动补充换行符，避免 tree-sitter 误报
+- 主流程中 `ast` 块独立处理，不生成 cjpm 项目
+
+### 2.4 自动检测 output-type
+
+**问题**：原框架固定使用 `output-type = "executable"`，导致无 `main()` 函数的代码块编译失败。
 
 **方案**：自动检测代码中是否包含 `main()` 函数：
 - 有 `main()` → `output-type = "executable"`
 - `build_only` 或 `compile_error` 指令且无 `main()` → `output-type = "static"`
 
-**改动点**：
-- 新增 `_has_main_function()` 辅助函数
-- `CJPM_TOML_TEMPLATE` 改为动态 `output_type` 参数
-- `create_cjpm_project()` 中根据代码内容自动选择
+### 2.5 自动匹配 package 名称
 
-### 2.4 自动匹配 package 名称
-
-**问题**：文档示例中常有显式的 `package xxx` 声明，但框架自动生成的 cjpm 项目名与之不匹配，导致编译失败。
+**问题**：文档示例中常有显式的 `package xxx` 声明，但框架自动生成的 cjpm 项目名与之不匹配。
 
 **方案**：从源代码中提取 `package` 声明的根包名，作为 `cjpm.toml` 的项目名。
-
-**改动点**：
-- 新增 `_extract_package_name()` 辅助函数（排除 `macro package`）
-- `create_cjpm_project()` 中优先使用源码中的包名
 
 ## 三、文档标注修复
 
@@ -80,40 +88,39 @@ project_dir/
 |------|----------|
 | `dump.md` | `<!-- verify -->` → `<!-- check:run -->` |
 | `operate.md` | `<!-- verify -->` → `<!-- check:run -->`，新增 `<!-- expected_output -->` |
-| `parse.md` | 第一个块 `<!-- verify -->` → `<!-- check:run -->`；第二个块 `<!-- compile -->` → `<!-- check:skip -->`（依赖外部文件） |
+| `parse.md` | 第一个块 `<!-- verify -->` → `<!-- check:run -->`；第二个块 `<!-- compile -->` → `<!-- check:ast -->`（依赖外部文件，但语法正确） |
 | `traverse.md` | `<!-- verify -->` → `<!-- check:run -->`，新增 `<!-- expected_output -->` |
-| `context.md` | 重写标注：示例 1 使用 `compile_error project=ctx1 type=macro_def`；示例 2 使用 `run project=ctx2 type=macro_def`；移除调用代码中冗余的 `package` 声明；新增运行时 `expected_output` |
-| `report.md` | 重写标注：示例 1 使用 `compile_error project=rpt1 type=macro_def`；示例 2 使用 `check:run`；移除调用代码中冗余的 `package` 声明 |
+| `context.md` | 重写标注：示例 1 使用 `compile_error project=ctx1 type=macro`；示例 2 使用 `run project=ctx2 type=macro`；新增 `expected_output` |
+| `report.md` | 重写标注：示例 1 使用 `compile_error project=rpt1 type=macro`；示例 2 使用 `check:run` |
 
 ### 3.2 package 目录（5 个文件）
 
 | 文件 | 修改内容 |
 |------|----------|
-| `entry.md` | `<!-- run -->` → `<!-- check:run -->`；`<!-- compile.error -->` → `<!-- check:compile_error -->` |
-| `import.md` | 所有代码片段和多文件示例标注为 `<!-- check:skip -->`；最后的 `compile.error` 块改为 `<!-- check:compile_error -->` |
-| `package_name.md` | 移除旧的 `<!-- compile.error -->` 和 `<!-- cfg=... -->` 标注；所有代码块标注为 `<!-- check:skip -->`（均为多文件/跨包示例） |
-| `toplevel_access.md` | `<!-- compile -->` → `<!-- check:build_only -->`；`<!-- compile.error -->` → `<!-- check:compile_error -->`；`<!-- compile -toplevel-->` → `<!-- check:build_only -->`；最后两个跨文件示例使用 `compile_error project=priv_a file=...` 合并为一个项目 |
+| `entry.md` | `<!-- run -->` → `<!-- check:run -->`；`<!-- compile.error -->` → `<!-- check:compile_error -->`；第二个代码块新增 `<!-- expected_output -->` |
+| `import.md` | 语法正确的独立片段改为 `<!-- check:ast -->`；多文件合并的片段保留 `<!-- check:skip -->`；重导出示例 3 个块改为 `build_only project=reexport` 多文件项目；最后的块保持 `<!-- check:compile_error -->` |
+| `package_name.md` | 语法正确的独立片段改为 `<!-- check:ast -->`（6 个）；多文件/多包声明片段保留 `<!-- check:skip -->`（3 个） |
+| `toplevel_access.md` | `<!-- compile -->` → `<!-- check:build_only -->`；`<!-- compile.error -->` → `<!-- check:compile_error -->`；最后两个跨文件示例使用 `compile_error project=priv_a file=...` 合并为一个项目 |
 | `package_overview.md` | 无代码块，无需修改 |
 
 ## 四、check.md 文档更新
 
-- **2.2 节**：新增可选参数表（`project`、`file`、`type`、`lang`）
-- **2.6 节**（新增）：宏包项目使用方法及生成结构示例
-- **2.7 节**（新增）：C 代码/FFI 项目使用方法示例
-- **2.8 节**：更新标注规则总结，新增宏包和 C 代码说明
-- **3.1 节**：更新项目生成步骤描述
-- **3.3 节**：更新自动处理机制，新增 package 匹配、output-type 检测、宏项目结构、C 编译说明
+- **2.2 节**：新增 `ast` 指令说明；新增可选参数表（`project`、`file`、`type=macro`、`lang`）；更新 `skip` 说明为仅用于多文件合并等场景
+- **2.3 节**：新增 `check:ast` 示例；更新 `check:skip` 示例说明
+- **2.6 节**：宏包项目参数从 `type=macro_def` 改为 `type=macro`
+- **2.8 节**：新增 AST 语法检查规则说明
+- **3.3 节**：新增 AST 语法检查、宏项目结构说明；`type=macro_def` 改为 `type=macro`
 
 ## 五、测试结果
 
 ### ast_samples 目录
-- 测试用例：8 个（2 宏项目 + 5 独立项目 + 1 跳过）
-- 未标注代码块：0 个（全部已标注）
+- 测试用例：8 个（2 宏项目 + 5 独立项目 + 1 语法检查）
+- 未标注代码块：0 个
 
 ### package 目录
-- 测试用例：15 个（5 entry + 1 import + 9 toplevel）
-- 跳过：24 个（多文件/跨包示例和代码片段）
-- 未标注代码块：0 个（全部已标注）
+- 测试用例：31 个（16 个编译测试 + 15 个语法检查）
+- 跳过：6 个（多文件/多包声明合并片段，无法独立解析）
+- 未标注代码块：0 个
 
 ## 六、安全扫描
 

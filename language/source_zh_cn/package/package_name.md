@@ -52,7 +52,7 @@ src
 
 则 `a.cj`、`b.cj`、`c.cj`、`main.cj` 中的包声明可以为:
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 // a.cj
@@ -61,7 +61,7 @@ src
 package default.directory_0.directory_1
 ```
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 // b.cj
@@ -70,7 +70,7 @@ package default.directory_0.directory_1
 package default.directory_0.directory_1
 ```
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 // c.cj
@@ -79,7 +79,7 @@ package default.directory_0.directory_1
 package default.directory_0
 ```
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 // main.cj
@@ -94,7 +94,7 @@ main(): Int64 {
 
 以下是一些错误示例：
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 // a.cj
@@ -112,7 +112,7 @@ package a.B
 public func f {}
 ```
 
-<!-- check:skip -->
+<!-- check:ast -->
 
 ```cangjie
 // main.cj
