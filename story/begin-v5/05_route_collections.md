@@ -10,6 +10,7 @@
 
 ## 1. 路线缓存容器
 
+<!-- check:run project=cache -->
 ```cangjie
 import std.collection.*
 import std.sync.*
@@ -18,11 +19,19 @@ struct Route {
     let distanceKm: Float64
     let congestion: Int64
     let toll: Float64
+
+    public init(distanceKm: Float64, congestion: Int64, toll: Float64) {
+        this.distanceKm = distanceKm
+        this.congestion = congestion
+        this.toll = toll
+    }
 }
 
 class Cache<T> {
     var items = HashMap<String, T>()
     let lock = Mutex()
+
+    public init() {}
 
     public func put(key: String, value: T) {
         synchronized(lock) {
@@ -43,6 +52,7 @@ class Cache<T> {
 
 ## 2. 应用缓存
 
+<!-- check:run project=cache -->
 ```cangjie
 main() {
     let routeCache = Cache<Route>()

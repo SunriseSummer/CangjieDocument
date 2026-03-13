@@ -6,12 +6,13 @@
 
 *   学会用枚举表达有限状态集合。
 *   理解模式匹配在状态流转校验中的作用。
-*   建立“合法流转 + 明确兜底”的状态机思维。
+*   建立"合法流转 + 明确兜底"的状态机思维。
 
 ## 1. 状态定义 (Enum)
 
 一个订单的生命周期。
 
+<!-- check:run project=state_management -->
 ```cangjie
 enum OrderState {
     | Created
@@ -26,6 +27,7 @@ enum OrderState {
 
 根据当前状态决定下一步操作，防止非法流转（例如从 Created 直接变 Completed）。
 
+<!-- check:run project=state_management -->
 ```cangjie
 class OrderManager {
     public func process(state: OrderState) {
@@ -34,7 +36,7 @@ class OrderManager {
                 println("订单已创建，等待支付...")
 
             case Paid(amount) =>
-                println("订单已支付 ¥${amount}，准备发货...")
+                println("订单已支付 ${amount}，准备发货...")
 
             case Shipped(trackingNo) =>
                 println("订单已发货，单号: ${trackingNo}")
@@ -56,7 +58,7 @@ class OrderManager {
             case (Shipped(_), "receive") => Completed
             case (_, "cancel") => Cancelled("用户主动取消")
             case _ =>
-                println("❌ 非法状态流转！")
+                println("非法状态流转！")
                 current // 保持原状
         }
     }
@@ -76,6 +78,12 @@ main() {
     state = manager.next(state, "receive")
 }
 ```
+
+<!-- expected_output:
+订单已创建，等待支付...
+订单已支付 100.000000，准备发货...
+非法状态流转！
+-->
 
 ## 工程化提示
 

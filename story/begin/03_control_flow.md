@@ -12,6 +12,7 @@
 
 我们需要根据玩家猜测的数字与目标数字的大小关系，给出提示，并明确每种提示对应的业务分支。
 
+<!-- check:run -->
 ```cangjie
 main() {
     let targetNumber = 42
@@ -29,8 +30,13 @@ main() {
 }
 ```
 
+<!-- expected_output:
+玩家猜了 30 -> 太小了，再试一次。
+-->
+
 `if-else` 不仅可以控制流程，在仓颉中它还是表达式，可以直接返回值：
 
+<!-- check:skip -->
 ```cangjie
 let resultMsg = if (playerGuess == targetNumber) "Win" else "Try Again"
 ```
@@ -39,6 +45,7 @@ let resultMsg = if (playerGuess == targetNumber) "Win" else "Try Again"
 
 游戏通常不会猜一次就结束。我们需要一个循环，直到玩家猜对为止。为了演示，我们模拟几次猜测过程，并记录尝试次数。
 
+<!-- check:run -->
 ```cangjie
 main() {
     let target = 7
@@ -72,6 +79,7 @@ main() {
 
 在 RPG 游戏中，我们经常需要查看背包里的物品。
 
+<!-- check:run -->
 ```cangjie
 main() {
     // 定义一个区间，模拟背包格子编号

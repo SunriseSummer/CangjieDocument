@@ -10,7 +10,20 @@
 
 ## 1. 可预期错误：Option
 
+<!-- check:run -->
 ```cangjie
+struct Order {
+    let id: String
+    let weight: Float64
+    let priority: Int64
+
+    public init(id: String, weight: Float64, priority: Int64) {
+        this.id = id
+        this.weight = weight
+        this.priority = priority
+    }
+}
+
 func findOrder(id: String): Option<Order> {
     if (id == "O-404") {
         return None
@@ -30,6 +43,7 @@ main() {
 
 ## 2. 不可预期错误：Try-Catch
 
+<!-- check:run -->
 ```cangjie
 func loadRouteFile(path: String) {
     if (path == "") {

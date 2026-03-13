@@ -1,6 +1,6 @@
 # 第八章：机关陷阱 (错误处理)
 
-> 塔的高层布满了致命机关。有些宝箱是空的（Option），有些拉杆会触发爆炸（Exception）。你需要学会区分“可预期的空结果”和“不可预期的异常”，才能安全通过这些区域。
+> 塔的高层布满了致命机关。有些宝箱是空的（Option），有些拉杆会触发爆炸（Exception）。你需要学会区分"可预期的空结果"和"不可预期的异常"，才能安全通过这些区域。
 
 ## 本章目标
 
@@ -12,6 +12,7 @@
 
 这个宝箱可能含有传说装备，也可能什么都没有。在打开之前，它是未知的。
 
+<!-- check:run -->
 ```cangjie
 func openChest(id: Int64): Option<String> {
     if (id == 888) {
@@ -31,11 +32,15 @@ main() {
     }
 }
 ```
+<!-- expected_output:
+✨ 哇！获得了: 圣剑
+-->
 
 ## 2. 拆除炸弹 (Try-Catch)
 
 如果你剪错了线，就会触发异常。
 
+<!-- check:run -->
 ```cangjie
 func defuseBomb(wireColor: String) {
     if (wireColor == "Red") {
@@ -50,7 +55,7 @@ main() {
     try {
         defuseBomb("Red") // 尝试剪红线
     } catch (e: Exception) {
-        // 捕获了异常，幸好有“复活币”
+        // 捕获了异常，幸好有"复活币"
         println("🚑 受到重伤: " + e.message)
         println("使用复活币... 身体重组中...")
     } finally {
@@ -58,11 +63,18 @@ main() {
     }
 }
 ```
+<!-- expected_output:
+发现定时炸弹！尝试拆除...
+🚑 受到重伤: 轰！！！炸弹爆炸了！
+使用复活币... 身体重组中...
+无论死活，这场试炼结束了。
+-->
 
 ## 3. 机关解析 (Pattern Matching)
 
 面对复杂的符文锁，你需要根据图案做出不同反应。
 
+<!-- check:run -->
 ```cangjie
 enum RuneLock {
     | Triangle
@@ -83,6 +95,9 @@ main() {
     unlock(lock)
 }
 ```
+<!-- expected_output:
+输入密码: 1234
+-->
 
 ## 工程化提示
 
@@ -92,5 +107,5 @@ main() {
 
 ## 小试身手
 
-1. 为 `openChest` 增加“陷阱宝箱”分支，返回失败原因。
+1. 为 `openChest` 增加"陷阱宝箱"分支，返回失败原因。
 2. 扩展 `RuneLock` 增加新图案，并在 `unlock` 中处理。

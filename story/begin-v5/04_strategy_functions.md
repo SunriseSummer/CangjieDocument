@@ -10,11 +10,18 @@
 
 ## 1. 路径模型与评分
 
+<!-- check:run project=strategy -->
 ```cangjie
 struct Route {
     let distanceKm: Float64
     let congestion: Int64 // 0-10
     let toll: Float64
+
+    public init(distanceKm: Float64, congestion: Int64, toll: Float64) {
+        this.distanceKm = distanceKm
+        this.congestion = congestion
+        this.toll = toll
+    }
 }
 
 type ScoreFn = (Route) -> Float64
@@ -26,6 +33,7 @@ func scoreRoute(route: Route, scorer: ScoreFn): Float64 {
 
 ## 2. 策略示例
 
+<!-- check:run project=strategy -->
 ```cangjie
 main() {
     let route = Route(18.5, 6, 12.0)

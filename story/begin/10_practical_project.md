@@ -1,12 +1,12 @@
 # 10. 综合实战：迷你搜索引擎
 
-我们将综合运用之前学到的所有知识（结构体、集合、并发、错误处理），构建一个迷你的“倒排索引”搜索引擎。
+我们将综合运用之前学到的所有知识（结构体、集合、并发、错误处理），构建一个迷你的"倒排索引"搜索引擎。
 
 ## 本章目标
 
 *   综合运用结构体、集合与并发编程的能力。
 *   理解倒排索引的核心概念与基础流程。
-*   建立“拆分模块 + 组合流程”的工程实践思维。
+*   建立"拆分模块 + 组合流程"的工程实践思维。
 
 ## 1. 场景描述
 
@@ -16,21 +16,25 @@
 
 ## 2. 完整实现
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 import std.sync.*
-import std.time.*
 
 // === 数据模型 ===
 
 struct Document {
     let id: Int64
     let content: String
+
+    public init(id: Int64, content: String) {
+        this.id = id
+        this.content = content
+    }
 }
 
 // 倒排索引：单词 -> 文档ID列表
-// 使用 ConcurrentHashMap 或者是加锁的 HashMap。
-// 为了简化演示，我们这里使用互斥锁保护普通 HashMap。
+// 使用互斥锁保护普通 HashMap。
 class SearchIndex {
     // 存储结构: "apple" -> [1, 3]
     var indexMap: HashMap<String, ArrayList<Int64>>
@@ -46,7 +50,7 @@ class SearchIndex {
         // 加锁保护写操作
         synchronized(lock) {
             if (!indexMap.contains(word)) {
-                indexMap.put(word, ArrayList<Int64>())
+                indexMap[word] = ArrayList<Int64>()
             }
             let list = indexMap[word]
             // 避免重复添加
@@ -54,7 +58,7 @@ class SearchIndex {
             for (id in list) { if (id == docId) { exists = true; break } }
 
             if (!exists) {
-                list.append(docId)
+                list.add(docId)
             }
         }
     }
@@ -65,7 +69,7 @@ class SearchIndex {
             if (indexMap.contains(query)) {
                 // 返回副本以避免并发修改问题
                 let result = ArrayList<Int64>()
-                for (id in indexMap[query]) { result.append(id) }
+                for (id in indexMap[query]) { result.add(id) }
                 return result
             } else {
                 return ArrayList<Int64>()
@@ -76,16 +80,16 @@ class SearchIndex {
 
 // === 核心逻辑 ===
 
-// 分词函数 (简单按空格切分)
+// 分词函数 (简单按关键词匹配)
 func tokenize(text: String): Array<String> {
     // 实际项目中会用更复杂的正则或 NLP 库
-    // 这里简化为：转小写、按空格切分（具体 API 以标准库为准）
-    // 为了让示例可读，我们手动模拟关键词集合
+    // 这里简化为：转小写、匹配关键词
+    let lower = text.toAsciiLower()
     let words = ArrayList<String>()
-    if (text.contains("cangjie")) { words.append("cangjie") }
-    if (text.contains("programming")) { words.append("programming") }
-    if (text.contains("fast")) { words.append("fast") }
-    if (text.contains("safe")) { words.append("safe") }
+    if (lower.contains("cangjie")) { words.add("cangjie") }
+    if (lower.contains("programming")) { words.add("programming") }
+    if (lower.contains("fast")) { words.add("fast") }
+    if (lower.contains("safe")) { words.add("safe") }
     return words.toArray()
 }
 
@@ -115,20 +119,17 @@ main() {
     let futures = ArrayList<Future<Unit>>()
 
     // 2. 并发构建索引
-    let start = DateTime.now()
-
     for (doc in docs) {
         let f = spawn {
             indexDocument(doc, engine)
         }
-        futures.append(f)
+        futures.add(f)
     }
 
     // 等待所有索引任务完成
     for (f in futures) { f.get() }
 
-    let end = DateTime.now()
-    println("索引构建完成！耗时: ${(end - start).toMilliseconds()} ms")
+    println("索引构建完成！")
 
     // 3. 执行搜索
     let queries = ["cangjie", "safe", "fast", "java"]
@@ -167,5 +168,5 @@ main() {
 
 ## 小试身手
 
-1. 为索引增加“词频统计”，并在搜索结果中输出出现次数。
+1. 为索引增加"词频统计"，并在搜索结果中输出出现次数。
 2. 将索引构建与搜索过程拆分成两个函数模块，并为其补充日志。

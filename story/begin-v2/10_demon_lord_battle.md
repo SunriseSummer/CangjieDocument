@@ -1,12 +1,12 @@
 # 第十章：决战魔王 (综合实战)
 
-> 终于，你来到了第 100 层。魔王“Bug”端坐在王座之上。它拥有无穷的血量和变幻莫测的攻击。你需要运用你学到的所有知识——结构体、集合、并发、策略——来编写一个自动战斗系统击败它，并持续记录关键战斗指标。
+> 终于，你来到了第 100 层。魔王"Bug"端坐在王座之上。它拥有无穷的血量和变幻莫测的攻击。你需要运用你学到的所有知识——结构体、集合、并发、策略——来编写一个自动战斗系统击败它，并持续记录关键战斗指标。
 
 ## 本章目标
 
 *   综合运用并发、集合与结构体构建完整场景。
 *   理解共享状态的同步策略与日志记录方式。
-*   体验从“模型设计”到“流程编排”的完整闭环。
+*   体验从"模型设计"到"流程编排"的完整闭环。
 
 ## 1. 战场模拟系统
 
@@ -15,11 +15,10 @@
 *   **Hero Party**: 一个英雄小队，并发进行攻击。
 *   **Log System**: 记录战斗日志。
 
+<!-- check:run -->
 ```cangjie
 import std.sync.*
-import std.time.*
 import std.collection.*
-import std.math.* // 假设有随机数库，这里用模拟
 
 // === 1. 实体定义 ===
 
@@ -49,6 +48,12 @@ struct Skill {
     let name: String
     let damage: Int64
     let castTime: Int64 // 毫秒
+
+    public init(name: String, damage: Int64, castTime: Int64) {
+        this.name = name
+        this.damage = damage
+        this.castTime = castTime
+    }
 }
 
 // === 2. 英雄行为 (并发任务) ===
@@ -88,13 +93,13 @@ main() {
     let partyFutures = ArrayList<Future<Unit>>()
 
     // 战士进场
-    partyFutures.append(spawn { heroAction("亚瑟", demonLord, warriorSkills) })
+    partyFutures.add(spawn { heroAction("亚瑟", demonLord, warriorSkills) })
 
     // 法师进场
-    partyFutures.append(spawn { heroAction("梅林", demonLord, mageSkills) })
+    partyFutures.add(spawn { heroAction("梅林", demonLord, mageSkills) })
 
     // 射手进场
-    partyFutures.append(spawn {
+    partyFutures.add(spawn {
         heroAction("罗宾", demonLord, [Skill("连射", 50, 100)])
     })
 

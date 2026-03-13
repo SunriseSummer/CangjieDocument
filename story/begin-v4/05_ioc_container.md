@@ -12,6 +12,7 @@
 
 我们需要一个万能的字典，可以存储任意类型的服务实例。
 
+<!-- check:run project=ioc_container -->
 ```cangjie
 import std.collection.*
 
@@ -30,8 +31,7 @@ class Container {
         println("IoC: 注册服务 [${name}]")
     }
 
-    // 泛型获取方法 (模拟)
-    // 仓颉中通常需要转换类型，这里简化演示
+    // 获取服务
     public func resolve(name: String): Option<Service> {
         if (services.contains(name)) {
             return Some(services[name])
@@ -43,15 +43,16 @@ class Container {
 
 ## 2. 服务注册与获取
 
+<!-- check:run project=ioc_container -->
 ```cangjie
 class DatabaseService <: Service {
-    public func getName() = "Database"
-    public func query() = "SELECT * FROM users"
+    public func getName(): String { "Database" }
+    public func query(): String { "SELECT * FROM users" }
 }
 
 class CacheService <: Service {
-    public func getName() = "Redis"
-    public func get(key: String) = "Value for ${key}"
+    public func getName(): String { "Redis" }
+    public func get(key: String): String { "Value for ${key}" }
 }
 
 class UserController {
@@ -76,18 +77,24 @@ main() {
 
     // 2. 解析依赖
     if (let Some(svc) <- container.resolve("db")) {
-        // 假设我们知道它是 DatabaseService 并进行了转换
-        // 在强类型语言中，这里通常涉及 cast
-        if (svc is DatabaseService) {
-             let db = svc as DatabaseService
+        // 使用模式匹配进行类型转换
+        let db: DatabaseService = match (svc) {
+            case db: DatabaseService => db
+            case _ => throw Exception("not DatabaseService")
+        }
 
-             // 3. 注入 Controller
-             let ctrl = UserController(db)
-             ctrl.getUser()
-         }
-     }
+        // 3. 注入 Controller
+        let ctrl = UserController(db)
+        ctrl.getUser()
+    }
 }
 ```
+
+<!-- expected_output:
+IoC: 注册服务 [db]
+IoC: 注册服务 [cache]
+Controller 调用 DB: SELECT * FROM users
+-->
 
 ## 工程化提示
 

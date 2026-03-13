@@ -1,6 +1,6 @@
 # 第三章：路由分发 (流程控制)
 
-> 服务器需要根据 URL 的不同，执行不同的业务逻辑。这就是“路由”。我们将实现一个简单的路由匹配器，理解“路径到处理函数”的映射关系。
+> 服务器需要根据 URL 的不同，执行不同的业务逻辑。这就是"路由"。我们将实现一个简单的路由匹配器，理解"路径到处理函数"的映射关系。
 
 ## 本章目标
 
@@ -12,8 +12,33 @@
 
 在很多微框架中，路由本质上就是一个巨大的 `match` 或 `if-else` 结构。
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
+
+enum HttpMethod {
+    | GET
+    | POST
+    | PUT
+    | DELETE
+}
+
+class Context {
+    let path: String
+    let method: HttpMethod
+    var responseBody: String = ""
+    var statusCode: Int64 = 200
+    public init(path: String, method: HttpMethod) {
+        this.path = path
+        this.method = method
+    }
+    public func string(content: String) {
+        this.responseBody = content
+    }
+    public func json(json: String) {
+        this.responseBody = json
+    }
+}
 
 // 定义一个处理函数类型
 type Handler = (Context) -> Unit
@@ -61,6 +86,11 @@ main() {
     println("[${req2.statusCode}] ${req2.responseBody}")
 }
 ```
+
+<!-- expected_output:
+[200] Welcome to Index Page
+[404] 404 Not Found
+-->
 
 ## 工程化提示
 

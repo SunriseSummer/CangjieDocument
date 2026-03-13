@@ -4,14 +4,15 @@
 
 ## 本章目标
 
-*   理解接口在“能力抽象”上的价值。
-*   学会通过多态实现“调用方与实现方解耦”。
+*   理解接口在"能力抽象"上的价值。
+*   学会通过多态实现"调用方与实现方解耦"。
 *   掌握扩展现有类型的安全方式。
 
 ## 1. 定义支付标准 (Interface)
 
-不管是什么支付方式，都必须具备“支付”这个能力。
+不管是什么支付方式，都必须具备"支付"这个能力。
 
+<!-- check:run project=payment -->
 ```cangjie
 interface PaymentGateway {
     func pay(amount: Float64): Unit
@@ -21,6 +22,7 @@ interface PaymentGateway {
 
 ## 2. 对接不同渠道 (Implementation)
 
+<!-- check:run project=payment -->
 ```cangjie
 class AliPay <: PaymentGateway {
     public func pay(amount: Float64) {
@@ -45,8 +47,9 @@ class WeChatPay <: PaymentGateway {
 
 ## 3. 统一收银台 (多态)
 
-收银台不需要知道用户具体用什么 App，它只认“支付网关”。
+收银台不需要知道用户具体用什么 App，它只认"支付网关"。
 
+<!-- check:run project=payment -->
 ```cangjie
 func processPayment(gateway: PaymentGateway, price: Float64, orderId: String) {
     println("--- 开始交易: ${orderId} ---")
@@ -72,6 +75,7 @@ main() {
 
 为了防止支付金额出现负数，我们想给系统的 `Float64` 类型加个检查功能，但我们不能修改系统源码。扩展（Extend）来帮忙！
 
+<!-- check:run -->
 ```cangjie
 extend Float64 {
     func isValidMoney(): Bool {
@@ -86,6 +90,10 @@ main() {
     }
 }
 ```
+
+<!-- expected_output:
+❌ 错误：金额不能为负！
+-->
 
 ## 工程化提示
 

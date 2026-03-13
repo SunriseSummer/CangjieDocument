@@ -1,12 +1,12 @@
 # 第十章：全栈博客实战 (CangjieWeb 综合演示)
 
-> 终于，我们的 `CangjieWeb` 框架初具雏形。现在，让我们用它来构建一个真实的博客后端 API。我们将串联起所有知识点，并演示“分层 + 依赖注入”的开发方式。
+> 终于，我们的 `CangjieWeb` 框架初具雏形。现在，让我们用它来构建一个真实的博客后端 API。我们将串联起所有知识点，并演示"分层 + 依赖注入"的开发方式。
 
 ## 本章目标
 
 *   综合运用模型、服务与控制器的分层思路。
 *   理解 IoC 注入与路由分发的完整流程。
-*   建立“全链路设计”的系统观念。
+*   建立"全链路设计"的系统观念。
 
 ## 1. 架构设计
 
@@ -17,9 +17,9 @@
 
 ## 2. 完整代码实现
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
-import std.time.*
 
 // === 1. Core Framework (迷你版) ===
 class Context {
@@ -33,6 +33,11 @@ struct Post {
     let id: Int64
     let title: String
     let content: String
+    public init(id: Int64, title: String, content: String) {
+        this.id = id
+        this.title = title
+        this.content = content
+    }
 }
 
 // === 3. Services (Interface & Impl) ===
@@ -45,8 +50,8 @@ class BlogServiceImpl <: BlogService {
     var posts = ArrayList<Post>()
 
     public init() {
-        posts.append(Post(1, "Hello Cangjie", "First Post"))
-        posts.append(Post(2, "Web Dev", "Framework Design"))
+        posts.add(Post(1, "Hello Cangjie", "First Post"))
+        posts.add(Post(2, "Web Dev", "Framework Design"))
     }
 
     public func getAllPosts(): String {
@@ -61,7 +66,7 @@ class BlogServiceImpl <: BlogService {
 
     public func createPost(title: String) {
         let newId = posts.size + 1
-        posts.append(Post(newId, title, "Content..."))
+        posts.add(Post(newId, title, "Content..."))
         println("Service: 文章 '${title}' 已创建")
     }
 }
@@ -129,7 +134,7 @@ main() {
 *   **并发处理模型**
 *   **领域建模**
 
-这正是从“码农”进阶为“架构师”的必经之路。继续探索吧，用仓颉构建更宏大的数字大厦！
+这正是从"码农"进阶为"架构师"的必经之路。继续探索吧，用仓颉构建更宏大的数字大厦！
 
 ## 工程化提示
 

@@ -10,6 +10,7 @@
 
 ## 1. 简化版综合流程
 
+<!-- check:run -->
 ```cangjie
 import std.collection.*
 import std.sync.*
@@ -19,6 +20,12 @@ struct Order {
     let id: String
     let weight: Float64
     let priority: Int64
+
+    public init(id: String, weight: Float64, priority: Int64) {
+        this.id = id
+        this.weight = weight
+        this.priority = priority
+    }
 }
 
 class Vehicle {
@@ -67,7 +74,7 @@ main() {
                 }
             }
         }
-        futures.append(f)
+        futures.add(f)
     }
 
     for (f in futures) { f.get() }

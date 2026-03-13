@@ -6,15 +6,15 @@
 
 *   理解并发 Worker 的调度与同步方式。
 *   学会用原子变量统计共享指标。
-*   建立“异步处理 + 主线程协作”的工程认知。
+*   建立"异步处理 + 主线程协作"的工程认知。
 
 ## 1. 请求处理 Worker
 
 模拟一个能够并发处理请求的 Worker 池。
 
+<!-- check:run -->
 ```cangjie
 import std.sync.*
-import std.time.*
 import std.collection.*
 
 // 模拟耗时的业务逻辑
@@ -22,7 +22,7 @@ func handleRequest(id: Int64) {
     let processTime = Duration.millisecond * (id * 100) // 模拟不同耗时
     println("Worker [${id}]: 开始处理 (预计 ${id * 100}ms)")
     sleep(processTime)
-    println("Worker [${id}]: 完成 ✅")
+    println("Worker [${id}]: 完成")
 }
 
 main() {
@@ -36,7 +36,7 @@ main() {
         let f = spawn {
             handleRequest(i)
         }
-        futures.append(f)
+        futures.add(f)
     }
 
     println(">>> 主线程：所有请求已分发，继续监听新请求...")
@@ -54,7 +54,10 @@ main() {
 
 统计服务器的总请求数 (QPS)，必须保证线程安全。
 
+<!-- check:run -->
 ```cangjie
+import std.sync.*
+
 main() {
     let totalRequests = AtomicInt64(0)
 
@@ -70,6 +73,10 @@ main() {
 }
 ```
 
+<!-- expected_output:
+总请求数: 100
+-->
+
 ## 工程化提示
 
 *   真实服务会使用线程池或协程框架，本例仅演示核心概念。
@@ -79,4 +86,4 @@ main() {
 ## 小试身手
 
 1. 为 `handleRequest` 增加失败分支，并统计失败次数。
-2. 将 `totalRequests` 统计改为“成功/失败”双计数。
+2. 将 `totalRequests` 统计改为"成功/失败"双计数。

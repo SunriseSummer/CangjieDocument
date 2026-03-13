@@ -6,12 +6,13 @@
 
 *   理解配置加载的基本流程与风险点。
 *   学会使用异常捕获提供降级策略。
-*   建立“配置可覆盖、可回退”的工程习惯。
+*   建立"配置可覆盖、可回退"的工程习惯。
 
 ## 1. 模拟文件读取 (File IO)
 
 假设我们有一个读取文件的底层函数。
 
+<!-- check:run project=config_loader -->
 ```cangjie
 // 模拟 std.fs 的读取
 func readFileContent(path: String): String {
@@ -26,6 +27,7 @@ func readFileContent(path: String): String {
 
 ## 2. 安全配置加载 (Try-Catch)
 
+<!-- check:run project=config_loader -->
 ```cangjie
 struct AppConfig {
     var port: Int64 = 80
@@ -43,14 +45,14 @@ func loadConfig(path: String): AppConfig {
         let content = readFileContent(path)
         println("读取成功: ${content}")
         // 这里应该有 JSON 解析逻辑，简化为模拟赋值
-        let config = AppConfig()
+        var config = AppConfig()
         config.port = 8080
         config.dbType = "mysql"
         return config
 
     } catch (e: Exception) {
-        println("⚠️ 配置加载失败: ${e.message}")
-        println("🔄 回退到默认配置")
+        println("配置加载失败: ${e.message}")
+        println("回退到默认配置")
         return AppConfig() // 返回默认值
     }
 }
@@ -60,7 +62,7 @@ main() {
     let conf1 = loadConfig("config.json")
     conf1.printInfo()
 
-    println("\n----------------\n")
+    println("----------------")
 
     // 场景 2: 文件不存在
     let conf2 = loadConfig("missing.yaml")
@@ -68,9 +70,20 @@ main() {
 }
 ```
 
+<!-- expected_output:
+正在加载配置: config.json ...
+读取成功: {"port": 8080, "db": "mysql"}
+配置加载: Port=8080, DB=mysql
+----------------
+正在加载配置: missing.yaml ...
+配置加载失败: FileNotFound: missing.yaml
+回退到默认配置
+配置加载: Port=80, DB=sqlite
+-->
+
 ## 工程化提示
 
-*   配置读取应区分“缺失”与“格式错误”，并提供清晰提示。
+*   配置读取应区分"缺失"与"格式错误"，并提供清晰提示。
 *   生产环境建议支持多级配置覆盖（默认、环境变量、文件）。
 *   JSON 解析需使用可靠库，本例只演示结构。
 

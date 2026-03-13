@@ -12,15 +12,16 @@
 
 凯撒密码的原理是将字母表中的每个字母向后移动固定位数。例如，移动 1 位，'A' 变成 'B'。
 
+<!-- check:run -->
 ```cangjie
 // 字符处理函数：将单个字符加密
-func encryptChar(char: Rune, shift: Int64): Rune {
+func encryptChar(ch: Rune, shift: Int64): Rune {
     // 简单的位移算法 (仅演示原理，非生产级加密)
-    let code = UInt32(char)
-    let lowerA = UInt32('a')
-    let lowerZ = UInt32('z')
-    let upperA = UInt32('A')
-    let upperZ = UInt32('Z')
+    let code = UInt32(ch)
+    let lowerA = UInt32(r'a')
+    let lowerZ = UInt32(r'z')
+    let upperA = UInt32(r'A')
+    let upperZ = UInt32(r'Z')
 
     if (code >= lowerA && code <= lowerZ) {
         return Rune(lowerA + (code - lowerA + UInt32(shift)) % 26)
@@ -28,14 +29,14 @@ func encryptChar(char: Rune, shift: Int64): Rune {
     if (code >= upperA && code <= upperZ) {
         return Rune(upperA + (code - upperA + UInt32(shift)) % 26)
     }
-    return char
+    return ch
 }
 
 // 主加密函数
 func encryptMessage(msg: String, key: Int64): String {
     var result = ""
-    for (char in msg) {
-        let encrypted = encryptChar(char, key)
+    for (ch in msg.toRuneArray()) {
+        let encrypted = encryptChar(ch, key)
         result = result + encrypted.toString()
     }
     return result
@@ -51,18 +52,24 @@ main() {
 }
 ```
 
+<!-- expected_output:
+原文: Cangjie
+密文: Dbohkjf
+-->
+
 ## 2. 定制化加密 (高阶函数与 Lambda)
 
 如果我们想让加密算法更灵活，比如允许用户自定义“如何处理每个字符”，该怎么办？
 
 我们可以让函数接收另一个函数作为参数。
 
+<!-- check:run -->
 ```cangjie
 // 通用处理器：它不知道具体做什么，全看 `processor` 怎么说
 func processString(text: String, processor: (Rune) -> Rune): String {
     var result = ""
-    for (char in text) {
-        result = result + processor(char).toString()
+    for (ch in text.toRuneArray()) {
+        result = result + processor(ch).toString()
     }
     return result
 }
@@ -77,10 +84,15 @@ main() {
     println("加密后: " + encrypted)
 
     // 场景 2: 掩码 (把所有字符变成 '*')
-    let masked = processString(text) { c => '*' }
+    let masked = processString(text) { _ => r'*' }
     println("掩码后: " + masked)
 }
 ```
+
+<!-- expected_output:
+加密后: Ifmmp
+掩码后: *****
+-->
 
 通过这种方式，我们的代码变得极具扩展性。这就是函数式编程在工程中可组合、可替换的魅力。
 

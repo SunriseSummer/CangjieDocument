@@ -12,6 +12,7 @@
 
 传感器上报的数据包通常是只读的快照，适合使用 `struct`（值类型）。
 
+<!-- check:run project=device_models -->
 ```cangjie
 struct SensorPacket {
     let timestamp: Int64
@@ -34,10 +35,11 @@ struct SensorPacket {
 
 一个真实的灯泡是有状态的（开/关，亮度），且在这个系统中是唯一的对象，适合使用 `class`（引用类型）。
 
+<!-- check:run project=device_models -->
 ```cangjie
 class SmartLight {
     let id: String
-    var brightness: Int64 // 0-100
+    var brightness: Int64
     var isOn: Bool
 
     public init(id: String) {
@@ -71,6 +73,12 @@ main() {
     livingRoomLight.dim(50)
 }
 ```
+
+<!-- expected_output:
+[Log] Value: 25.500000C
+💡 灯光 [L-001] 已开启
+💡 灯光 [L-001] 亮度调节为 50%
+-->
 
 ## 工程化提示
 
