@@ -10,11 +10,18 @@
 
 ## 1. 优先级规则
 
+<!-- check:run project=dispatch -->
 ```cangjie
 struct Order {
     let id: String
     let weight: Float64
     let priority: Int64
+
+    public init(id: String, weight: Float64, priority: Int64) {
+        this.id = id
+        this.weight = weight
+        this.priority = priority
+    }
 }
 
 func decideLane(order: Order): String {
@@ -30,6 +37,7 @@ func decideLane(order: Order): String {
 
 ## 2. 批量调度
 
+<!-- check:run project=dispatch -->
 ```cangjie
 main() {
     let orders = [

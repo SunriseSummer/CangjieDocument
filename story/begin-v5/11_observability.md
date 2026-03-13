@@ -10,7 +10,10 @@
 
 ## 1. 日志等级
 
+<!-- check:run project=observability -->
 ```cangjie
+import std.time.*
+
 enum LogLevel {
     | Info
     | Warn
@@ -29,9 +32,8 @@ func log(level: LogLevel, message: String) {
 
 ## 2. 耗时统计
 
+<!-- check:run project=observability -->
 ```cangjie
-import std.time.*
-
 func timeBlock(name: String, action: () -> Unit) {
     let start = DateTime.now()
     action()

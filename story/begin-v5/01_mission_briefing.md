@@ -10,6 +10,7 @@
 
 ## 1. 启动入口与信息输出
 
+<!-- check:run -->
 ```cangjie
 import std.time.*
 

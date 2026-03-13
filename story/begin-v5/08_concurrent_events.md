@@ -10,6 +10,7 @@
 
 ## 1. 并行事件处理
 
+<!-- check:run -->
 ```cangjie
 import std.sync.*
 import std.time.*
@@ -24,8 +25,8 @@ func handleDockEvent(name: String): Int64 {
 main() {
     let futures = ArrayList<Future<Int64>>()
 
-    futures.append(spawn { handleDockEvent("Dock-A") })
-    futures.append(spawn { handleDockEvent("Dock-B") })
+    futures.add(spawn { handleDockEvent("Dock-A") })
+    futures.add(spawn { handleDockEvent("Dock-B") })
 
     var total = 0
     for (f in futures) { total = total + f.get() }
@@ -35,7 +36,11 @@ main() {
 
 ## 2. 共享计数器
 
+<!-- check:run -->
 ```cangjie
+import std.sync.*
+import std.time.*
+
 main() {
     let totalOrders = AtomicInt64(0)
 

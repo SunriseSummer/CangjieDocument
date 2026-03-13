@@ -10,6 +10,7 @@
 
 ## 1. 统一设备接口
 
+<!-- check:skip -->
 ```cangjie
 interface Telemetry {
     func read(): SensorPacket
@@ -19,6 +20,12 @@ struct SensorPacket {
     let deviceId: String
     let value: Float64
     let captureTimestamp: Int64 // Unix 时间戳（秒）
+
+    public init(deviceId: String, value: Float64, captureTimestamp: Int64) {
+        this.deviceId = deviceId
+        this.value = value
+        this.captureTimestamp = captureTimestamp
+    }
 }
 
 class GpsSensor <: Telemetry {
@@ -30,6 +37,7 @@ class GpsSensor <: Telemetry {
 
 ## 2. 扩展基础类型
 
+<!-- check:run -->
 ```cangjie
 extend Float64 {
     func asKm(): String {

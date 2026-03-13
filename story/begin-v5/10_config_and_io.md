@@ -10,10 +10,13 @@
 
 ## 1. 配置加载
 
+<!-- check:run project=config -->
 ```cangjie
 struct AppConfig {
     var region: String = "star-port"
     var maxVehicles: Int64 = 200
+
+    public init() {}
 
     public func summary() {
         println("Region=${region}, MaxVehicles=${maxVehicles}")
@@ -31,7 +34,7 @@ func loadConfig(path: String): AppConfig {
     try {
         let content = readConfigFile(path)
         println("读取配置: ${content}")
-        let cfg = AppConfig()
+        var cfg = AppConfig()
         cfg.region = "star-port"
         cfg.maxVehicles = 200
         return cfg
@@ -44,11 +47,18 @@ func loadConfig(path: String): AppConfig {
 
 ## 2. 序列化输出
 
+<!-- check:run project=config -->
 ```cangjie
 struct Order {
     let id: String
     let weight: Float64
     let priority: Int64
+
+    public init(id: String, weight: Float64, priority: Int64) {
+        this.id = id
+        this.weight = weight
+        this.priority = priority
+    }
 }
 
 func orderToJson(order: Order): String {

@@ -10,6 +10,7 @@
 
 ## 1. 订单与车辆模型
 
+<!-- check:skip -->
 ```cangjie
 struct Order {
     let id: String
@@ -42,11 +43,18 @@ class Vehicle {
 
 ## 2. 仓库信息
 
+<!-- check:skip -->
 ```cangjie
 struct Warehouse {
     let code: String
     let region: String
     let slots: Int64
+
+    public init(code: String, region: String, slots: Int64) {
+        this.code = code
+        this.region = region
+        this.slots = slots
+    }
 }
 ```
 

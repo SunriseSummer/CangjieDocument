@@ -10,6 +10,7 @@
 
 ## 1. 状态定义
 
+<!-- check:run project=shipment -->
 ```cangjie
 enum ShipmentState {
     | Created
@@ -22,6 +23,7 @@ enum ShipmentState {
 
 ## 2. 状态流转
 
+<!-- check:run project=shipment -->
 ```cangjie
 class ShipmentFlow {
     public func next(state: ShipmentState, action: String): ShipmentState {
