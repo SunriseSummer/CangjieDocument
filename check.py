@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-check.py — Story 文档示例代码提取、构建和验证工具
+check.py — 仓颉 Markdown 文档示例代码提取、构建和验证工具
 
-从 story/ 目录下的 Markdown 文档中提取带有 <!-- check:xxx --> 标注的仓颉代码块，
+从指定目录下的 Markdown 文档中提取带有 <!-- check:xxx --> 标注的仓颉代码块，
 自动生成 cjpm 项目并编译运行，验证示例代码的正确性。
+对于未标注的代码块会发出警告，提醒开发者补全标注。
 
 用法:
-    python3 check.py [选项]
+    python3 check.py [选项] [目录]
 
 详细说明参见 check.md。
 """
@@ -105,15 +106,22 @@ def find_heading_for_position(content: str, pos: int) -> str:
     return best
 
 
-def extract_code_blocks(md_path: str) -> list:
-    """从 Markdown 文件中提取所有带标注的代码块"""
+def extract_code_blocks(md_path: str) -> tuple:
+    """从 Markdown 文件中提取所有带标注的代码块，同时记录未标注的代码块。
+
+    返回 (annotated_blocks, unannotated_blocks)，其中 unannotated_blocks 是
+    [(line_number, heading, first_line_of_code), ...] 列表。
+    """
     with open(md_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
     blocks = []
+    unannotated = []
     lines = content.split('\n')
     i = 0
     block_index = 0
+    # 记录已被标注关联的代码块起始行号
+    annotated_line_set = set()
 
     while i < len(lines):
         line = lines[i]
@@ -133,6 +141,7 @@ def extract_code_blocks(md_path: str) -> list:
                 j += 1
 
             if j < len(lines) and lines[j].strip().startswith('```cangjie'):
+                annotated_line_set.add(j)
                 # 找代码块结束
                 code_lines = []
                 k = j + 1
@@ -174,7 +183,27 @@ def extract_code_blocks(md_path: str) -> list:
                 continue
         i += 1
 
-    return blocks
+    # 第二遍扫描：找出所有未标注的 cangjie 代码块
+    # 预计算行偏移量
+    line_offsets = []
+    offset = 0
+    for l in lines:
+        line_offsets.append(offset)
+        offset += len(l) + 1
+
+    for idx, line in enumerate(lines):
+        if line.strip().startswith('```cangjie') and idx not in annotated_line_set:
+            heading = find_heading_for_position(content, line_offsets[idx])
+            # 取代码块的第一行（非空）作为预览
+            preview = ''
+            k = idx + 1
+            while k < len(lines) and lines[k].strip() != '```':
+                if lines[k].strip() and not preview:
+                    preview = lines[k].strip()[:60]
+                k += 1
+            unannotated.append((idx + 1, heading, preview))  # 1-based line number
+
+    return blocks, unannotated
 
 
 # ============================================================
@@ -445,21 +474,21 @@ def run_testcase(tc: TestCase, timeout_build: int = 60, timeout_run: int = 30) -
 # 主流程
 # ============================================================
 
-def find_story_files(story_dir: str) -> list:
-    """查找 story 目录下所有 Markdown 文件"""
+def find_md_files(base_dir: str) -> list:
+    """查找目录下所有 Markdown 文件"""
     files = []
-    story_path = Path(story_dir)
-    if not story_path.exists():
-        print(f"Error: story directory '{story_dir}' not found", file=sys.stderr)
+    base_path = Path(base_dir)
+    if not base_path.exists():
+        print(f"Error: directory '{base_dir}' not found", file=sys.stderr)
         sys.exit(1)
-    for md_file in sorted(story_path.rglob('*.md')):
+    for md_file in sorted(base_path.rglob('*.md')):
         files.append(str(md_file))
     return files
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Story 文档示例代码提取、构建和验证工具',
+        description='仓颉 Markdown 文档示例代码提取、构建和验证工具',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent('''\
             标注格式:
@@ -475,18 +504,21 @@ def main():
               line1
               line2
               -->
+
+            未标注的 cangjie 代码块会被报告为警告，提示开发者补全标注。
         ''')
     )
 
     parser.add_argument(
-        '-d', '--story-dir',
-        default='story',
-        help='story 文档目录路径 (默认: story)',
+        'dir',
+        nargs='?',
+        default='.',
+        help='文档目录路径 (默认: 当前目录)',
     )
     parser.add_argument(
         '-o', '--output-dir',
-        default='story_tests',
-        help='提取的示例代码存放路径 (默认: story_tests)',
+        default='check_output',
+        help='提取的示例代码存放路径 (默认: check_output)',
     )
     parser.add_argument(
         '-f', '--file',
@@ -494,8 +526,8 @@ def main():
         help='只处理指定的文档文件（可多次指定）',
     )
     parser.add_argument(
-        '-s', '--story',
-        help='只处理指定的 story 子目录（如 begin, begin-v2）',
+        '-s', '--subdir',
+        help='只处理指定的子目录（如 begin, begin-v2）',
     )
     parser.add_argument(
         '--clean',
@@ -528,19 +560,19 @@ def main():
             print("Error: cjpm 命令不可用。请先 source envsetup.sh 配置环境。", file=sys.stderr)
             sys.exit(1)
 
-    # 确定 story 目录
-    story_dir = args.story_dir
-    if args.story:
-        story_dir = os.path.join(args.story_dir, args.story)
+    # 确定扫描目录
+    scan_dir = args.dir
+    if args.subdir:
+        scan_dir = os.path.join(args.dir, args.subdir)
 
     # 收集要处理的文件
     if args.file:
         md_files = args.file
     else:
-        md_files = find_story_files(story_dir)
+        md_files = find_md_files(scan_dir)
 
     if not md_files:
-        print(f"No markdown files found in '{story_dir}'")
+        print(f"No markdown files found in '{scan_dir}'")
         sys.exit(0)
 
     # 创建输出目录
@@ -552,22 +584,31 @@ def main():
     passed = 0
     failed = 0
     skipped = 0
+    unannotated_total = 0
+    unannotated_warnings = []  # [(file, line, heading, preview), ...]
     errors = []
     all_results = []
 
-    print(f"📖 扫描文档目录: {story_dir}")
+    print(f"📖 扫描文档目录: {scan_dir}")
     print(f"📁 输出目录: {output_base}")
     print(f"📄 找到 {len(md_files)} 个文档文件\n")
 
     for md_file in md_files:
         # 提取代码块
-        blocks = extract_code_blocks(md_file)
-        if not blocks:
+        blocks, unannotated = extract_code_blocks(md_file)
+
+        # 记录未标注代码块
+        if unannotated:
+            unannotated_total += len(unannotated)
+            for line_no, heading, preview in unannotated:
+                unannotated_warnings.append((md_file, line_no, heading, preview))
+
+        if not blocks and not unannotated:
             continue
 
         # 计算相对路径以保持目录结构
         try:
-            rel = Path(md_file).relative_to(args.story_dir)
+            rel = Path(md_file).relative_to(args.dir)
         except ValueError:
             rel = Path(md_file).name
         doc_output_dir = output_base / rel.parent
@@ -575,16 +616,22 @@ def main():
         # 组装测试用例
         testcases = blocks_to_testcases(blocks, md_file)
 
-        if not testcases:
-            continue
-
         rel_display = str(rel)
         skip_count = sum(1 for b in blocks if b.directive == 'skip')
         if skip_count > 0:
             skipped += skip_count
 
-        print(f"  📄 {rel_display}: {len(testcases)} 个测试用例" +
-              (f" ({skip_count} 个跳过)" if skip_count else ""))
+        unannotated_count = len(unannotated) if unannotated else 0
+        info_parts = []
+        if testcases:
+            info_parts.append(f"{len(testcases)} 个测试用例")
+        if skip_count:
+            info_parts.append(f"{skip_count} 个跳过")
+        if unannotated_count:
+            info_parts.append(f"{unannotated_count} 个未标注")
+
+        detail = f" ({', '.join(info_parts)})" if info_parts else ""
+        print(f"  📄 {rel_display}:{detail}")
 
         for tc in testcases:
             total += 1
@@ -632,10 +679,27 @@ def main():
                     print(f"    编译输出:\n{textwrap.indent(r['build_output'], '      ')}")
                 print()
 
+    # 报告未标注代码块
+    if unannotated_warnings:
+        print(f"\n{'='*60}")
+        print(f"⚠️  发现 {unannotated_total} 个未标注的 cangjie 代码块:\n")
+        for filepath, line_no, heading, preview in unannotated_warnings:
+            print(f"  {filepath}:{line_no}  (章节: {heading})")
+            if preview:
+                print(f"    {preview}")
+        print(f"\n   请为这些代码块添加 <!-- check:xxx --> 标注。")
+
     # 输出 JSON
     if args.json:
+        json_data = {
+            'results': all_results,
+            'unannotated': [
+                {'file': f, 'line': ln, 'heading': h, 'preview': p}
+                for f, ln, h, p in unannotated_warnings
+            ],
+        }
         with open(args.json, 'w', encoding='utf-8') as f:
-            json.dump(all_results, f, ensure_ascii=False, indent=2)
+            json.dump(json_data, f, ensure_ascii=False, indent=2)
         print(f"\n📋 测试结果已保存到: {args.json}")
 
     # 清理
