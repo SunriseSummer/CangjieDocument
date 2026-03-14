@@ -10,7 +10,7 @@
 
 ## 1. 订单与车辆模型
 
-<!-- check:skip -->
+<!-- check:ast -->
 ```cangjie
 struct Order {
     let id: String
@@ -43,7 +43,7 @@ class Vehicle {
 
 ## 2. 仓库信息
 
-<!-- check:skip -->
+<!-- check:ast -->
 ```cangjie
 struct Warehouse {
     let code: String

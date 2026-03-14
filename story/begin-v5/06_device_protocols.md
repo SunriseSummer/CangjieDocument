@@ -10,7 +10,7 @@
 
 ## 1. 统一设备接口
 
-<!-- check:skip -->
+<!-- check:ast -->
 ```cangjie
 interface Telemetry {
     func read(): SensorPacket

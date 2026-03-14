@@ -8,7 +8,7 @@
 
 没有参数的 `main`：
 
-<!-- run -->
+<!-- check:run -->
 
 ```cangjie
 // main.cj
@@ -19,7 +19,7 @@ main(): Int64 { // OK.
 
 参数类型为 `Array<String>` 的 `main`：
 
-<!-- run -->
+<!-- check:run -->
 
 ```cangjie
 // main.cj
@@ -30,6 +30,9 @@ main(args: Array<String>): Unit { // OK.
 }
 ```
 
+<!-- expected_output:
+-->
+
 使用 `cjc main.cj` 编译完成后，通过命令行执行：`./main Hello, World`，将会得到如下输出：
 
 ```text
@@ -39,7 +42,7 @@ World
 
 以下是一些错误示例：
 
-<!-- compile.error  -->
+<!-- check:compile_error -->
 
 ```cangjie
 // main.cj
@@ -48,7 +51,7 @@ main(): String { // Error, return type of 'main' is not 'Integer' or 'Unit'.
 }
 ```
 
-<!-- compile.error  -->
+<!-- check:compile_error -->
 
 ```cangjie
 // main.cj
@@ -57,7 +60,7 @@ main(args: Array<Int8>): Int64 { // Error, 'main' cannot be defined with paramet
 }
 ```
 
-<!-- compile.error  -->
+<!-- check:compile_error -->
 
 ```cangjie
 // main.cj

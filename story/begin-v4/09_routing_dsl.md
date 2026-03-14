@@ -16,7 +16,7 @@
 
 假设我们定义了一个 `@Route` 宏。
 
-<!-- check:skip -->
+<!-- check:ast -->
 ```cangjie
 // 概念代码：宏定义 (伪代码)
 // macro Route(path: String, method: String) {
@@ -30,7 +30,7 @@
 
 如果不使用宏，我们需要手动注册：
 
-<!-- check:skip -->
+<!-- check:ast -->
 ```cangjie
 // 手动方式
 // router.add("/user", GET, handleUser)
@@ -38,7 +38,7 @@
 
 如果有了宏，我们可以这样写（更加声明式）：
 
-<!-- check:skip -->
+<!-- check:ast -->
 ```cangjie
 /*
 @Controller("/api")

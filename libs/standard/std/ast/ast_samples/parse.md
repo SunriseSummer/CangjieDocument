@@ -15,7 +15,7 @@ class Data {
 
 利用解析函数将上述代码解析为一个 Decl 对象，代码如下所示：
 
-<!-- verify -->
+<!-- check:run -->
 
 ```cangjie
 import std.ast.*
@@ -150,7 +150,7 @@ public macro M(input: Tokens) {
 
 利用 parseProgram 函数将上述代码解析为一个 Program 节点对象，代码如下所示：
 
-<!-- compile -->
+<!-- check:ast -->
 
 ```cangjie
 internal import std.ast.*

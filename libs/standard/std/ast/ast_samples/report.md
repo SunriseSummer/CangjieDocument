@@ -8,6 +8,8 @@
 
 宏定义如下：
 
+<!-- check:compile_error project=rpt1 type=macro -->
+
 ```cangjie
 // macro_definition.cj
 macro package macro_definition
@@ -27,11 +29,10 @@ public macro testDef(input: Tokens): Tokens {
 
 宏调用如下：
 
+<!-- check:compile_error project=rpt1 -->
+
 ```cangjie
 // macro_call.cj
-package macro_calling
-
-import std.ast.*
 import macro_definition.*
 
 main(): Int64 {
@@ -73,6 +74,8 @@ error: This expression is not allowed to contain identifier
 ```
 
 ## 非宏展开过程中调用示例
+
+<!-- check:run -->
 
 ```cangjie
 import std.ast.*

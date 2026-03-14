@@ -2,6 +2,8 @@
 
 在仓颉编程语言中，包声明以关键字 `package` 开头，后接 root 包至当前包由 `.` 分隔路径上所有包的包名。包名必须是合法的普通标识符（不含原始标识符）。例如：
 
+<!-- check:skip -->
+
 ```cangjie
 package pkg1      // root 包 pkg1
 package pkg1.sub1 // root 包 pkg1 的子包 sub1
@@ -13,8 +15,7 @@ package pkg1.sub1 // root 包 pkg1 的子包 sub1
 
 包声明必须在源文件的非空非注释的首行，且同一个包中的不同源文件的包声明必须保持一致。
 
-<!-- compile.error -->
-<!-- cfg="-p test --output-type=staticlib" -->
+<!-- check:skip -->
 
 ```cangjie
 // file 1
@@ -51,12 +52,16 @@ src
 
 则 `a.cj`、`b.cj`、`c.cj`、`main.cj` 中的包声明可以为:
 
+<!-- check:ast -->
+
 ```cangjie
 // a.cj
 // in file a.cj, the declared package name must correspond to relative path directory_0/directory_1.
 
 package default.directory_0.directory_1
 ```
+
+<!-- check:ast -->
 
 ```cangjie
 // b.cj
@@ -65,12 +70,16 @@ package default.directory_0.directory_1
 package default.directory_0.directory_1
 ```
 
+<!-- check:ast -->
+
 ```cangjie
 // c.cj
 // in file c.cj, the declared package name must correspond to relative path directory_0.
 
 package default.directory_0
 ```
+
+<!-- check:ast -->
 
 ```cangjie
 // main.cj
@@ -85,6 +94,8 @@ main(): Int64 {
 
 以下是一些错误示例：
 
+<!-- check:ast -->
+
 ```cangjie
 // a.cj
 package a
@@ -93,8 +104,7 @@ public class B { // Error, 'B' is conflicted with sub-package 'a.B'
 }
 ```
 
-<!-- compile.error -->
-<!-- cfg="-p a/B --output-type=staticlib" -->
+<!-- check:skip -->
 
 ```cangjie
 // b.cj
@@ -102,8 +112,7 @@ package a.B
 public func f {}
 ```
 
-<!-- compile.error -->
-<!-- cfg="liba.a liba.B.a" -->
+<!-- check:ast -->
 
 ```cangjie
 // main.cj

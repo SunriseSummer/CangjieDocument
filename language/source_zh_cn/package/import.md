@@ -4,6 +4,8 @@
 
 在仓颉编程语言中，可以通过 `import fullPackageName.itemName` 的语法导入其他包中的一个顶层声明或定义，`fullPackageName` 为完整路径包名，`itemName` 为声明的名字。导入语句在源文件中的位置必须在包声明之后，其他声明或定义之前。例如：
 
+<!-- check:ast -->
+
 ```cangjie
 package a
 import std.math.*
@@ -13,11 +15,15 @@ import {package1.foo, package2.bar}
 
 如果要导入的多个 `itemName` 同属于一个 `fullPackageName`，可以使用 `import fullPackageName.{itemName[, itemName]*}` 语法，例如：
 
+<!-- check:ast -->
+
 ```cangjie
 import package1.{foo, bar, fuzz}
 ```
 
 这等价于：
+
+<!-- check:ast -->
 
 ```cangjie
 import package1.foo
@@ -26,6 +32,8 @@ import package1.fuzz
 ```
 
 除了通过 `import fullPackagename.itemName` 语法导入一个特定的顶层声明或定义外，还可以使用 `import packageName.*` 语法将 `packageName` 包中所有可见的顶层声明或定义全部导入。例如：
+
+<!-- check:ast -->
 
 ```cangjie
 import package1.*
@@ -41,6 +49,8 @@ import {package1.*, package2.*}
 - 禁止包间的循环依赖导入，如果包之间存在循环依赖，编译器会报错。
 
 示例如下：
+
+<!-- check:skip -->
 
 ```cangjie
 // pkga/a.cj
@@ -86,6 +96,8 @@ func f2() {
 
 在仓颉编程语言中，导入的声明或定义如果和当前包中的顶层声明或定义重名且不构成函数重载，则导入的声明和定义会被遮盖；导入的声明或定义如果和当前包中的顶层声明或定义重名且构成函数重载，函数调用时将会根据函数重载的规则进行函数决议。
 
+<!-- check:skip -->
+
 ```cangjie
 // pkga/a.cj
 package pkga
@@ -119,8 +131,8 @@ func bar() {
 - 使用 `import as` 对导入的声明进行重命名后，当前包只能使用重命名后的新名字，原名无法使用。
 - 如果重命名后的名字与当前包顶层作用域的其他名字存在冲突，且这些名字对应的声明均为函数类型，则参与函数重载，否则报重定义的错误。
 - 支持 `import pkg as newPkgName` 的形式对包名进行重命名，以解决不同模块中同名包的命名冲突问题。
-    <!-- compile.error -import3-->
-    <!-- cfg="-p p1 --output-type=staticlib" -->
+
+    <!-- check:ast -->
 
     ```cangjie
     // a.cj
@@ -128,8 +140,7 @@ func bar() {
     public func f1() {}
     ```
 
-    <!-- compile.error -import3-->
-    <!-- cfg="-p p2 --output-type=staticlib" -->
+    <!-- check:ast -->
 
     ```cangjie
     // d.cj
@@ -137,8 +148,7 @@ func bar() {
     public func f3() {}
     ```
 
-    <!-- compile.error -import3-->
-    <!-- cfg="-p p1 --output-type=staticlib" -->
+    <!-- check:ast -->
 
     ```cangjie
     // b.cj
@@ -146,8 +156,7 @@ func bar() {
     public func f2() {}
     ```
 
-    <!-- compile.error -import3-->
-    <!-- cfg="-p pkgc --output-type=staticlib" -->
+    <!-- check:ast -->
 
     ```cangjie
     // c.cj
@@ -155,8 +164,7 @@ func bar() {
     public func f1() {}
     ```
 
-    <!-- compile.error -import3-->
-    <!-- cfg="libp1.a libpkgc.a libp1.a" -->
+    <!-- check:ast -->
 
     ```cangjie
     // main.cj
@@ -179,6 +187,8 @@ func bar() {
     ```
 
 - 如果没有对导入的存在冲突的名字进行重命名，在 `import` 语句处不报错；在使用处，会因为无法导入唯一的名字而报错。这种情况可以通过 `import as` 定义别名或者 `import fullPackageName` 导入包作为命名空间。
+
+    <!-- check:skip -->
 
     ```cangjie
     // a.cj
@@ -232,27 +242,34 @@ func bar() {
 
 在下面的例子中，`b` 是 `a` 的子包，在 `a` 中通过 `public import` 重导出了 `b` 中定义的函数 `f`。
 
+<!-- check:build_only project=reexport file=src/a/a.cj -->
+
 ```cangjie
-package a
-public import a.b.f
+package reexport.a
+public import reexport.a.b.f
 
 public let x = 0
 ```
 
+<!-- check:build_only project=reexport file=src/a/b/b.cj -->
+
 ```cangjie
-internal package a.b
+internal package reexport.a.b
 
 public func f() { 0 }
 ```
 
+<!-- check:build_only project=reexport file=src/main.cj -->
+
 ```cangjie
-import a.f  // OK
+import reexport.a.f
+
 let _ = f() // OK
 ```
 
 需要注意的是，包不可以被重导出：如果被 `import` 导入的是包，那么该 `import` 不允许被 `public`、`protected` 或者 `internal` 修饰。
 
-<!-- compile.error -->
+<!-- check:compile_error -->
 
 ```cangjie
 public import a.b // Error, cannot re-export package

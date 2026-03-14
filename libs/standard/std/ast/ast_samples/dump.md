@@ -4,7 +4,7 @@
 
 示例：
 
-<!-- verify -->
+<!-- check:run -->
 
 ```cangjie
 import std.ast.*
