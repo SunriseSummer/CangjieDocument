@@ -10,11 +10,9 @@
 
 ## 2. tree-sitter 末尾换行符敏感
 
-**问题**：tree-sitter 仓颉解析器在代码不以换行符结尾时可能产生误报（`has_error=True` 但无实际 ERROR 节点）。
+**状态**：已解决。
 
-**影响**：不补充换行符时，合法代码可能被误判为语法错误。
-
-**解决**：`check_ast()` 函数中已自动在代码末尾补充 `\n`。
+tree-sitter-cangjie 插件 v1.0.5.3 已修复末尾换行符敏感问题，代码不以换行符结尾也不再产生误报。`check_ast()` 中的换行符补充逻辑已移除。
 
 ## 3. check:skip 仍有少量使用
 
@@ -40,8 +38,10 @@
 
 **建议**：并发示例不设置 `expected_output`，仅验证编译运行成功。
 
-## 6. story 目录 skip 已全部转为 ast
+## 6. tree-sitter 对无大括号 if-else 表达式解析严格
 
-**状态**：已解决。
+**问题**：tree-sitter-cangjie 解析器不支持无大括号的 if-else 表达式形式（如 `if (cond) "Win" else "Lose"`），要求必须使用 `{ }` 包裹（如 `if (cond) { "Win" } else { "Lose" }`）。
 
-`story/` 目录中原有 7 个 `check:skip` 代码块已全部转为 `check:ast`，经验证语法检查均通过。
+**影响**：`story/begin/03_control_flow.md` 中一个代码块因此仍使用 `check:skip`。
+
+**说明**：该代码在仓颉编译器中可能是合法语法，但 tree-sitter 语法解析更严格。

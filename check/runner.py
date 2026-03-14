@@ -59,8 +59,6 @@ def check_ast(code: str) -> tuple:
     parser = _get_ts_parser()
     if parser is None:
         return True, []
-    if not code.endswith('\n'):
-        code += '\n'
     tree = parser.parse(code.encode('utf-8'))
     if not tree.root_node.has_error:
         return True, []

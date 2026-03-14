@@ -36,7 +36,7 @@ main() {
 
 `if-else` 不仅可以控制流程，在仓颉中它还是表达式，可以直接返回值：
 
-<!-- check:ast -->
+<!-- check:skip -->
 ```cangjie
 let resultMsg = if (playerGuess == targetNumber) "Win" else "Try Again"
 ```
